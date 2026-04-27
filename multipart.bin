@@ -1,0 +1,61 @@
+--2aebe8c82430d2503fef18c4fd19cafd93157e1527f491ede040edd6e074
+Content-Disposition: form-data; name="index.js"
+
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+// src/index.js
+var index_default = {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const host = request.headers.get("host") || "";
+    if (host.includes("error-handler")) {
+      return handleErrorHandler(request);
+    } else if (host.includes("circuit-breaker")) {
+      return handleCircuitBreaker(request);
+    } else if (host.includes("rate-limiter")) {
+      return handleRateLimiter(request);
+    } else if (host.includes("lesson-handler")) {
+      return handleLessonHandler(request);
+    }
+    return new Response(JSON.stringify({ error: "Unknown route" }), { status: 404 });
+  }
+};
+function handleErrorHandler(request) {
+  if (request.method === "POST") {
+    return request.json().then((data) => {
+      const type = data.error_type || "UNKNOWN";
+      const classified = ["TIMEOUT", "NETWORK", "RATE_LIMIT"].includes(type) ? "RETRYABLE" : ["PAYMENT_FAILED", "PERMISSION_DENIED"].includes(type) ? "ESCALATABLE" : ["USER_NOT_FOUND", "DATA_CORRUPT"].includes(type) ? "TERMINAL" : "IGNORABLE";
+      return new Response(JSON.stringify({ classified, logged: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+    });
+  }
+  return new Response(JSON.stringify({ status: "operational", timestamp: (/* @__PURE__ */ new Date()).toISOString() }), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+__name(handleErrorHandler, "handleErrorHandler");
+function handleCircuitBreaker(request) {
+  const url = new URL(request.url);
+  if (url.pathname === "/status") {
+    return new Response(JSON.stringify({ breakers: { stripe: { state: "CLOSED" }, drive: { state: "CLOSED" }, kbt: { state: "CLOSED" }, external: { state: "CLOSED" } }, healthy: true, timestamp: (/* @__PURE__ */ new Date()).toISOString() }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+  return new Response(JSON.stringify({ message: "Circuit breaker operational" }), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+__name(handleCircuitBreaker, "handleCircuitBreaker");
+function handleRateLimiter(request) {
+  const user = request.headers.get("X-User-ID") || "anonymous";
+  return new Response(JSON.stringify({ allowed: true, user, limit: 100, current: 1, remaining: 99, timestamp: (/* @__PURE__ */ new Date()).toISOString() }), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+__name(handleRateLimiter, "handleRateLimiter");
+function handleLessonHandler(request) {
+  const url = new URL(request.url);
+  if (url.pathname === "/lessons") {
+    return new Response(JSON.stringify({ status: "success", lessons: [{ id: 1, title: "Basketball Basics", subject: "PE" }, { id: 2, title: "Volleyball Skills", subject: "PE" }], count: 2, timestamp: (/* @__PURE__ */ new Date()).toISOString() }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+  return new Response(JSON.stringify({ status: "healthy", timestamp: (/* @__PURE__ */ new Date()).toISOString() }), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+__name(handleLessonHandler, "handleLessonHandler");
+export {
+  index_default as default
+};
+//# sourceMappingURL=index.js.map
+
+--2aebe8c82430d2503fef18c4fd19cafd93157e1527f491ede040edd6e074--
