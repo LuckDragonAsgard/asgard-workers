@@ -22,7 +22,7 @@ const JSON_MANIFEST = JSON.stringify({
 });
 
 const SW_CODE = `
-const CACHE = 'falkor-v9.10.0';
+const CACHE = 'falkor-v9.13.0';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -111,7 +111,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({status:'ok',version:'9.10.0',worker:'falkor-ui'}), {
+      return new Response(JSON.stringify({status:'ok',version:'9.13.0',worker:'falkor-ui'}), {
         headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
       });
     }
@@ -374,6 +374,7 @@ const AUTH_URL     = 'https://asgard.luckdragon.io';
 const AI_URL       = 'https://asgard-ai.luckdragon.io';
 const USERS_URL    = 'https://falkor-push.luckdragon.io';
 const CALENDAR_URL = 'https://falkor-calendar.luckdragon.io';
+const KBT_URL      = 'https://falkor-kbt.luckdragon.io';
 
 const MODELS = [
   { key: 'groq-fast',  label: '⚡ Groq Fast' },
@@ -885,111 +886,171 @@ function NRLPanel({pin}){
 }
 
 
-function RacingPanel({pin}){
-  var [meetings,setMeetings]=React.useState([]);
-  var [selMeeting,setSelMeeting]=React.useState(null);
-  var [races,setRaces]=React.useState([]);
-  var [myTips,setMyTips]=React.useState({});
-  var [leaderboard,setLeaderboard]=React.useState([]);
-  var [loading,setLoading]=React.useState(true);
-  var [tab,setTab]=React.useState('pick');
-  var [player,setPlayer]=React.useState(function(){try{var u=JSON.parse(localStorage.getItem('falkor.user')||'null');if(u&&u.name){localStorage.setItem('falkor.sport.player',u.name);return u.name;}}catch{}return localStorage.getItem('falkor.sport.player')||'';});
-  var loggedInName=(function(){try{var u=JSON.parse(localStorage.getItem('falkor.user')||'null');return u&&u.name?u.name:null;}catch{return null;}})();
-  var today=new Date().toISOString().slice(0,10);
-  var RURL='https://falkor-sport.luckdragon.io';
-  function rsf(path){var sep=path.includes('?')?'&':'?';return fetch(RURL+path+sep+'pin='+pin).then(function(r){return r.json();});}
-  function rLoad(){
+function RacingPanel({ pin }) {
+  const [meetings, setMeetings] = React.useState([]);
+  const [selMeeting, setSelMeeting] = React.useState(null);
+  const [races, setRaces] = React.useState([]);
+  const [myTips, setMyTips] = React.useState({});
+  const [leaderboard, setLeaderboard] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [racesLoading, setRacesLoading] = React.useState(false);
+  const [tab, setTab] = React.useState('pick');
+  const today = new Date().toISOString().slice(0, 10);
+  const RURL = 'https://falkor-sport.luckdragon.io';
+  const loggedInName = (() => { try { const u = JSON.parse(localStorage.getItem('falkor.user') || 'null'); return u?.name || null; } catch { return null; } })();
+  const playerName = loggedInName || localStorage.getItem('falkor.sport.player') || 'Guest';
+
+  function rf(path) { const sep = path.includes('?') ? '&' : '?'; return fetch(RURL + path + sep + 'pin=' + pin).then(r => r.json()); }
+
+  async function load() {
     setLoading(true);
-    Promise.allSettled([rsf('/racing/meetings?date='+today),rsf('/racing/leaderboard'),rsf('/racing/comp?date='+today)]).then(function(res){
-      if(res[0].status==='fulfilled') setMeetings(res[0].value.meetings||[]);
-      if(res[1].status==='fulfilled') setLeaderboard(res[1].value.leaderboard||[]);
-      if(res[2].status==='fulfilled'){var ex={};(res[2].value.tips||[]).forEach(function(t){if(t.player===player)ex[t.race_id]=t.selection;});setMyTips(ex);}
-      setLoading(false);
+    const [m, lb, tips] = await Promise.allSettled([
+      rf('/racing/meetings?date=' + today),
+      rf('/racing/leaderboard'),
+      rf('/racing/comp?date=' + today),
+    ]);
+    if (m.status === 'fulfilled') setMeetings(m.value.meetings || []);
+    if (lb.status === 'fulfilled') setLeaderboard(lb.value.leaderboard || []);
+    if (tips.status === 'fulfilled') {
+      const ex = {};
+      (tips.value.tips || []).filter(t => t.player === playerName).forEach(t => { ex[t.race_id] = t.selection; });
+      setMyTips(ex);
+    }
+    setLoading(false);
+  }
+
+  async function loadRaces(m) {
+    setSelMeeting(m); setRaces([]); setRacesLoading(true);
+    const d = await rf('/racing/races?date=' + today + '&venue=' + encodeURIComponent(m.id || m.name) + '&type=' + (m.type || 'R'));
+    setRaces(d.races || []);
+    setRacesLoading(false);
+  }
+
+  function pick(raceId, raceName, horse) {
+    if (!playerName || playerName === 'Guest') { alert('Log in first to save tips'); return; }
+    setMyTips(prev => ({ ...prev, [raceId]: horse }));
+    fetch(RURL + '/racing/comp/tip?pin=' + pin, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player: playerName, date: today, raceId, raceName, selection: horse }),
     });
   }
-  function rLoadRaces(m){
-    setSelMeeting(m);setRaces([]);
-    rsf('/racing/races?date='+today+'&venue='+encodeURIComponent(m.id||m.name)+'&type='+(m.type||'R')).then(function(d){setRaces(d.races||[]);});
-  }
-  function rPick(raceId,raceName,horse){
-    var pName=loggedInName||player;
-    if(!pName){alert('Enter your name first');return;}
-    if(!loggedInName) localStorage.setItem('falkor.sport.player',pName);
-    setMyTips(function(prev){var n=Object.assign({},prev);n[raceId]=horse;return n;});
-    fetch(RURL+'/racing/comp/tip?pin='+pin,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({player:pName,date:today,raceId:raceId,raceName:raceName,selection:horse})});
-  }
-  useEffect(function(){rLoad();},[]);
-  var RTB=function(t){return {padding:'6px 14px',border:'none',borderRadius:'7px',cursor:'pointer',fontSize:'13px',fontWeight:tab===t?600:400,background:tab===t?'rgba(108,99,255,.15)':'transparent',color:tab===t?'var(--accent2)':'var(--muted)',marginRight:'4px'};};
+
+  React.useEffect(() => { load(); }, []);
+
+  const medalOf = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1)+'.';
+
   return (
-    <div style={{flex:1,overflow:'auto',padding:'16px 20px'}}>
-      <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'16px',flexWrap:'wrap'}}>
-        <span style={{fontSize:'18px',fontWeight:800}}>Racing Tips</span>
-        <span style={{fontSize:'12px',color:'var(--muted)'}}>{today}</span>
-        <div style={{marginLeft:'auto'}}>
-          {['pick','leaderboard'].map(function(t){return <button key={t} style={RTB(t)} onClick={function(){setTab(t);}}>{t==='pick'?'Pick Tips':'Board'}</button>;})}
-        </div>
+    <div style={{ flex:1, overflow:'auto', padding:'12px 16px' }}>
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+        <span style={{ fontSize:18, fontWeight:800 }}>🏇 Racing Tips</span>
+        <span style={{ fontSize:12, color:'var(--muted)', marginRight:'auto' }}>{today}</span>
+        <button onClick={load} style={{ background:'none', border:'1px solid var(--border)', borderRadius:8, color:'var(--muted)', padding:'4px 10px', cursor:'pointer', fontSize:12 }}>↻</button>
       </div>
-      <div style={{marginBottom:'12px',display:'flex',gap:'8px',alignItems:'center'}}>
-        {loggedInName ? <span style={{background:'rgba(108,99,255,.12)',border:'1px solid var(--accent)',borderRadius:'20px',color:'var(--accent2)',padding:'5px 14px',fontSize:'13px',fontWeight:600}}>🏇 {loggedInName}</span> : <input value={player} onChange={function(e){setPlayer(e.target.value);}} onBlur={function(){localStorage.setItem('falkor.sport.player',player);}} placeholder='Your name' style={{background:'var(--input-bg)',border:'1px solid var(--border)',borderRadius:'8px',color:'var(--text)',padding:'7px 12px',fontSize:'13px',width:'160px'}}/>}
-        <span style={{fontSize:'12px',color:'var(--muted)'}}>Pick a winner each race</span>
+
+      {/* Player badge */}
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
+        <span style={{ background:'rgba(99,102,241,.15)', border:'1px solid var(--accent)', borderRadius:20, color:'var(--accent)', padding:'4px 14px', fontSize:13, fontWeight:600 }}>
+          {loggedInName ? ('🏇 ' + loggedInName) : '👤 Guest — log in to save tips'}
+        </span>
       </div>
-      {loading && <div style={{color:'var(--muted)',fontSize:'13px',padding:'20px'}}>Loading meetings...</div>}
-      {!loading && tab==='pick' && (
+
+      {/* Tabs */}
+      <div style={{ display:'flex', gap:6, marginBottom:14 }}>
+        {['pick','leaderboard'].map(t => (
+          <button key={t} onClick={() => setTab(t)} style={{ padding:'7px 16px', borderRadius:20, border:'1px solid', borderColor: tab===t ? 'var(--accent)' : 'var(--border)', background: tab===t ? 'var(--accent)' : 'transparent', color: tab===t ? '#fff' : 'var(--muted)', cursor:'pointer', fontSize:13, fontWeight: tab===t ? 700 : 400 }}>
+            {t === 'pick' ? '🐎 Pick Tips' : '🏆 Leaderboard'}
+          </button>
+        ))}
+      </div>
+
+      {loading && <div style={{ color:'var(--muted)', padding:20, textAlign:'center' }}>Loading race day…</div>}
+
+      {!loading && tab === 'pick' && (
         <div>
-          <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'16px'}}>
-            {meetings.length===0 && <div style={{color:'var(--muted)',fontSize:'13px'}}>No race meetings today. Check back on race day!</div>}
-            {meetings.map(function(m){return (
-              <button key={m.id} onClick={function(){rLoadRaces(m);}} style={{padding:'8px 14px',borderRadius:'8px',border:'2px solid '+(selMeeting&&selMeeting.id===m.id?'var(--accent)':'var(--border)'),background:selMeeting&&selMeeting.id===m.id?'rgba(108,99,255,.15)':'var(--input-bg)',color:'var(--text)',cursor:'pointer',fontSize:'13px'}}>
-                {m.type==='R'?'Thoroughbred':m.type==='G'?'Greyhound':m.type==='H'?'Harness':'Race'} - {m.name}
-              </button>
-            );})}
-          </div>
-          {selMeeting&&races.length===0 && <div style={{color:'var(--muted)',fontSize:'13px'}}>Loading race card...</div>}
-          {races.map(function(race){
-            var rId=(selMeeting.id||selMeeting.name)+'_'+(selMeeting.type||'R')+'_'+race.id;
-            var myPick=myTips[rId];
-            var done=race.status==='Final'||race.status==='Interim'||race.status==='Closed';
+          {/* Meeting selector */}
+          {meetings.length === 0 && <div style={{ color:'var(--muted)', fontSize:13, padding:'20px 0' }}>No race meetings today.</div>}
+          {meetings.length > 0 && (
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
+              {meetings.map(m => {
+                const label = m.type==='G' ? '🐕 Greyhound' : m.type==='H' ? '🐴 Harness' : '🏇 Thoroughbred';
+                const active = selMeeting?.id === m.id;
+                return (
+                  <button key={m.id} onClick={() => loadRaces(m)} style={{ padding:'10px 16px', borderRadius:10, border:'2px solid', borderColor: active ? 'var(--accent)' : 'var(--border)', background: active ? 'rgba(99,102,241,.15)' : 'var(--panel)', color:'var(--text)', cursor:'pointer', fontSize:13, fontWeight: active ? 700 : 400, textAlign:'center' }}>
+                    <div>{label}</div>
+                    <div style={{ fontSize:11, color:'var(--muted)', marginTop:2 }}>{m.name}</div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {racesLoading && <div style={{ color:'var(--muted)', fontSize:13, padding:'12px 0' }}>Loading race card…</div>}
+
+          {/* Race cards */}
+          {races.map(race => {
+            const rId = (selMeeting?.id||selMeeting?.name) + '_' + (selMeeting?.type||'R') + '_' + race.id;
+            const myPick = myTips[rId];
+            const done = ['Final','Interim','Closed'].includes(race.status);
             return (
-              <div key={race.id} style={{background:'var(--panel)',border:'1px solid var(--border)',borderRadius:'10px',padding:'12px 16px',marginBottom:'10px'}}>
-                <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
-                  <span style={{fontWeight:700}}>Race {race.id}</span>
-                  {race.name && <span style={{color:'var(--muted)',fontSize:'12px'}}>{race.name}</span>}
-                  {race.distance && <span style={{color:'var(--muted)',fontSize:'11px'}}>{race.distance}m</span>}
-                  <span style={{marginLeft:'auto',fontSize:'11px',padding:'2px 8px',borderRadius:'20px',background:done?'rgba(34,197,94,.12)':'var(--border)',color:done?'var(--success)':'var(--muted)',fontWeight:600}}>{race.status||'Open'}</span>
+              <div key={race.id} style={{ background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:14, marginBottom:12 }}>
+                <div style={{ display:'flex', alignItems:'center', marginBottom:10 }}>
+                  <div>
+                    <span style={{ fontWeight:700, fontSize:15 }}>Race {race.id}</span>
+                    {race.name && <span style={{ color:'var(--muted)', fontSize:12, marginLeft:8 }}>{race.name}</span>}
+                    {race.distance && <span style={{ color:'var(--muted)', fontSize:11, marginLeft:6 }}>{race.distance}m</span>}
+                  </div>
+                  <span style={{ marginLeft:'auto', fontSize:11, padding:'3px 10px', borderRadius:20, background: done ? 'rgba(34,197,94,.15)' : 'rgba(99,102,241,.1)', color: done ? 'var(--success)' : 'var(--accent)', fontWeight:700 }}>
+                    {race.status || 'Open'}
+                  </span>
                 </div>
-                {myPick && <div style={{fontSize:'12px',color:'var(--accent2)',marginBottom:'6px'}}>Your pick: <strong>{myPick}</strong></div>}
-                <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
-                  {race.runners.length===0 && <div style={{color:'var(--muted)',fontSize:'12px'}}>Runners not yet available</div>}
-                  {race.runners.map(function(r){return (
-                    <button key={r.num} onClick={function(){if(!done)rPick(rId,race.name||('Race '+race.id),r.name);}} style={{padding:'6px 12px',borderRadius:'8px',border:'2px solid '+(myPick===r.name?'var(--accent)':'var(--border)'),background:myPick===r.name?'rgba(108,99,255,.15)':'var(--input-bg)',color:'var(--text)',cursor:done?'default':'pointer',fontSize:'12px',fontWeight:myPick===r.name?700:400}}>
-                      <span style={{color:'var(--muted)'}}>{r.num}. </span>{r.name}
-                    </button>
-                  );})}
+
+                {myPick && (
+                  <div style={{ background:'rgba(99,102,241,.12)', border:'1px solid var(--accent)', borderRadius:8, padding:'6px 12px', marginBottom:10, fontSize:13, color:'var(--accent)', fontWeight:600 }}>
+                    ✓ Your pick: {myPick}
+                  </div>
+                )}
+
+                {/* Horse cards — large tap targets */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
+                  {race.runners.length === 0 && <div style={{ color:'var(--muted)', fontSize:12, gridColumn:'1/-1' }}>Runners not yet available</div>}
+                  {race.runners.map(r => {
+                    const selected = myPick === r.name;
+                    return (
+                      <button key={r.num} onClick={() => { if (!done) pick(rId, race.name || ('Race ' + race.id), r.name); }}
+                        style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 12px', borderRadius:10, border:'2px solid', borderColor: selected ? 'var(--accent)' : 'var(--border)', background: selected ? 'rgba(99,102,241,.2)' : 'var(--bg)', cursor: done ? 'default' : 'pointer', textAlign:'left', width:'100%', opacity: done && !selected ? 0.5 : 1 }}>
+                        <span style={{ background:'var(--border)', borderRadius:6, padding:'2px 6px', fontSize:11, fontWeight:700, color:'var(--muted)', minWidth:22, textAlign:'center' }}>{r.num}</span>
+                        <span style={{ fontSize:13, fontWeight: selected ? 700 : 500, color: selected ? 'var(--accent)' : 'var(--text)', lineHeight:1.2 }}>{r.name}</span>
+                        {selected && <span style={{ marginLeft:'auto', fontSize:14 }}>✓</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
         </div>
       )}
-      {!loading && tab==='leaderboard' && (
+
+      {!loading && tab === 'leaderboard' && (
         <div>
-          {leaderboard.length===0 && <div style={{color:'var(--muted)',fontSize:'13px'}}>No results yet - get your tips in on race day!</div>}
-          {leaderboard.length>0 && (
-            <table className="sport-table">
-              <thead><tr><th>#</th><th>Player</th><th style={{textAlign:'center'}}>Wins</th><th style={{textAlign:'center'}}>Tips</th><th style={{textAlign:'center'}}>Days</th><th style={{textAlign:'center'}}>%</th></tr></thead>
-              <tbody>{leaderboard.map(function(p,i){return (
-                <tr key={p.player} style={{fontWeight:p.player===player?700:400}}>
-                  <td style={{color:'var(--muted)'}}>{i+1}</td>
-                  <td>{p.player}{p.player===player && ' You'}</td>
-                  <td style={{textAlign:'center',color:'var(--success)',fontWeight:600}}>{p.wins}</td>
-                  <td style={{textAlign:'center'}}>{p.total}</td>
-                  <td style={{textAlign:'center',color:'var(--muted)'}}>{p.days}</td>
-                  <td style={{textAlign:'center',color:'var(--muted)'}}>{p.pct}%</td>
-                </tr>
-              );})}
-              </tbody>
-            </table>
-          )}
+          {leaderboard.length === 0 && <div style={{ color:'var(--muted)', fontSize:13, padding:'20px 0' }}>No results yet — tips comp starts race day!</div>}
+          {leaderboard.map((p, i) => (
+            <div key={p.player} style={{ display:'flex', alignItems:'center', gap:12, background: p.player===playerName ? 'rgba(99,102,241,.1)' : 'var(--panel)', border:'1px solid', borderColor: p.player===playerName ? 'var(--accent)' : 'var(--border)', borderRadius:10, padding:'12px 14px', marginBottom:8 }}>
+              <span style={{ fontSize:20, minWidth:30 }}>{medalOf(i)}</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight: p.player===playerName ? 700 : 500, fontSize:15 }}>{p.player}{p.player===playerName && ' (you)'}</div>
+                <div style={{ color:'var(--muted)', fontSize:12 }}>{p.total} tips across {p.days} day{p.days!==1?'s':''}</div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontWeight:700, fontSize:18, color:'var(--accent)' }}>{p.wins}</div>
+                <div style={{ fontSize:11, color:'var(--muted)' }}>wins</div>
+              </div>
+              <div style={{ textAlign:'right', minWidth:38 }}>
+                <div style={{ fontWeight:600, fontSize:14, color: parseInt(p.pct) >= 30 ? 'var(--success)' : 'var(--muted)' }}>{p.pct}%</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1412,6 +1473,128 @@ function TypingIndicator() {
   );
 }
 
+
+// ─── KBTPanel — Game Pack Builder ────────────────────────────────────────────
+function KBTPanel({ pin }) {
+  const [theme, setTheme] = React.useState('');
+  const [rounds, setRounds] = React.useState(6);
+  const [qpr, setQpr] = React.useState(10);
+  const [loading, setLoading] = React.useState(false);
+  const [pack, setPack] = React.useState(null);
+  const [activeRound, setActiveRound] = React.useState(1);
+  const [copied, setCopied] = React.useState(false);
+
+  async function buildPack() {
+    if (!theme.trim()) return;
+    setLoading(true); setPack(null);
+    try {
+      const r = await fetch(KBT_URL + '/build-pack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin },
+        body: JSON.stringify({ theme: theme.trim(), rounds, questionsPerRound: qpr }),
+      });
+      const d = await r.json();
+      if (d.ok) { setPack(d); setActiveRound(1); }
+      else alert('Pack generation failed: ' + (d.error || 'unknown'));
+    } catch (e) { alert('Error: ' + e.message); }
+    setLoading(false);
+  }
+
+  function copyAnswers() {
+    if (!pack) return;
+    navigator.clipboard.writeText(pack.answerSheet).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  }
+
+  function copySuno() {
+    if (!pack) return;
+    navigator.clipboard.writeText(pack.sunoPrompt).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  }
+
+  const activeRoundData = pack?.rounds?.find(r => r.round === activeRound);
+
+  return (
+    <div style={{ padding:'16px', maxWidth:700, margin:'0 auto' }}>
+      <div style={{ fontSize:20, fontWeight:700, marginBottom:4 }}>🎯 KBT Game Pack Builder</div>
+      <div style={{ color:'var(--muted)', fontSize:13, marginBottom:16 }}>Generate a full trivia night in one shot</div>
+
+      <div style={{ background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, marginBottom:16 }}>
+        <div style={{ marginBottom:12 }}>
+          <label style={{ fontSize:12, color:'var(--muted)', display:'block', marginBottom:4 }}>Theme</label>
+          <input value={theme} onChange={e => setTheme(e.target.value)}
+            placeholder="e.g. 80s Pop, Aussie Sport, Christmas, Football..."
+            style={{ width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', color:'var(--text)', fontSize:15, boxSizing:'border-box' }}
+            onKeyDown={e => e.key === 'Enter' && buildPack()}
+          />
+        </div>
+        <div style={{ display:'flex', gap:16, marginBottom:12 }}>
+          <div style={{ flex:1 }}>
+            <label style={{ fontSize:12, color:'var(--muted)', display:'block', marginBottom:4 }}>Rounds</label>
+            <select value={rounds} onChange={e => setRounds(Number(e.target.value))}
+              style={{ width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', color:'var(--text)' }}>
+              {[4,5,6,7,8].map(n => <option key={n} value={n}>{n} rounds</option>)}
+            </select>
+          </div>
+          <div style={{ flex:1 }}>
+            <label style={{ fontSize:12, color:'var(--muted)', display:'block', marginBottom:4 }}>Questions / Round</label>
+            <select value={qpr} onChange={e => setQpr(Number(e.target.value))}
+              style={{ width:'100%', background:'var(--bg)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 12px', color:'var(--text)' }}>
+              {[5,8,10,12,15].map(n => <option key={n} value={n}>{n} questions</option>)}
+            </select>
+          </div>
+        </div>
+        <button className="btn" onClick={buildPack} disabled={loading || !theme.trim()} style={{ width:'100%' }}>
+          {loading ? '⏳ Generating pack…' : '🎯 Build Full Game Pack'}
+        </button>
+      </div>
+
+      {pack && (
+        <div>
+          <div style={{ fontSize:16, fontWeight:700, marginBottom:4 }}>{pack.gameTitle}</div>
+          <div style={{ color:'var(--muted)', fontSize:13, marginBottom:12 }}>{pack.totalQuestions} questions across {pack.rounds.length} rounds</div>
+
+          {/* Round tabs */}
+          <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:12 }}>
+            {pack.rounds.map(r => (
+              <button key={r.round}
+                onClick={() => setActiveRound(r.round)}
+                style={{ padding:'6px 12px', borderRadius:20, border:'1px solid var(--border)', background: activeRound === r.round ? 'var(--accent)' : 'var(--panel)', color: activeRound === r.round ? '#fff' : 'var(--text)', cursor:'pointer', fontSize:12, fontWeight: activeRound === r.round ? 700 : 400 }}>
+                R{r.round}
+              </button>
+            ))}
+          </div>
+
+          {/* Active round questions */}
+          {activeRoundData && (
+            <div style={{ background:'var(--panel)', border:'1px solid var(--border)', borderRadius:12, padding:16, marginBottom:12 }}>
+              <div style={{ fontWeight:700, marginBottom:8, color:'var(--accent)' }}>Round {activeRoundData.round}: {activeRoundData.category}</div>
+              {activeRoundData.questions.map((q, i) => (
+                <div key={i} style={{ marginBottom:10, paddingBottom:10, borderBottom: i < activeRoundData.questions.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ fontWeight:500, marginBottom:2 }}>Q{i+1}. {q.q}</div>
+                  <div style={{ color:'var(--accent)', fontSize:13, marginBottom:2 }}>✓ {q.a}</div>
+                  {q.fun && <div style={{ color:'var(--muted)', fontSize:12 }}>💡 {q.fun}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Action buttons */}
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+            <button className="btn" onClick={copyAnswers} style={{ flex:1 }}>
+              {copied ? '✓ Copied!' : '📋 Copy Answer Sheet'}
+            </button>
+            <button className="btn btn-ghost" onClick={copySuno} style={{ flex:1 }}>🎵 Copy Suno Prompt</button>
+          </div>
+
+          {/* Suno prompt preview */}
+          <div style={{ marginTop:10, background:'var(--bg)', border:'1px solid var(--border)', borderRadius:8, padding:10, fontSize:12, color:'var(--muted)' }}>
+            <span style={{ fontWeight:600 }}>Suno: </span>{pack.sunoPrompt}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(() => {
@@ -1458,6 +1641,8 @@ function App() {
   const alwaysOnRef      = useRef(alwaysOn);
   const audioRef         = useRef(null);
   const interruptRecogRef = useRef(null);
+  const audioQueueRef     = useRef([]);
+  const audioPlayingRef   = useRef(false);
   const activeIdRef      = useRef(activeId);
   const streamTimerRef   = useRef(null);
 
@@ -1559,6 +1744,10 @@ function App() {
 
   // ── stopCurrentAudio — interrupts TTS playback immediately ──
   function stopCurrentAudio() {
+    // drain queue
+    audioQueueRef.current.forEach(item => { try { URL.revokeObjectURL(item.url); } catch {} });
+    audioQueueRef.current = [];
+    audioPlayingRef.current = false;
     if (audioRef.current) {
       try { audioRef.current.pause(); audioRef.current.src = ''; } catch {}
       audioRef.current = null;
@@ -1585,40 +1774,86 @@ function App() {
     try { recog.start(); } catch {}
   }
 
-  // ── speakText ──
-  async function speakText(text) {
+  // ── speakText — sentence-streaming TTS ──
+  function splitSentences(text) {
+    const parts = text.match(/[^.!?\n]+[.!?\n]+\s*/g) || [text];
+    return parts.map(s => s.trim()).filter(s => s.length > 2);
+  }
+
+  function onAllSentencesDone() {
+    if (interruptRecogRef.current) { try { interruptRecogRef.current.stop(); } catch {} interruptRecogRef.current = null; }
+    setVoiceState('idle');
+    if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600);
+    else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350);
+    else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700);
+  }
+
+  function playNextQueued() {
+    if (audioPlayingRef.current) return;
+    if (audioQueueRef.current.length === 0) return;
+    const item = audioQueueRef.current.shift();
+    audioPlayingRef.current = true;
+    audioRef.current = item.audio;
+    item.audio.onended = () => {
+      audioRef.current = null; audioPlayingRef.current = false;
+      try { URL.revokeObjectURL(item.url); } catch {}
+      if (audioQueueRef.current.length > 0) { playNextQueued(); }
+      else if (item.isLast) { onAllSentencesDone(); }
+    };
+    item.audio.onerror = () => {
+      audioRef.current = null; audioPlayingRef.current = false;
+      if (audioQueueRef.current.length > 0) { playNextQueued(); }
+      else if (item.isLast) { onAllSentencesDone(); }
+    };
+    // Wire analyser to first sentence for waveform
     try {
-      setVoiceState('speaking');
+      if (item.isFirst && audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        const ctx = audioCtxRef.current;
+        const analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyserRef.current = analyser;
+        const msrc = ctx.createMediaElementSource(item.audio); msrc.connect(analyser); analyser.connect(ctx.destination);
+      }
+    } catch {}
+    item.audio.play().catch(() => {
+      audioPlayingRef.current = false;
+      if (audioQueueRef.current.length > 0) playNextQueued();
+      else if (item.isLast) onAllSentencesDone();
+    });
+  }
+
+  async function fetchAndQueueSentence(text, isFirst, isLast) {
+    try {
       const res = await fetch(AI_URL + '/speak', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ text, model:'tts-1', voice:'nova' }),
       });
-      if (!res.ok) { setVoiceState('idle'); return; }
+      if (!res.ok) { if (isLast && audioQueueRef.current.length === 0 && !audioPlayingRef.current) onAllSentencesDone(); return; }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
-      try {
-        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') audioCtxRef.current = new AudioContext();
-        const ctx = audioCtxRef.current;
-        if (ctx.state === 'suspended') await ctx.resume();
-        const analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyserRef.current = analyser;
-        const src = ctx.createMediaElementSource(audio); src.connect(analyser); analyser.connect(ctx.destination);
-      } catch {}
-      audio.onended = () => { audioRef.current = null; if (interruptRecogRef.current) { try { interruptRecogRef.current.stop(); } catch {} interruptRecogRef.current = null; } setVoiceState('idle'); URL.revokeObjectURL(url); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
-      audio.onerror = () => { audioRef.current = null; if (interruptRecogRef.current) { try { interruptRecogRef.current.stop(); } catch {} interruptRecogRef.current = null; } setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
-      audioRef.current = audio;
-      audio.play().then(() => {
-        // Start interrupt listener — if user speaks, cut Falkor off
-        if (alwaysOnRef.current || drivingModeRef.current || showVoiceRef.current) {
-          startInterruptListener(interruptText => {
-            stopCurrentAudio();
-            setVoiceState('idle');
-            URL.revokeObjectURL(url);
-            if (interruptText) { setVoiceTranscript(interruptText); sendMessage(interruptText, null); }
-          });
-        }
-      }).catch(() => { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); });
-    } catch { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); }
+      audioQueueRef.current.push({ audio, url, isFirst, isLast });
+      // Start interrupt listener when first sentence is queued
+      if (isFirst && (alwaysOnRef.current || drivingModeRef.current || showVoiceRef.current)) {
+        startInterruptListener(interruptText => {
+          stopCurrentAudio();
+          setVoiceState('idle');
+          if (interruptText) { setVoiceTranscript(interruptText); sendMessage(interruptText, null); }
+        });
+      }
+      playNextQueued();
+    } catch { if (isLast && audioQueueRef.current.length === 0 && !audioPlayingRef.current) onAllSentencesDone(); }
+  }
+
+  function speakText(text) {
+    if (!text || !text.trim()) return;
+    setVoiceState('speaking');
+    audioQueueRef.current = [];
+    audioPlayingRef.current = false;
+    try {
+      if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') audioCtxRef.current = new AudioContext();
+      if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+    } catch {}
+    const sentences = splitSentences(text);
+    sentences.forEach((s, i) => fetchAndQueueSentence(s, i === 0, i === sentences.length - 1));
   }
 
   // ── startListening ──
@@ -1835,6 +2070,7 @@ function App() {
           <button className={'nav-btn'+(view==='history'?' active':'')} onClick={() => setView('history')}>📖</button>
             <button className={'nav-btn'+(view==='racing'?' active':'')} onClick={() => setView('racing')}>Racing</button>
           <button className={'nav-btn'+(view==='nrl'?' active':'')} onClick={() => setView('nrl')}>NRL</button>
+          <button className={'nav-btn'+(view==='kbt'?' active':'')} onClick={() => setView('kbt')}>🎯</button>
           <div className="nav-sep"/>
 
           <select className="model-select" value={model} onChange={e => { setModelS(e.target.value); LS.setModel(e.target.value); }}>
@@ -1853,6 +2089,7 @@ function App() {
         {view === 'tips'     && <SportPanel pin={LS.agentPin() || LS.pin()} initialTab="comp"/>}
         {view === 'racing'   && <RacingPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'nrl'      && <NRLPanel pin={LS.agentPin() || LS.pin()}/>}
+        {view === 'kbt'      && <KBTPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'sites'    && <SitesPanel/>}
         {view === 'calendar' && <CalendarPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'history'  && <HistoryPanel convos={convos} onOpen={id => { setActiveId(id); setView('chat'); }}/>}
