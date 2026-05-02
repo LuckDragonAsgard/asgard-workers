@@ -8,7 +8,7 @@
 //   POST /lesson-plan     — single AI-generated lesson plan
 //   POST /lesson-week     — full 5-day week plan (NEW)
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 const WORKER_NAME = 'falkor-school';
 const WPS_LAT = -37.8594;
 const WPS_LON = 144.8750;
@@ -259,6 +259,59 @@ export default {
         raw_plan: rawPlan,
         curriculum_links: curriculum,
       });
+    }
+
+
+    // ── Cross Country result entry ─────────────────────────────────────────
+    // POST /xc/result   { category, position, name, time, school, event_date }
+    // GET  /xc/results  ?category=10boys&event_date=2026-05-03
+    // DELETE /xc/clear  ?event_date=2026-05-03  (wipe a day's results)
+    if (path === '/xc/result' && method === 'POST') {
+      if (!env.XC_RESULTS) return json({ ok: false, error: 'XC_RESULTS KV not bound' }, 500);
+      const body = await request.json().catch(() => ({}));
+      const { category, position, name, time = '', school = '', event_date = new Date().toISOString().slice(0, 10) } = body;
+      if (!category || !position || !name) return json({ ok: false, error: 'category, position, name required' }, 400);
+      const key = event_date + ':' + category;
+      const existing = JSON.parse(await env.XC_RESULTS.get(key) || '[]');
+      // Remove any existing entry for same position (allow overwrite)
+      const filtered = existing.filter(function(r) { return r.position !== position; });
+      filtered.push({ position, name, time, school, recorded_at: new Date().toISOString() });
+      filtered.sort(function(a, b) {
+        const pa = parseInt(a.position, 10) || 999;
+        const pb = parseInt(b.position, 10) || 999;
+        return pa - pb;
+      });
+      await env.XC_RESULTS.put(key, JSON.stringify(filtered), { expirationTtl: 60 * 60 * 24 * 30 });
+      return json({ ok: true, category, event_date, results: filtered });
+    }
+
+    if (path === '/xc/results' && method === 'GET') {
+      if (!env.XC_RESULTS) return json({ ok: false, error: 'XC_RESULTS KV not bound' }, 500);
+      const url2 = new URL(request.url);
+      const category = url2.searchParams.get('category') || '';
+      const event_date = url2.searchParams.get('event_date') || new Date().toISOString().slice(0, 10);
+      if (category) {
+        const key = event_date + ':' + category;
+        const data = JSON.parse(await env.XC_RESULTS.get(key) || '[]');
+        return json({ ok: true, category, event_date, results: data });
+      }
+      // Return all categories for the day
+      const list = await env.XC_RESULTS.list({ prefix: event_date + ':' });
+      const all = {};
+      for (const k of list.keys) {
+        const cat = k.name.slice(event_date.length + 1);
+        all[cat] = JSON.parse(await env.XC_RESULTS.get(k.name) || '[]');
+      }
+      return json({ ok: true, event_date, categories: all });
+    }
+
+    if (path === '/xc/clear' && method === 'DELETE') {
+      if (!env.XC_RESULTS) return json({ ok: false, error: 'XC_RESULTS KV not bound' }, 500);
+      const url3 = new URL(request.url);
+      const event_date = url3.searchParams.get('event_date') || new Date().toISOString().slice(0, 10);
+      const list = await env.XC_RESULTS.list({ prefix: event_date + ':' });
+      for (const k of list.keys) { await env.XC_RESULTS.delete(k.name); }
+      return json({ ok: true, cleared: list.keys.length, event_date });
     }
 
     return json({ error: 'Not found', path }, 404);
