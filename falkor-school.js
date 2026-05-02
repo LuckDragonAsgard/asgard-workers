@@ -1,4 +1,4 @@
-// falkor-school v1.3.0 — Phase 69: full week PE lesson planner
+// falkor-school v1.5.0 — Phase 77: XC end-of-day auto-email via Resend
 // Endpoints:
 //   GET  /health          — version check
 //   GET  /summary         — context for Falkor agent
@@ -8,11 +8,13 @@
 //   POST /lesson-plan     — single AI-generated lesson plan
 //   POST /lesson-week     — full 5-day week plan (NEW)
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 const WORKER_NAME = 'falkor-school';
 const WPS_LAT = -37.8594;
 const WPS_LON = 144.8750;
 const AI_URL = 'https://asgard-ai.luckdragon.io';
+const RESEND_URL = 'https://api.resend.com/emails';
+const DEFAULT_EMAIL = 'pgallivan@outlook.com';
 const BRAIN_URL = 'https://falkor-brain.luckdragon.io';
 const CALENDAR_URL = 'https://falkor-calendar.luckdragon.io';
 
@@ -312,6 +314,98 @@ export default {
       const list = await env.XC_RESULTS.list({ prefix: event_date + ':' });
       for (const k of list.keys) { await env.XC_RESULTS.delete(k.name); }
       return json({ ok: true, cleared: list.keys.length, event_date });
+    }
+
+
+    // ── XC End-of-Day Auto-Email (Phase 77) ──────────────────────────────────
+    // POST /xc/email  { event_date?, to? }
+    // GET  /xc/email?event_date=2026-05-03&to=email@example.com
+    if (path === '/xc/email' && (method === 'POST' || method === 'GET')) {
+      if (!env.XC_RESULTS) return json({ ok: false, error: 'XC_RESULTS KV not bound' }, 500);
+      if (!env.RESEND_API_KEY) return json({ ok: false, error: 'RESEND_API_KEY not configured' }, 500);
+
+      let event_date, to_email;
+      if (method === 'POST') {
+        const b = await request.json().catch(function() { return {}; });
+        event_date = b.event_date || new Date().toISOString().slice(0, 10);
+        to_email = b.to || DEFAULT_EMAIL;
+      } else {
+        const u = new URL(request.url);
+        event_date = u.searchParams.get('event_date') || new Date().toISOString().slice(0, 10);
+        to_email = u.searchParams.get('to') || DEFAULT_EMAIL;
+      }
+
+      // Fetch all results for the day
+      const list = await env.XC_RESULTS.list({ prefix: event_date + ':' });
+      if (!list.keys.length) return json({ ok: false, error: 'No results found for ' + event_date });
+
+      const categories = {};
+      for (const k of list.keys) {
+        const cat = k.name.split(':')[1] || k.name;
+        const raw = await env.XC_RESULTS.get(k.name);
+        if (raw) categories[cat] = JSON.parse(raw);
+      }
+
+      // Build HTML email
+      const catCount = Object.keys(categories).length;
+      const totalRunners = Object.values(categories).reduce(function(sum, rs) { return sum + rs.length; }, 0);
+
+      let tableRows = '';
+      const sortedCats = Object.keys(categories).sort();
+      for (const cat of sortedCats) {
+        const results = categories[cat];
+        tableRows += '<tr><td colspan="4" style="background:#1a237e;color:#fff;font-weight:bold;padding:8px 12px;font-size:14px;">' + cat.toUpperCase() + '</td></tr>';
+        const medals = ['🥇', '🥈', '🥉'];
+        for (let i = 0; i < results.length; i++) {
+          const r = results[i];
+          const medal = medals[i] || '';
+          const bg = i % 2 === 0 ? '#f5f5f5' : '#ffffff';
+          tableRows += '<tr style="background:' + bg + ';">' +
+            '<td style="padding:6px 12px;font-weight:bold;width:40px;">' + (r.position || i + 1) + '</td>' +
+            '<td style="padding:6px 12px;">' + medal + ' ' + (r.name || '') + '</td>' +
+            '<td style="padding:6px 12px;color:#555;">' + (r.school || '') + '</td>' +
+            '<td style="padding:6px 12px;color:#1a237e;font-weight:bold;">' + (r.time || '') + '</td>' +
+            '</tr>';
+        }
+      }
+
+      const htmlBody = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;">' +
+        '<div style="background:#1a237e;padding:20px;border-radius:8px 8px 0 0;text-align:center;">' +
+        '<h1 style="color:#fff;margin:0;font-size:22px;">WPS Cross Country District Day</h1>' +
+        '<p style="color:#c5cae9;margin:4px 0 0;">Results — ' + event_date + '</p>' +
+        '</div>' +
+        '<div style="background:#e8eaf6;padding:12px 20px;border-left:4px solid #1a237e;">' +
+        '<strong>' + catCount + ' categories &nbsp;|&nbsp; ' + totalRunners + ' runners recorded</strong>' +
+        '</div>' +
+        '<table style="width:100%;border-collapse:collapse;margin-top:0;">' +
+        tableRows +
+        '</table>' +
+        '<p style="color:#888;font-size:12px;margin-top:20px;text-align:center;">Sent by Falkor — Williamstown Primary School</p>' +
+        '</body></html>';
+
+      const emailPayload = JSON.stringify({
+        from: 'Falkor <onboarding@resend.dev>',
+        to: [to_email],
+        subject: 'WPS XC District Day Results — ' + event_date,
+        html: htmlBody
+      });
+
+      const resendResp = await fetch(RESEND_URL, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: emailPayload
+      });
+      const resendData = await resendResp.json().catch(function() { return {}; });
+
+      if (!resendResp.ok) {
+        return json({ ok: false, error: 'Email send failed: ' + (resendData.message || resendResp.status), detail: resendData });
+      }
+
+      return json({
+        ok: true, event_date, to: to_email,
+        categories: catCount, runners: totalRunners,
+        email_id: resendData.id || null
+      });
     }
 
     return json({ error: 'Not found', path }, 404);
