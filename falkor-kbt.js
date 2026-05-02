@@ -14,7 +14,7 @@
 //   POST /events               — create event
 //   GET  /health               — version + DB check
 
-const VERSION = '2.6.0';
+const VERSION = '2.7.0';
 const WORKER_NAME = 'falkor-kbt';
 const DB_ID = '7c6ee10f-93d4-475e-889d-cade0dbfd076';
 
@@ -132,6 +132,28 @@ export class KBTGame {
     if (path.endsWith('/state')) {
       return json(await this.getPublicState());
     }
+
+    if (path.endsWith('/scores') && request.method === 'POST') {
+      const storedToken = await this.state.storage.get('hostToken');
+      const reqToken = request.headers.get('X-Host-Token') || '';
+      if (storedToken && reqToken !== storedToken) return json({ error: 'Unauthorized' }, 401);
+      const body = await request.json().catch(() => ({}));
+      const { action, teamId, score, points, teamName } = body;
+      const scores = (await this.state.storage.get('scores')) || {};
+      if (action === 'add_team' && teamName) {
+        if (!scores[teamName]) scores[teamName] = 0;
+      } else if (action === 'award' && teamId !== undefined) {
+        scores[teamId] = (scores[teamId] || 0) + (points || 1);
+      } else if (action === 'set' && teamId !== undefined) {
+        scores[teamId] = score || 0;
+      } else if (action === 'reset') {
+        Object.keys(scores).forEach(k => { scores[k] = 0; });
+      }
+      await this.state.storage.put('scores', scores);
+      const leaderboard = await this.buildLeaderboard();
+      this.broadcast({ type: 'scores_updated', leaderboard });
+      return json({ ok: true, leaderboard });
+    }
     return json({ error: 'Not found' }, 404);
   }
 
@@ -194,6 +216,31 @@ export class KBTGame {
           await this.state.storage.put('scores', scores);
           const leaderboard = await this.buildLeaderboard();
           this.broadcast({ type: 'scores_updated', leaderboard });
+          break;
+        }
+
+        case 'set_score': {
+          // Host sets a team's score to an absolute value
+          const { teamId: tid2, score: newScore } = msg;
+          if (tid2 === undefined) break;
+          const scores2 = (await this.state.storage.get('scores')) || {};
+          scores2[tid2] = newScore || 0;
+          await this.state.storage.put('scores', scores2);
+          const lb2 = await this.buildLeaderboard();
+          this.broadcast({ type: 'scores_updated', leaderboard: lb2 });
+          break;
+        }
+
+        case 'add_team': {
+          // Host manually adds a team to the scoreboard
+          const { teamName: newTeam } = msg;
+          if (!newTeam) break;
+          const scores3 = (await this.state.storage.get('scores')) || {};
+          if (!scores3[newTeam]) scores3[newTeam] = 0;
+          await this.state.storage.put('scores', scores3);
+          const lb3 = await this.buildLeaderboard();
+          this.broadcast({ type: 'scores_updated', leaderboard: lb3 });
+          ws.send(JSON.stringify({ type: 'team_added', teamName: newTeam }));
           break;
         }
 
@@ -1182,6 +1229,15 @@ export default {
     }
 
     // ── Game state (REST) ─────────────────────────────────────────────────────
+    if (path.startsWith('/game/') && path.endsWith('/scores') && method === 'POST') {
+      const parts = path.split('/');
+      const code = parts[2];
+      if (!code) return json({ error: 'No code' }, 400);
+      const id = env.GAME.idFromName(code.toUpperCase());
+      const stub = env.GAME.get(id);
+      return stub.fetch(request);
+    }
+
     if (path.startsWith('/game/') && method === 'GET') {
       const code = path.split('/')[2]?.toUpperCase();
       if (!code) return err('code required');
