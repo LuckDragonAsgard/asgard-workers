@@ -22,7 +22,7 @@ const JSON_MANIFEST = JSON.stringify({
 });
 
 const SW_CODE = `
-const CACHE = 'falkor-v9.9.0';
+const CACHE = 'falkor-v9.10.0';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -111,7 +111,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({status:'ok',version:'9.9.0',worker:'falkor-ui'}), {
+      return new Response(JSON.stringify({status:'ok',version:'9.10.0',worker:'falkor-ui'}), {
         headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
       });
     }
@@ -484,7 +484,7 @@ function VoiceModal({ voiceState, transcript, reply, analyserRef, onMicClick, on
       {transcript && <div className="voice-transcript">"{transcript}"</div>}
       {reply && <div className="voice-reply">{reply}</div>}
       <button className={'voice-mic-btn ' + voiceState} onClick={onMicClick}
-        disabled={voiceState === 'processing' || voiceState === 'speaking'}>
+        disabled={voiceState === 'processing'}>
         {voiceState === 'listening' ? '⏹' : voiceState === 'speaking' ? '🔊' : '🎤'}
       </button>
     </div>
@@ -1456,6 +1456,8 @@ function App() {
   const showVoiceRef     = useRef(showVoice);
   const drivingModeRef   = useRef(drivingMode);
   const alwaysOnRef      = useRef(alwaysOn);
+  const audioRef         = useRef(null);
+  const interruptRecogRef = useRef(null);
   const activeIdRef      = useRef(activeId);
   const streamTimerRef   = useRef(null);
 
@@ -1554,6 +1556,35 @@ function App() {
     return () => { try { recog.stop(); } catch {}; };
   }, [user]);
 
+
+  // ── stopCurrentAudio — interrupts TTS playback immediately ──
+  function stopCurrentAudio() {
+    if (audioRef.current) {
+      try { audioRef.current.pause(); audioRef.current.src = ''; } catch {}
+      audioRef.current = null;
+    }
+    if (interruptRecogRef.current) {
+      try { interruptRecogRef.current.stop(); } catch {}
+      interruptRecogRef.current = null;
+    }
+  }
+
+  // ── startInterruptListener — listens for speech while Falkor talks ──
+  function startInterruptListener(onInterrupt) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    const recog = new SR();
+    recog.continuous = false; recog.interimResults = false; recog.lang = 'en-AU';
+    recog.onresult = e => {
+      const t = (e.results[0]?.[0]?.transcript || '').trim();
+      if (t.length > 1) { onInterrupt(t); }
+    };
+    recog.onerror = () => {};
+    recog.onend = () => {};
+    interruptRecogRef.current = recog;
+    try { recog.start(); } catch {}
+  }
+
   // ── speakText ──
   async function speakText(text) {
     try {
@@ -1573,9 +1604,20 @@ function App() {
         const analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyserRef.current = analyser;
         const src = ctx.createMediaElementSource(audio); src.connect(analyser); analyser.connect(ctx.destination);
       } catch {}
-      audio.onended = () => { setVoiceState('idle'); URL.revokeObjectURL(url); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
-      audio.onerror = () => { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
-      audio.play().catch(() => { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); });
+      audio.onended = () => { audioRef.current = null; if (interruptRecogRef.current) { try { interruptRecogRef.current.stop(); } catch {} interruptRecogRef.current = null; } setVoiceState('idle'); URL.revokeObjectURL(url); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
+      audio.onerror = () => { audioRef.current = null; if (interruptRecogRef.current) { try { interruptRecogRef.current.stop(); } catch {} interruptRecogRef.current = null; } setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); };
+      audioRef.current = audio;
+      audio.play().then(() => {
+        // Start interrupt listener — if user speaks, cut Falkor off
+        if (alwaysOnRef.current || drivingModeRef.current || showVoiceRef.current) {
+          startInterruptListener(interruptText => {
+            stopCurrentAudio();
+            setVoiceState('idle');
+            URL.revokeObjectURL(url);
+            if (interruptText) { setVoiceTranscript(interruptText); sendMessage(interruptText, null); }
+          });
+        }
+      }).catch(() => { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); });
     } catch { setVoiceState('idle'); if (drivingModeRef.current) setTimeout(() => { if (drivingModeRef.current) startListening(); }, 600); else if (alwaysOnRef.current) setTimeout(() => { if (alwaysOnRef.current) startListening(); }, 350); else if (showVoiceRef.current) setTimeout(() => { if (showVoiceRef.current) startListening(); }, 700); }
   }
 
@@ -1623,7 +1665,7 @@ function App() {
     clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null;
   }
 
-  function handleMicClick() { if (voiceState === 'listening') stopRecording(); else startListening(); }
+  function handleMicClick() { if (voiceState === 'speaking') { stopCurrentAudio(); setVoiceState('idle'); setTimeout(startListening, 200); } else if (voiceState === 'listening') stopRecording(); else startListening(); }
 
   // ── sendMessage ──
   function sendMessage(text, fileContent) {
@@ -1733,7 +1775,7 @@ function App() {
           {voiceTranscript ? <div className="driving-transcript">"{voiceTranscript}"</div> : null}
           {voiceReply ? <div className="driving-reply">{voiceReply}</div> : null}
           <button className={'driving-mic '+(voiceState==='listening'?'listening':voiceState==='speaking'?'speaking':'')}
-            onClick={handleMicClick} disabled={voiceState==='processing'||voiceState==='speaking'}>
+            onClick={handleMicClick} disabled={voiceState==='processing'}>
             {voiceState==='listening'?'⏹':voiceState==='speaking'?'🔊':'🎤'}
           </button>
         </div>
