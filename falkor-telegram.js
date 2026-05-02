@@ -1,4 +1,4 @@
-const VERSION = 'v1.5.0';
+const VERSION = 'v1.6.0';
 const AGENT_URL = 'https://falkor-agent.luckdragon.io';
 const AI_URL    = 'https://asgard-ai.luckdragon.io';
 
@@ -123,6 +123,7 @@ const SLASH_MAP = {
   '/pe':      'is it suitable for outdoor PE today at WPS?',
   '/lesson':   '__LESSON__',  // handled specially below
   '/xc':       '__XC__',      // handled specially below
+  '/quiz':     '__QUIZ__',    // handled specially below
 };
 
 const HELP_TEXT = `<b>Falkor Commands</b>
@@ -137,6 +138,7 @@ const HELP_TEXT = `<b>Falkor Commands</b>
 /lesson [yr] [min] [theme] — Plan a PE week
 /xc [category] [place] [name] [time] — Record XC result (e.g. /xc 10boys 1st Elias 8:06)
 /xc [category] — Show all results for that age group
+/quiz [theme] — Start a 5-question trivia quiz (e.g. /quiz sport)
 /help — This help message
 
 Or ask me anything — including sending a photo for me to analyse.`;
@@ -379,7 +381,32 @@ export default {
           return new Response('ok');
         }
 
-                const mapped = SLASH_MAP[cmdFull];
+        
+        // /quiz — KBT Telegram trivia quiz
+        if (cmdFull === '/quiz') {
+          const quizTheme = args.trim() || 'general knowledge';
+          await tgSend(token, chatId, '<i>Generating a ' + quizTheme + ' quiz... give me a sec!</i>');
+          const r = await fetch('https://falkor-kbt.luckdragon.io/quiz/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Pin': env.AGENT_PIN },
+            body: JSON.stringify({ chat_id: String(chatId), theme: quizTheme, num_questions: 5 })
+          });
+          const qdata = await r.json().catch(function() { return {}; });
+          if (!qdata.ok) {
+            await tgSend(token, chatId, '❌ Could not start quiz: ' + (qdata.error || 'unknown error'));
+          } else {
+            const fq = qdata.first_question;
+            await tgSend(token, chatId,
+              '<b>🎯 KBT Telegram Quiz — ' + quizTheme + '</b>' +
+              '\n<i>5 questions — first to reply correctly wins the point!</i>\n\n' +
+              '<b>Q1:</b> ' + fq.question +
+              (fq.category ? '\n<i>Category: ' + fq.category + '</i>' : '')
+            );
+          }
+          return new Response('ok');
+        }
+
+        const mapped = SLASH_MAP[cmdFull];
         if (mapped) {
           const query = mapped + (args ? ' ' + args : '');
           const reply = await askFalkor(agentPin, userId, query, chatId);
@@ -395,6 +422,45 @@ export default {
         await tgSend(token, chatId, 'Unknown command. Try /help for options.');
         return new Response('OK');
       }
+
+      // ── Active quiz intercept ──────────────────────────────────────────────
+      try {
+        const qsResp = await fetch('https://falkor-kbt.luckdragon.io/quiz/status/' + encodeURIComponent(String(chatId)), {
+          headers: { 'X-Pin': env.AGENT_PIN }
+        });
+        const quizStatus = await qsResp.json().catch(function() { return { ok: false }; });
+        if (quizStatus.ok && quizStatus.active) {
+          const ansResp = await fetch('https://falkor-kbt.luckdragon.io/quiz/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Pin': env.AGENT_PIN },
+            body: JSON.stringify({ chat_id: String(chatId), user_name: msg.from ? (msg.from.first_name || 'Someone') : 'Someone', answer: text })
+          }).then(function(r) { return r.json(); }).catch(function() { return { ok: false }; });
+          if (ansResp.ok && ansResp.correct) {
+            const medals = ['🥇', '🥈', '🥉'];
+            let replyMsg = '✅ <b>' + ansResp.scorer + '</b> got it! The answer was <b>' + ansResp.answer + '</b>';
+            if (ansResp.fun_fact) replyMsg += '\n<i>💡 ' + ansResp.fun_fact + '</i>';
+            if (ansResp.done) {
+              replyMsg += '\n\n<b>🏆 Quiz Over! Final Scores:</b>\n';
+              const sorted = Object.entries(ansResp.scores).sort(function(a, b) { return b[1] - a[1]; });
+              sorted.forEach(function(entry, i) {
+                replyMsg += (medals[i] || (i + 1) + '.') + ' ' + entry[0] + ' — ' + entry[1] + ' pt' + (entry[1] !== 1 ? 's' : '') + '\n';
+              });
+              replyMsg += '\n<i>Thanks for playing! Start another with /quiz [theme]</i>';
+            } else {
+              const nq = ansResp.next_question;
+              replyMsg += '\n\n<b>Q' + (nq.idx + 1) + ':</b> ' + nq.question;
+              if (nq.category) replyMsg += '\n<i>Category: ' + nq.category + '</i>';
+              const sorted = Object.entries(ansResp.scores).sort(function(a, b) { return b[1] - a[1]; });
+              if (sorted.length > 0) {
+                replyMsg += '\n<i>Scores: ' + sorted.map(function(e) { return e[0] + ' ' + e[1]; }).join(' | ') + '</i>';
+              }
+            }
+            await tgSend(token, chatId, replyMsg);
+          }
+          // Wrong answer — silently ignore so others can keep guessing
+          return new Response('OK');
+        }
+      } catch (quizErr) { /* quiz check failed — continue to falkor-agent */ }
 
       // ── Plain text → falkor-agent ─────────────────────────────────────────
       const reply = await askFalkor(agentPin, userId, text, chatId);
