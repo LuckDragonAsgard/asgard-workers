@@ -1,4 +1,4 @@
-const VERSION = 'v1.4.0';
+const VERSION = 'v1.5.0';
 const AGENT_URL = 'https://falkor-agent.luckdragon.io';
 const AI_URL    = 'https://asgard-ai.luckdragon.io';
 
@@ -122,6 +122,7 @@ const SLASH_MAP = {
   '/kbt':     'what kbt trivia events are coming up',
   '/pe':      'is it suitable for outdoor PE today at WPS?',
   '/lesson':   '__LESSON__',  // handled specially below
+  '/xc':       '__XC__',      // handled specially below
 };
 
 const HELP_TEXT = `<b>Falkor Commands</b>
@@ -134,6 +135,8 @@ const HELP_TEXT = `<b>Falkor Commands</b>
 /kbt — KBT trivia events
 /pe — PE outdoor suitability
 /lesson [yr] [min] [theme] — Plan a PE week
+/xc [category] [place] [name] [time] — Record XC result (e.g. /xc 10boys 1st Elias 8:06)
+/xc [category] — Show all results for that age group
 /help — This help message
 
 Or ask me anything — including sending a photo for me to analyse.`;
@@ -305,7 +308,78 @@ export default {
           return new Response('ok');
         }
 
-        const mapped = SLASH_MAP[cmdFull];
+        // /xc — cross country result entry or results query
+        if (cmdFull === '/xc') {
+          const args = text.slice('/xc'.length).trim();
+          const today = new Date().toISOString().slice(0, 10);
+          // If just a category name — show results
+          const tokens = args.trim().split(/\s+/);
+          if (tokens.length === 1 && tokens[0]) {
+            // Show results for this category
+            const cat = tokens[0].toLowerCase();
+            const r = await fetch('https://falkor-school.luckdragon.io/xc/results?category=' + encodeURIComponent(cat) + '&event_date=' + today, {
+              headers: { 'X-Pin': env.AGENT_PIN }
+            });
+            const data = await r.json().catch(() => ({}));
+            if (!data.ok || !data.results || data.results.length === 0) {
+              await tgSend(token, chatId, '<b>No results yet for ' + cat + ' (' + today + ')</b>');
+            } else {
+              let msg = '<b>XC Results — ' + cat + ' (' + today + ')</b>\n';
+              for (const res of data.results) {
+                msg += (res.position || '?') + '. ' + res.name + (res.time ? ' — ' + res.time : '') + (res.school ? ' (' + res.school + ')' : '') + '\n';
+              }
+              await tgSend(token, chatId, msg);
+            }
+            return new Response('ok');
+          }
+          // All results for today
+          if (!args) {
+            const r = await fetch('https://falkor-school.luckdragon.io/xc/results?event_date=' + today, {
+              headers: { 'X-Pin': env.AGENT_PIN }
+            });
+            const data = await r.json().catch(() => ({}));
+            if (!data.ok || !data.categories || Object.keys(data.categories).length === 0) {
+              await tgSend(token, chatId, '<b>No XC results recorded for ' + today + '</b>\nUse: /xc [category] [place] [name] [time]');
+            } else {
+              let msg = '<b>XC Results — ' + today + '</b>\n';
+              for (const [cat, results] of Object.entries(data.categories)) {
+                msg += '\n<b>' + cat + '</b>\n';
+                for (const res of results) {
+                  msg += (res.position || '?') + '. ' + res.name + (res.time ? ' — ' + res.time : '') + '\n';
+                }
+              }
+              await tgSend(token, chatId, msg);
+            }
+            return new Response('ok');
+          }
+          // Record a result: /xc [category] [position] [name] [time?]
+          // e.g. /xc 10boys 1st Elias 8:06
+          //      /xc yr5girls 2 Sophie 12:34
+          //      /xc open-boys 1 Marcus
+          const catTok = tokens[0].toLowerCase();
+          const posTok = tokens[1] ? tokens[1].replace(/[^0-9]/g, '') || tokens[1] : '1';
+          const nameTok = tokens.slice(2, tokens.length > 3 ? tokens.length - 1 : undefined).join(' ') || 'Unknown';
+          const timeTok = tokens.length > 3 ? tokens[tokens.length - 1] : '';
+          const body = JSON.stringify({ category: catTok, position: posTok, name: nameTok, time: timeTok, event_date: today });
+          const r = await fetch('https://falkor-school.luckdragon.io/xc/result', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Pin': env.AGENT_PIN },
+            body
+          });
+          const data = await r.json().catch(() => ({}));
+          if (data.ok) {
+            const pos = data.results.find(function(x) { return x.position === posTok; });
+            await tgSend(token, chatId,
+              '✅ <b>' + catTok + '</b> — ' + posTok + '. <b>' + nameTok + '</b>' + (timeTok ? ' (' + timeTok + ')' : '') + '\n' +
+              '<i>' + data.results.length + ' result(s) recorded today</i>'
+            );
+          } else {
+            await tgSend(token, chatId, '❌ ' + (data.error || 'Failed to record result'));
+          }
+          return new Response('ok');
+        }
+
+                const mapped = SLASH_MAP[cmdFull];
         if (mapped) {
           const query = mapped + (args ? ' ' + args : '');
           const reply = await askFalkor(agentPin, userId, query, chatId);
