@@ -1595,6 +1595,201 @@ function KBTPanel({ pin }) {
   );
 }
 
+
+// ─── PEPanel — Lesson Planner ─────────────────────────────────────────────────
+const SCHOOL_URL = 'https://falkor-school.luckdragon.io';
+const YEAR_LEVELS = ['Foundation', 'Year 1/2', 'Year 3/4', 'Year 5/6', 'Mixed F-6'];
+const EQUIPMENT_OPTIONS = ['Balls (various)', 'Cones', 'Bibs', 'Hoops', 'Skipping ropes', 'Bats/racquets', 'Athletics equipment', 'Mats', 'Beanbags', 'Parachute'];
+
+function PEPanel({ pin }) {
+  const [yearLevel, setYearLevel] = React.useState('Mixed F-6');
+  const [duration, setDuration] = React.useState(45);
+  const [theme, setTheme] = React.useState('');
+  const [equipment, setEquipment] = React.useState([]);
+  const [classSize, setClassSize] = React.useState(25);
+  const [loading, setLoading] = React.useState(false);
+  const [weekData, setWeekData] = React.useState(null);
+  const [singleData, setSingleData] = React.useState(null);
+  const [activeDay, setActiveDay] = React.useState(0);
+  const [mode, setMode] = React.useState('week');
+  const [error, setError] = React.useState(null);
+  const [advisor, setAdvisor] = React.useState(null);
+  const [advisorLoading, setAdvisorLoading] = React.useState(false);
+
+  React.useEffect(function() {
+    setAdvisorLoading(true);
+    fetch(SCHOOL_URL + '/pe-advisor', { headers: { 'X-Pin': pin || '' } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) { setAdvisor(d); setAdvisorLoading(false); })
+      .catch(function() { setAdvisorLoading(false); });
+  }, []);
+
+  function toggleEquip(e) {
+    setEquipment(function(prev) {
+      return prev.includes(e) ? prev.filter(function(x) { return x !== e; }) : prev.concat([e]);
+    });
+  }
+
+  async function buildWeek() {
+    setLoading(true); setError(null); setWeekData(null); setSingleData(null);
+    try {
+      const resp = await fetch(SCHOOL_URL + '/lesson-week', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin || '' },
+        body: JSON.stringify({ year_level: yearLevel, duration: duration, theme: theme || null, equipment: equipment, class_size: classSize }),
+      });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed');
+      setWeekData(data); setActiveDay(0);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  }
+
+  async function buildSingle() {
+    setLoading(true); setError(null); setWeekData(null); setSingleData(null);
+    try {
+      const resp = await fetch(SCHOOL_URL + '/lesson-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin || '' },
+        body: JSON.stringify({ year_level: yearLevel, duration: duration, focus: theme || null }),
+      });
+      const data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'Failed');
+      setSingleData(data);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  }
+
+  function copyPlan(text) {
+    navigator.clipboard.writeText(text).catch(function() {});
+  }
+
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const panelStyle = { padding: '16px', maxWidth: '600px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' };
+  const cardStyle = { background: 'var(--surface)', borderRadius: '10px', padding: '14px', marginBottom: '12px', border: '1px solid var(--border)' };
+  const btnStyle = { padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' };
+  const labelStyle = { fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' };
+  const inputStyle = { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '14px', boxSizing: 'border-box' };
+  const selectStyle = Object.assign({}, inputStyle, { cursor: 'pointer' });
+  const tabStyle = function(active) { return { padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: active ? 700 : 400, background: active ? 'var(--accent)' : 'var(--surface)', color: active ? '#fff' : 'var(--text)', marginRight: '6px' }; };
+
+  const rec = advisor ? advisor.recommendation : null;
+  const recColor = rec === 'OUTDOOR' ? '#22c55e' : rec === 'INDOOR' ? '#f59e0b' : '#888';
+
+  return React.createElement('div', { style: panelStyle },
+    React.createElement('div', { style: { fontSize: 20, fontWeight: 700, marginBottom: 4 } }, '🏫 PE Lesson Planner'),
+    React.createElement('div', { style: { fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 } }, 'Williamstown Primary — Vic Curriculum 2.0'),
+
+    // Weather rec
+    React.createElement('div', { style: Object.assign({}, cardStyle, { display: 'flex', alignItems: 'center', gap: 10 }) },
+      advisorLoading
+        ? React.createElement('span', { style: { fontSize: 13, color: 'var(--text-muted)' } }, 'Checking weather...')
+        : advisor
+          ? React.createElement(React.Fragment, null,
+              React.createElement('div', { style: { fontSize: 22 } }, rec === 'OUTDOOR' ? '☀️' : rec === 'INDOOR' ? '🏠' : '🌤'),
+              React.createElement('div', null,
+                React.createElement('div', { style: { fontWeight: 700, color: recColor, fontSize: 14 } }, rec === 'OUTDOOR' ? 'Outdoor PE recommended' : rec === 'INDOOR' ? 'Indoor PE recommended' : 'Checking conditions...'),
+                React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)' } }, advisor.verdict || '')
+              )
+            )
+          : React.createElement('span', { style: { fontSize: 13, color: 'var(--text-muted)' } }, 'Weather unavailable')
+    ),
+
+    // Config
+    React.createElement('div', { style: cardStyle },
+      React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 } },
+        React.createElement('div', null,
+          React.createElement('label', { style: labelStyle }, 'Year Level'),
+          React.createElement('select', { style: selectStyle, value: yearLevel, onChange: function(e) { setYearLevel(e.target.value); } },
+            YEAR_LEVELS.map(function(y) { return React.createElement('option', { key: y, value: y }, y); })
+          )
+        ),
+        React.createElement('div', null,
+          React.createElement('label', { style: labelStyle }, 'Duration (min)'),
+          React.createElement('select', { style: selectStyle, value: duration, onChange: function(e) { setDuration(parseInt(e.target.value)); } },
+            [30, 40, 45, 50, 60].map(function(d) { return React.createElement('option', { key: d, value: d }, d + ' min'); })
+          )
+        )
+      ),
+      React.createElement('div', { style: { marginBottom: 12 } },
+        React.createElement('label', { style: labelStyle }, 'Theme / Focus (optional)'),
+        React.createElement('input', { style: inputStyle, type: 'text', placeholder: 'e.g. Ball skills, Athletics, Team games...', value: theme, onChange: function(e) { setTheme(e.target.value); } })
+      ),
+      React.createElement('div', { style: { marginBottom: 12 } },
+        React.createElement('label', { style: labelStyle }, 'Class size'),
+        React.createElement('input', { style: Object.assign({}, inputStyle, { width: '80px' }), type: 'number', min: 5, max: 40, value: classSize, onChange: function(e) { setClassSize(parseInt(e.target.value) || 25); } })
+      ),
+      React.createElement('div', { style: { marginBottom: 14 } },
+        React.createElement('label', { style: labelStyle }, 'Available equipment'),
+        React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+          EQUIPMENT_OPTIONS.map(function(eq) {
+            const active = equipment.includes(eq);
+            return React.createElement('button', {
+              key: eq,
+              onClick: function() { toggleEquip(eq); },
+              style: { padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--border)', cursor: 'pointer', fontSize: 12, background: active ? 'var(--accent)' : 'var(--bg)', color: active ? '#fff' : 'var(--text)', fontWeight: active ? 600 : 400 }
+            }, eq);
+          })
+        )
+      ),
+      React.createElement('div', { style: { display: 'flex', gap: 10 } },
+        React.createElement('button', {
+          onClick: buildWeek,
+          disabled: loading,
+          style: Object.assign({}, btnStyle, { background: 'var(--accent)', color: '#fff', flex: 1 })
+        }, loading && mode === 'week' ? '⏳ Planning week...' : '📅 Plan Full Week'),
+        React.createElement('button', {
+          onClick: function() { setMode('single'); buildSingle(); },
+          disabled: loading,
+          style: Object.assign({}, btnStyle, { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', flex: 1 })
+        }, loading && mode === 'single' ? '⏳ Planning...' : '📋 Single Lesson')
+      )
+    ),
+
+    error && React.createElement('div', { style: { color: '#ef4444', fontSize: 13, marginBottom: 12, padding: '10px', background: 'rgba(239,68,68,0.1)', borderRadius: 8 } }, 'Error: ' + error),
+
+    // Week results
+    weekData && React.createElement('div', { style: cardStyle },
+      React.createElement('div', { style: { fontSize: 15, fontWeight: 700, marginBottom: 2 } }, weekData.theme),
+      React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 } }, weekData.year_level + ' — ' + weekData.duration + ' min — week of ' + weekData.week_of),
+      React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', marginBottom: 14 } },
+        (weekData.days || []).map(function(day, i) {
+          return React.createElement('button', { key: i, style: tabStyle(activeDay === i), onClick: function() { setActiveDay(i); } }, day.name || ('Day ' + (i+1)));
+        })
+      ),
+      weekData.days && weekData.days[activeDay] && React.createElement('div', null,
+        Object.keys(weekData.days[activeDay].sections || {}).length > 0
+          ? Object.entries(weekData.days[activeDay].sections).map(function(entry) {
+              const key = entry[0]; const val = entry[1];
+              const label = key.replace(/_/g, ' ').replace(/\w/g, function(c) { return c.toUpperCase(); });
+              return React.createElement('div', { key: key, style: { marginBottom: 8 } },
+                React.createElement('span', { style: { fontWeight: 700, fontSize: 13 } }, label + ': '),
+                React.createElement('span', { style: { fontSize: 13 } }, val)
+              );
+            })
+          : React.createElement('pre', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text)' } }, weekData.days[activeDay].raw)
+      ),
+      React.createElement('button', {
+        onClick: function() { copyPlan(weekData.raw_plan || ''); },
+        style: Object.assign({}, btnStyle, { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 12, padding: '7px 14px', marginTop: 10 })
+      }, '📋 Copy Full Week Plan')
+    ),
+
+    // Single lesson result
+    singleData && React.createElement('div', { style: cardStyle },
+      React.createElement('div', { style: { fontSize: 14, fontWeight: 700, marginBottom: 8 } },
+        'Single Lesson — ' + singleData.year_level + ' (' + singleData.duration + ' min, ' + (singleData.outdoor ? 'Outdoor' : 'Indoor') + ')'
+      ),
+      singleData.weather_note && React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 } }, singleData.weather_note),
+      React.createElement('pre', { style: { fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text)', margin: 0 } }, singleData.plan),
+      React.createElement('button', {
+        onClick: function() { copyPlan(singleData.plan || ''); },
+        style: Object.assign({}, btnStyle, { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 12, padding: '7px 14px', marginTop: 10 })
+      }, '📋 Copy Lesson Plan')
+    )
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(() => {
@@ -2071,6 +2266,7 @@ function App() {
             <button className={'nav-btn'+(view==='racing'?' active':'')} onClick={() => setView('racing')}>Racing</button>
           <button className={'nav-btn'+(view==='nrl'?' active':'')} onClick={() => setView('nrl')}>NRL</button>
           <button className={'nav-btn'+(view==='kbt'?' active':'')} onClick={() => setView('kbt')}>🎯</button>
+          <button className={'nav-btn'+(view==='pe'?' active':'')} onClick={() => setView('pe')}>🏫</button>
           <div className="nav-sep"/>
 
           <select className="model-select" value={model} onChange={e => { setModelS(e.target.value); LS.setModel(e.target.value); }}>
@@ -2090,6 +2286,7 @@ function App() {
         {view === 'racing'   && <RacingPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'nrl'      && <NRLPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'kbt'      && <KBTPanel pin={LS.agentPin() || LS.pin()}/>}
+        {view === 'pe'       && <PEPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'sites'    && <SitesPanel/>}
         {view === 'calendar' && <CalendarPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'history'  && <HistoryPanel convos={convos} onOpen={id => { setActiveId(id); setView('chat'); }}/>}
