@@ -111,7 +111,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({status:'ok',version:'9.13.0',worker:'falkor-ui'}), {
+      return new Response(JSON.stringify({status:'ok',version:'9.16.0',worker:'falkor-ui'}), {
         headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
       });
     }
@@ -1797,6 +1797,10 @@ const KBT_BASE = 'https://falkor-kbt.luckdragon.io';
 function ScoreboardPanel({ pin }) {
   const [gameCode, setGameCode] = React.useState('');
   const [inputCode, setInputCode] = React.useState('');
+  const [hostToken, setHostToken] = React.useState('');
+  const [addTeamName, setAddTeamName] = React.useState('');
+  const [customPts, setCustomPts] = React.useState('');
+  const [scoreMsg, setScoreMsg] = React.useState(null);
   const [gameState, setGameState] = React.useState(null);
   const [error, setError] = React.useState(null);
   const [creating, setCreating] = React.useState(false);
@@ -1841,6 +1845,7 @@ function ScoreboardPanel({ pin }) {
       if (!data.ok && !data.code) throw new Error(data.error || 'Create failed');
       const code = data.code;
       setInputCode(code);
+      if (data.hostToken) setHostToken(data.hostToken);
       connectToGame(code);
     } catch (e) { setError(e.message); }
     setCreating(false);
@@ -1855,6 +1860,24 @@ function ScoreboardPanel({ pin }) {
     const url = KBT_BASE + '/scoreboard/' + gameCode;
     navigator.clipboard.writeText(url).catch(function() {});
   }
+
+  async function scoreCall(body) {
+    setScoreMsg(null);
+    try {
+      const r = await fetch(KBT_BASE + '/game/' + gameCode + '/scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin || '', 'X-Host-Token': hostToken },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (d.ok) { setScoreMsg('Done'); if (d.leaderboard) setGameState(function(s) { return Object.assign({}, s, { leaderboard: d.leaderboard }); }); }
+      else setScoreMsg(d.error || 'Error');
+    } catch (e) { setScoreMsg(e.message); }
+  }
+
+  function awardPoints(teamId, pts) { scoreCall({ action: 'award', teamId: teamId, points: pts }); }
+  function addTeam() { if (!addTeamName.trim()) return; scoreCall({ action: 'add_team', teamName: addTeamName.trim() }); setAddTeamName(''); }
+  function resetScores() { scoreCall({ action: 'reset' }); }
 
   const panelStyle = { padding: '16px', maxWidth: '600px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' };
   const cardStyle = { background: 'var(--surface)', borderRadius: '10px', padding: '14px', marginBottom: '12px', border: '1px solid var(--border)' };
@@ -1935,6 +1958,38 @@ function ScoreboardPanel({ pin }) {
         ),
         React.createElement('div', { style: { fontSize: 14, fontWeight: 600 } }, gameState.questionText),
         gameState.answerRevealed && gameState.answerText && React.createElement('div', { style: { marginTop: 8, color: '#22c55e', fontWeight: 700, fontSize: 13 } }, 'Answer: ' + gameState.answerText)
+      )
+    ),
+
+    // Score Controls (host only — shown when hostToken present)
+    gameCode && hostToken && React.createElement('div', { style: cardStyle },
+      React.createElement('div', { style: { fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 } }, 'Host Score Controls'),
+
+      // Add team row
+      React.createElement('div', { style: { display: 'flex', gap: 8, marginBottom: 12 } },
+        React.createElement('input', { style: Object.assign({}, inputStyle, { fontSize: 13 }), type: 'text', placeholder: 'New team name', value: addTeamName, onChange: function(e) { setAddTeamName(e.target.value); } }),
+        React.createElement('button', { onClick: addTeam, style: Object.assign({}, btnStyle, { background: '#059669', color: '#fff', fontSize: 12, padding: '7px 12px', whiteSpace: 'nowrap' }) }, '+ Add Team')
+      ),
+
+      // Per-team score buttons
+      gameState && gameState.leaderboard && gameState.leaderboard.length > 0 && React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        gameState.leaderboard.map(function(t) {
+          return React.createElement('div', { key: 'sc-' + t.team, style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', padding: '8px 0', borderBottom: '1px solid var(--border)' } },
+            React.createElement('span', { style: { minWidth: 120, fontWeight: 600, fontSize: 13 } }, t.team),
+            React.createElement('span', { style: { color: '#f59e0b', fontWeight: 700, fontSize: 13, minWidth: 50 } }, t.score + ' pts'),
+            [1, 2, 5, 10].map(function(pts) {
+              return React.createElement('button', { key: pts, onClick: function() { awardPoints(t.team, pts); }, style: { padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 12, background: 'var(--accent)', color: '#fff' } }, '+' + pts)
+            }),
+            React.createElement('input', { style: { width: 52, padding: '4px 6px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: 12, textAlign: 'center' }, type: 'number', placeholder: 'pts', min: 0, value: customPts, onChange: function(e) { setCustomPts(e.target.value); } }),
+            React.createElement('button', { onClick: function() { if (customPts) { awardPoints(t.team, parseInt(customPts, 10) || 0); setCustomPts(''); } }, style: { padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 12, background: '#7c3aed', color: '#fff' } }, 'Award')
+          );
+        })
+      ),
+
+      // Reset + feedback
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 } },
+        React.createElement('button', { onClick: resetScores, style: Object.assign({}, btnStyle, { background: '#ef4444', color: '#fff', fontSize: 12, padding: '7px 14px' }) }, 'Reset All Scores'),
+        scoreMsg && React.createElement('span', { style: { fontSize: 12, color: scoreMsg === 'Done' ? '#22c55e' : '#ef4444' } }, scoreMsg)
       )
     ),
 
