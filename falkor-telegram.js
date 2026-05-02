@@ -1,4 +1,4 @@
-const VERSION = 'v1.6.0';
+const VERSION = 'v1.7.0';
 const AGENT_URL = 'https://falkor-agent.luckdragon.io';
 const AI_URL    = 'https://asgard-ai.luckdragon.io';
 
@@ -137,6 +137,7 @@ const HELP_TEXT = `<b>Falkor Commands</b>
 /pe — PE outdoor suitability
 /lesson [yr] [min] [theme] — Plan a PE week
 /xc [category] [place] [name] [time] — Record XC result (e.g. /xc 10boys 1st Elias 8:06)
+/xc email [date?] — Email today's full XC results
 /xc [category] — Show all results for that age group
 /quiz [theme] — Start a 5-question trivia quiz (e.g. /quiz sport)
 /help — This help message
@@ -313,6 +314,31 @@ export default {
         // /xc — cross country result entry or results query
         if (cmdFull === '/xc') {
           const args = text.slice('/xc'.length).trim();
+
+          // /xc email [optional date] — send end-of-day results email
+          if (args.toLowerCase().startsWith('email')) {
+            const dateArg = args.slice('email'.length).trim();
+            const xcDate = dateArg || new Date().toISOString().slice(0, 10);
+            await tgSend(token, chatId, '<i>Sending XC results email for ' + xcDate + '...</i>');
+            const er = await fetch('https://falkor-school.luckdragon.io/xc/email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-Pin': env.AGENT_PIN },
+              body: JSON.stringify({ event_date: xcDate, to: 'pgallivan@outlook.com' })
+            });
+            const edata = await er.json().catch(function() { return {}; });
+            if (edata.ok) {
+              await tgSend(token, chatId,
+                '<b>📧 XC Results Email Sent!</b>\n' +
+                'To: pgallivan@outlook.com\n' +
+                'Date: ' + xcDate + '\n' +
+                edata.categories + ' categories | ' + edata.runners + ' runners'
+              );
+            } else {
+              await tgSend(token, chatId, '❌ Email failed: ' + (edata.error || 'unknown'));
+            }
+            return new Response('ok');
+          }
+
           const today = new Date().toISOString().slice(0, 10);
           // If just a category name — show results
           const tokens = args.trim().split(/\s+/);
