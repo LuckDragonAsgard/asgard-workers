@@ -112,6 +112,8 @@ function routeIntent(text) {
     return { agent: 'school', action: 'xc_query' };
   if (/\b(record.*result|came.*first|came.*second|finished.*first|xc.*result|result.*xc)\b/.test(t) && /\b(1st|2nd|3rd|first|second|third|\d+th)\b/i.test(t))
     return { agent: 'school', action: 'xc_record' };
+  if (/\b(xc.*email|email.*xc|send.*xc|xc.*results.*email|email.*cross.country|cross.country.*email)\b/.test(t))
+    return { agent: 'school', action: 'xc_email' };
   if (/(pe|physical education|sports day|cross.country|carnival|students|wps|williamstown primary|outdoor|weather for school|athletics|sprint|house points|outdoor.*activity|suitable.*pe|pe.*suitable)/.test(t))
     return { agent: 'school', action: 'query' };
   if (/\b(weather|temperature|forecast|rain|uv|wind|celsius|degrees|conditions)\b/.test(t) && !/school|pe|lesson/.test(t))
@@ -176,6 +178,18 @@ async function callSubAgent(agentKey, action, text, pin, aiPin) {
           const rd = await rr.json().catch(() => ({}));
           if (rd.ok) return Response.json({ reply: 'Recorded: ' + xcCat + ' ' + pos + '. ' + nameM[1] + (timeM ? ' (' + timeM[1] + ')' : '') + '. ' + rd.results.length + ' result(s) today.', source: 'school' });
           return Response.json({ reply: 'Failed: ' + (rd.error || 'unknown'), source: 'school' });
+        }
+        if (schoolAction === 'xc_email') {
+          const dateM = userText.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+          const xcDate = dateM ? dateM[1] : new Date().toISOString().slice(0, 10);
+          const er = await fetch('https://falkor-school.luckdragon.io/xc/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Pin': env.AGENT_PIN },
+            body: JSON.stringify({ event_date: xcDate, to: 'pgallivan@outlook.com' })
+          });
+          const ed = await er.json().catch(function() { return {}; });
+          if (ed.ok) return Response.json({ reply: 'XC results email sent for ' + xcDate + ' (' + ed.categories + ' categories, ' + ed.runners + ' runners) to pgallivan@outlook.com.', source: 'school' });
+          return Response.json({ reply: 'Email failed: ' + (ed.error || 'unknown error'), source: 'school' });
         }
         if (schoolAction === 'lesson_week' || schoolAction === 'lesson_single') {
           // Parse year level, duration, theme from the query
@@ -613,7 +627,7 @@ export class FalkorAgent {
       const memory = await this.getMemory();
       const ctxTs = await this.state.storage.get('liveContextTs');
       return corsJson({
-        version: '2.8.0',
+        version: '2.9.0',
         activeSessions: this.sessions.size,
         historyLength: history.length,
         memoryKeys: Object.keys(memory).length,
@@ -965,7 +979,7 @@ export default {
     }
 
     if (url.pathname === '/health') {
-      return Response.json({ status: 'ok', version: '2.8.0', worker: 'falkor-agent' });
+      return Response.json({ status: 'ok', version: '2.9.0', worker: 'falkor-agent' });
     }
 
     // ── /tasks proxy → falkor-workflows via service binding (no 522 loopback) ──
