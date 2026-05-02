@@ -14,7 +14,7 @@
 //   POST /events               — create event
 //   GET  /health               — version + DB check
 
-const VERSION = '2.7.0';
+const VERSION = '2.8.0';
 const WORKER_NAME = 'falkor-kbt';
 const DB_ID = '7c6ee10f-93d4-475e-889d-cade0dbfd076';
 
@@ -1615,6 +1615,127 @@ connect();
       return new Response(buildPlayerHTML(code), {
         headers: { 'Content-Type': 'text/html;charset=UTF-8', ...CORS_HEADERS }
       });
+    }
+
+
+    // ── Telegram Quiz ─────────────────────────────────────────────────────────
+    // POST /quiz/start     { chat_id, theme, num_questions }
+    // GET  /quiz/status/:chatId
+    // POST /quiz/answer    { chat_id, user_name, answer }
+    // DELETE /quiz/end/:chatId
+
+    if (path === '/quiz/start' && method === 'POST') {
+      if (!pinOk(request, env)) return err('Unauthorized', 401);
+      if (!env.ANTHROPIC_API_KEY) return err('ANTHROPIC_API_KEY missing', 500);
+      const b = await request.json().catch(() => ({}));
+      const { chat_id, theme = 'general knowledge', num_questions = 5 } = b;
+      if (!chat_id) return err('chat_id required');
+
+      await env.KBT_DB.prepare('CREATE TABLE IF NOT EXISTS telegram_quiz (chat_id TEXT PRIMARY KEY, theme TEXT, questions TEXT NOT NULL, current_idx INTEGER DEFAULT 0, scores TEXT DEFAULT \'{}\', created_at INTEGER, done INTEGER DEFAULT 0)').run().catch(function(){});
+
+      const qPrompt = 'Generate ' + num_questions + ' trivia questions for a Telegram quiz' +
+        (theme ? ' with theme: "' + theme + '"' : '') + '.\n' +
+        'Rules:\n' +
+        '- Fun and suitable for a family/friends group chat\n' +
+        '- Single, clear answers (1-4 words max, no articles needed)\n' +
+        '- Mix of difficulties — mostly easy/medium\n' +
+        '- Include a short fun fact for each\n\n' +
+        'Return ONLY a JSON array:\n' +
+        '[{"question":"...","answer":"...","category":"...","fun_fact":"..."}]';
+
+      const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1500, messages: [{ role: 'user', content: qPrompt }] }),
+      });
+      if (!aiResp.ok) return err('AI generation failed: ' + aiResp.status, 502);
+      const aiData = await aiResp.json();
+      const rawText = aiData.content && aiData.content[0] ? aiData.content[0].text : '[]';
+      let questions = [];
+      try {
+        const match = rawText.match(/\[[\s\S]*\]/);
+        questions = JSON.parse(match ? match[0] : rawText);
+      } catch (e) { return err('Failed to parse AI questions: ' + e.message); }
+      if (!questions.length) return err('No questions generated');
+
+      await env.KBT_DB.prepare(
+        'INSERT OR REPLACE INTO telegram_quiz (chat_id, theme, questions, current_idx, scores, created_at, done) VALUES (?,?,?,0,?,?,0)'
+      ).bind(chat_id, theme, JSON.stringify(questions), '{}', Date.now()).run();
+
+      const fq = questions[0];
+      return json({ ok: true, total: questions.length, first_question: { idx: 0, question: fq.question, category: fq.category } });
+    }
+
+    if (path.startsWith('/quiz/status/') && method === 'GET') {
+      if (!pinOk(request, env)) return err('Unauthorized', 401);
+      const chatId = decodeURIComponent(path.split('/')[3] || '');
+      if (!chatId) return err('chat_id required');
+      try {
+        const row = await env.KBT_DB.prepare('SELECT * FROM telegram_quiz WHERE chat_id = ?').bind(chatId).first();
+        if (!row) return json({ ok: false, active: false });
+        const questions = JSON.parse(row.questions);
+        const scores = JSON.parse(row.scores || '{}');
+        const q = questions[row.current_idx] || null;
+        return json({
+          ok: true, active: !row.done, done: !!row.done,
+          current_idx: row.current_idx, total: questions.length,
+          question: q ? { idx: row.current_idx, question: q.question, category: q.category } : null,
+          scores
+        });
+      } catch (e) { return json({ ok: false, active: false }); }
+    }
+
+    if (path === '/quiz/answer' && method === 'POST') {
+      if (!pinOk(request, env)) return err('Unauthorized', 401);
+      const b = await request.json().catch(() => ({}));
+      const { chat_id, user_name, answer } = b;
+      if (!chat_id || answer === undefined) return err('chat_id and answer required');
+
+      let row;
+      try {
+        row = await env.KBT_DB.prepare('SELECT * FROM telegram_quiz WHERE chat_id = ? AND done = 0').bind(chat_id).first();
+      } catch (e) { return json({ ok: false, active: false }); }
+      if (!row) return json({ ok: false, active: false });
+
+      const questions = JSON.parse(row.questions);
+      const scores = JSON.parse(row.scores || '{}');
+      const current = questions[row.current_idx];
+      if (!current) return json({ ok: false, active: false });
+
+      const norm = function(s) { return (s || '').toLowerCase().trim().replace(/[^a-z0-9 ]/g, ''); };
+      const correct = norm(current.answer);
+      const given = norm(answer);
+      const isCorrect = given.length > 0 && (given === correct || given.includes(correct) || correct.includes(given));
+
+      if (!isCorrect) return json({ ok: true, correct: false });
+
+      const scorer = (user_name || 'Unknown').substring(0, 30);
+      scores[scorer] = (scores[scorer] || 0) + 1;
+      const nextIdx = row.current_idx + 1;
+      const isDone = nextIdx >= questions.length;
+
+      await env.KBT_DB.prepare(
+        'UPDATE telegram_quiz SET current_idx=?, scores=?, done=? WHERE chat_id=?'
+      ).bind(nextIdx, JSON.stringify(scores), isDone ? 1 : 0, chat_id).run();
+
+      let nq = null;
+      if (!isDone) {
+        const nqData = questions[nextIdx];
+        nq = { idx: nextIdx, question: nqData.question, category: nqData.category };
+      }
+      return json({
+        ok: true, correct: true, scorer,
+        answer: current.answer, fun_fact: current.fun_fact || null,
+        next_question: nq, done: isDone, scores,
+        total: questions.length
+      });
+    }
+
+    if (path.startsWith('/quiz/end/') && method === 'DELETE') {
+      if (!pinOk(request, env)) return err('Unauthorized', 401);
+      const chatId = decodeURIComponent(path.split('/')[3] || '');
+      try { await env.KBT_DB.prepare('DELETE FROM telegram_quiz WHERE chat_id=?').bind(chatId).run(); } catch {}
+      return json({ ok: true });
     }
 
     return json({ error: 'Not found', path }, 404);
