@@ -22,7 +22,7 @@ const JSON_MANIFEST = JSON.stringify({
 });
 
 const SW_CODE = `
-const CACHE = 'falkor-v9.13.0';
+const CACHE = 'falkor-v9.18.0';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -2165,6 +2165,248 @@ function XCPanel({ pin }) {
   );
 }
 
+
+// ─── TipsPanel ────────────────────────────────────────────────────────────────
+function TipsPanel({ pin }) {
+  const YEAR = 2026;
+  const [round, setRound] = React.useState(null);
+  const [games, setGames] = React.useState([]);
+  const [comp, setComp] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [player, setPlayer] = React.useState(function() {
+    return localStorage.getItem('falkor.tips.player') || 'Paddy';
+  });
+  const [saving, setSaving] = React.useState(null);
+  const [msg, setMsg] = React.useState('');
+  const canvasRef = React.useRef(null);
+
+  async function load(rnd) {
+    setLoading(true);
+    try {
+      const gSep = rnd ? '&round=' + rnd : '';
+      const gData = await fetch(SPORT_URL + '/afl/round?year=' + YEAR + gSep + '&pin=' + (pin||'')).then(function(r){return r.json();});
+      const detRound = rnd || (Array.isArray(gData) && gData[0] && gData[0].round) || null;
+      setGames(Array.isArray(gData) ? gData : []);
+      if (!rnd && detRound) setRound(detRound);
+      if (detRound) {
+        const cData = await fetch(SPORT_URL + '/afl/comp?year=' + YEAR + '&round=' + detRound + '&pin=' + (pin||'')).then(function(r){return r.json();});
+        setComp(cData);
+      }
+    } catch(e) {}
+    setLoading(false);
+  }
+
+  React.useEffect(function() { load(round); }, [round]);
+
+  React.useEffect(function() {
+    if (!comp || !canvasRef.current) return;
+    const season = comp.season || [];
+    if (!season.length) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    const n = season.length;
+    const slotW = (W - 40) / n;
+    const barW = Math.min(60, slotW - 10);
+    const maxC = Math.max.apply(null, season.map(function(s){return s.total||1;}));
+    const chartH = H - 40;
+    const colors = ['#6c63ff','#10b981','#f59e0b','#ef4444','#06b6d4','#8b5cf6'];
+    season.forEach(function(s, i) {
+      const x = 20 + i * slotW + (slotW - barW) / 2;
+      const totalH = maxC > 0 ? Math.round((s.total / maxC) * chartH) : 0;
+      const correctH = maxC > 0 ? Math.round((s.correct / maxC) * chartH) : 0;
+      // total bar (faint)
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, H - 30 - totalH, barW, totalH, 4);
+      else ctx.rect(x, H - 30 - totalH, barW, totalH);
+      ctx.fill();
+      // correct bar
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, H - 30 - correctH, barW, correctH, 4);
+      else ctx.rect(x, H - 30 - correctH, barW, correctH);
+      ctx.fill();
+      // name
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(s.player.slice(0,7), x + barW/2, H - 14);
+      // score label
+      if (correctH > 16) {
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px system-ui,sans-serif';
+        ctx.fillText(s.correct + '/' + s.total, x + barW/2, H - 30 - correctH - 5);
+      }
+    });
+  }, [comp]);
+
+  function changePlayer(name) {
+    setPlayer(name);
+    localStorage.setItem('falkor.tips.player', name);
+  }
+
+  async function tipGame(gameId, tip) {
+    setSaving(gameId);
+    setMsg('');
+    try {
+      const res = await fetch(SPORT_URL + '/afl/comp/tip?year=' + YEAR, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','X-Pin':pin||''},
+        body: JSON.stringify({player:player, round:round, gameId:String(gameId), tip:tip})
+      });
+      const d = await res.json();
+      if (d.ok) {
+        setMsg('Tip saved: ' + tip);
+        setTimeout(function(){setMsg('');}, 2500);
+        load(round);
+      } else { setMsg(d.error || 'Error saving tip'); }
+    } catch(e) { setMsg(e.message); }
+    setSaving(null);
+  }
+
+  const FAMILY = ['Paddy','Jacky','George','Sasha','Mick','Neil','Deano','Wayne'];
+  const playerNames = comp ? Object.keys(comp.players || {}) : [];
+  const roundGames = Array.isArray(games) ? games.filter(function(g){return !round||g.round===round;}) : [];
+
+  const panelStyle = {padding:'12px 14px',maxWidth:'800px',margin:'0 auto',fontFamily:'system-ui,sans-serif'};
+  const cardStyle = {background:'var(--surface)',borderRadius:'10px',padding:'12px 14px',marginBottom:'10px',border:'1px solid var(--border)'};
+  const btnBase = {padding:'7px 12px',borderRadius:'7px',border:'1px solid var(--border)',cursor:'pointer',fontWeight:600,fontSize:'13px',background:'var(--surface)',color:'var(--text)',transition:'all .15s'};
+
+  if (loading) return (
+    <div style={panelStyle}>
+      <div style={{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:'15px'}}>Loading tips...</div>
+    </div>
+  );
+
+  return (
+    <div style={panelStyle}>
+
+      {/* ── Header ── */}
+      <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px',flexWrap:'wrap'}}>
+        <span style={{fontSize:'18px',fontWeight:700}}>🏉 AFL Family Tips</span>
+        <div style={{display:'flex',gap:'4px',alignItems:'center'}}>
+          <button style={{...btnBase,padding:'5px 10px',border:'1px solid var(--border)'}}
+            onClick={function(){setRound(function(r){return Math.max(1,(r||1)-1);});}}>‹</button>
+          <span style={{fontWeight:600,minWidth:'65px',textAlign:'center',fontSize:'14px',color:'var(--text)'}}>Round {round}</span>
+          <button style={{...btnBase,padding:'5px 10px',border:'1px solid var(--border)'}}
+            onClick={function(){setRound(function(r){return (r||1)+1;});}}>›</button>
+        </div>
+        <div style={{display:'flex',gap:'6px',alignItems:'center',marginLeft:'auto'}}>
+          <span style={{fontSize:'12px',color:'var(--muted)'}}>Tipping as:</span>
+          <select style={{padding:'5px 8px',borderRadius:'7px',border:'1px solid var(--border)',background:'var(--bg)',color:'var(--text)',fontSize:'13px'}}
+            value={player} onChange={function(e){changePlayer(e.target.value);}}>
+            {FAMILY.map(function(p){return <option key={p} value={p}>{p}</option>;})}
+          </select>
+        </div>
+      </div>
+
+      {msg && (
+        <div style={{background:'rgba(108,99,255,0.15)',border:'1px solid var(--accent)',borderRadius:'8px',padding:'8px 12px',marginBottom:'10px',fontSize:'13px',color:'var(--accent)'}}>
+          {msg}
+        </div>
+      )}
+
+      {/* ── Games ── */}
+      {roundGames.map(function(game) {
+        const myTip = comp && comp.players[player] && comp.players[player].tips.find(function(t){return t.gameId===String(game.id);});
+        const isFinal = game.status === 'final';
+        const isLive  = game.status === 'live';
+        const statusColor = isFinal ? '#10b981' : isLive ? '#f59e0b' : 'var(--accent)';
+
+        function teamBtn(team, score) {
+          const isMyPick = myTip && myTip.tip === team;
+          const isWinner = isFinal && game.winner === team;
+          let bg = 'var(--surface)';
+          let border = '1px solid var(--border)';
+          let color = 'var(--text)';
+          if (isMyPick) {
+            if (myTip.correct === 1)  { bg = '#059669'; border = '2px solid #10b981'; color = '#fff'; }
+            else if (myTip.correct === 0) { bg = '#b91c1c'; border = '2px solid #ef4444'; color = '#fff'; }
+            else { bg = '#4f46e5'; border = '2px solid #6c63ff'; color = '#fff'; }
+          } else if (isWinner) {
+            bg = 'rgba(16,185,129,0.1)'; border = '1px solid #10b981';
+          }
+          return (
+            <button key={team}
+              style={{flex:1,padding:'10px 8px',borderRadius:'8px',border:border,cursor:isFinal?'default':'pointer',
+                fontWeight:700,fontSize:'14px',background:bg,color:color,transition:'all .15s',
+                opacity:saving===game.id?0.6:1}}
+              disabled={saving===game.id||isFinal}
+              onClick={function(){if(!isFinal)tipGame(game.id,team);}}>
+              {team}
+              {isFinal && <span style={{display:'block',fontSize:'22px',fontWeight:900,lineHeight:1.1,marginTop:'3px'}}>{score}</span>}
+              {isMyPick && !isFinal && <span style={{display:'block',fontSize:'11px',fontWeight:400,opacity:.8,marginTop:'2px'}}>your pick ✓</span>}
+            </button>
+          );
+        }
+
+        return (
+          <div key={game.id} style={{...cardStyle,opacity:isFinal?0.88:1}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+              <span style={{fontSize:'11px',color:statusColor,fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>
+                {isFinal ? 'Final' : isLive ? '🔴 Live' : (function(){try{return new Date(game.date).toLocaleDateString('en-AU',{weekday:'short',month:'short',day:'numeric'});}catch(e){return game.date||'';}}())}
+              </span>
+              <span style={{fontSize:'11px',color:'var(--muted)'}}>{game.venue||''}</span>
+            </div>
+
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'10px'}}>
+              {teamBtn(game.home, game.homeScore)}
+              <span style={{fontWeight:700,color:'var(--muted)',fontSize:'14px',flexShrink:0}}>v</span>
+              {teamBtn(game.away, game.awayScore)}
+            </div>
+
+            {playerNames.length > 0 && (
+              <div style={{display:'flex',gap:'5px',flexWrap:'wrap',borderTop:'1px solid var(--border)',paddingTop:'8px',marginTop:'4px'}}>
+                {playerNames.map(function(p) {
+                  const t = comp.players[p].tips.find(function(x){return x.gameId===String(game.id);});
+                  if (!t) return null;
+                  const bg = t.correct===1 ? 'rgba(16,185,129,0.2)' : t.correct===0 ? 'rgba(239,68,68,0.2)' : 'var(--surface)';
+                  const cl = t.correct===1 ? '#10b981' : t.correct===0 ? '#ef4444' : 'var(--muted)';
+                  return (
+                    <div key={p} style={{display:'flex',gap:'3px',alignItems:'center',background:bg,border:'1px solid '+cl,borderRadius:'20px',padding:'3px 9px',fontSize:'12px',fontWeight:600,color:cl}}>
+                      <span style={{opacity:0.8}}>{p.charAt(0)}</span>
+                      <span style={{color:'var(--text)'}}>{t.tip}</span>
+                      {t.correct===1&&<span>✓</span>}
+                      {t.correct===0&&<span>✗</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {roundGames.length === 0 && (
+        <div style={{textAlign:'center',padding:'40px',color:'var(--muted)'}}>No games found for round {round}</div>
+      )}
+
+      {/* ── Season Leaderboard ── */}
+      {comp && comp.season && comp.season.length > 0 && (
+        <div style={{...cardStyle,marginTop:'16px'}}>
+          <div style={{fontWeight:700,marginBottom:'12px',fontSize:'14px'}}>📊 Season {YEAR}</div>
+          <canvas ref={canvasRef} width={600} height={160} style={{width:'100%',height:'auto',display:'block',borderRadius:'6px'}}/>
+          <div style={{display:'flex',gap:'14px',flexWrap:'wrap',marginTop:'10px',justifyContent:'center'}}>
+            {comp.season.map(function(s,i){
+              const colors=['#6c63ff','#10b981','#f59e0b','#ef4444','#06b6d4','#8b5cf6'];
+              return (
+                <div key={s.player} style={{display:'flex',flexDirection:'column',alignItems:'center',fontSize:'12px',gap:'2px'}}>
+                  <span style={{width:'10px',height:'10px',borderRadius:'50%',background:colors[i%colors.length],display:'inline-block'}}/>
+                  <span style={{fontWeight:700,fontSize:'13px'}}>{s.player}</span>
+                  <span style={{color:'var(--muted)'}}>{s.correct}/{s.total} ({s.pct}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(() => {
@@ -2636,7 +2878,7 @@ function App() {
           <button className={'nav-btn'+(view==='sport'?' active':'')} onClick={() => setView('sport')}>🏈</button>
           <button className={'nav-btn'+(view==='calendar'?' active':'')} onClick={() => setView('calendar')}>📅</button>
           <button className={'nav-btn'+(view==='sites'?' active':'')} onClick={() => setView('sites')}>🌐</button>
-          <button className={'nav-btn'+(view==='tips'?' active':'')} onClick={() => setView('tips')}>🏆</button>
+          <button className={'nav-btn'+(view==='tips'?' active':'')} onClick={() => setView('tips')}>🏉</button>
           <button className={'nav-btn'+(view==='history'?' active':'')} onClick={() => setView('history')}>📖</button>
             <button className={'nav-btn'+(view==='racing'?' active':'')} onClick={() => setView('racing')}>Racing</button>
           <button className={'nav-btn'+(view==='nrl'?' active':'')} onClick={() => setView('nrl')}>NRL</button>
@@ -2659,7 +2901,7 @@ function App() {
 
         {view === 'home'     && <HomePanel pin={LS.agentPin() || LS.pin()} userName={user && user.name || 'Paddy'} onNavigate={(v,q) => { setView(v); if (q) setTimeout(() => sendMessage(q, null), 400); }}/>}
         {view === 'sport'    && <SportPanel pin={LS.agentPin() || LS.pin()}/>}
-        {view === 'tips'     && <SportPanel pin={LS.agentPin() || LS.pin()} initialTab="comp"/>}
+        {view === 'tips'     && <TipsPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'racing'   && <RacingPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'nrl'      && <NRLPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'kbt'      && <KBTPanel pin={LS.agentPin() || LS.pin()}/>}
