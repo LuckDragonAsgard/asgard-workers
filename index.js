@@ -111,7 +111,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({status:'ok',version:'9.16.0',worker:'falkor-ui'}), {
+      return new Response(JSON.stringify({status:'ok',version:'9.17.0',worker:'falkor-ui'}), {
         headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
       });
     }
@@ -2002,6 +2002,169 @@ function ScoreboardPanel({ pin }) {
   );
 }
 
+
+// ─── XCPanel — Cross Country Live Results ────────────────────────────────────
+const SCHOOL_BASE = 'https://falkor-school.luckdragon.io';
+const XC_CATEGORIES = ['10girls','10boys','11girls','11boys','12girls','12boys','open-girls','open-boys'];
+const MEDALS = ['🥇','🥈','🥉'];
+
+function XCPanel({ pin }) {
+  const today = new Date().toISOString().slice(0,10);
+  const [eventDate, setEventDate] = React.useState(today);
+  const [results, setResults] = React.useState({});
+  const [loading, setLoading] = React.useState(false);
+  const [lastRefresh, setLastRefresh] = React.useState(null);
+  const [entryMode, setEntryMode] = React.useState(false);
+  const [entryCat, setEntryCat] = React.useState('');
+  const [entryPos, setEntryPos] = React.useState('');
+  const [entryName, setEntryName] = React.useState('');
+  const [entryTime, setEntryTime] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
+  const [saveMsg, setSaveMsg] = React.useState(null);
+  const pollRef = React.useRef(null);
+
+  function fetchResults(date) {
+    setLoading(true);
+    fetch(SCHOOL_BASE + '/xc/results?event_date=' + (date || eventDate), {
+      headers: { 'X-Pin': pin || '' }
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.ok) setResults(d.categories || {});
+        setLastRefresh(new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      })
+      .catch(function() {})
+      .finally(function() { setLoading(false); });
+  }
+
+  React.useEffect(function() {
+    fetchResults(eventDate);
+    pollRef.current = setInterval(function() { fetchResults(eventDate); }, 10000);
+    return function() { clearInterval(pollRef.current); };
+  }, [eventDate]);
+
+  async function saveEntry() {
+    if (!entryCat || !entryPos || !entryName.trim()) return;
+    setSaving(true); setSaveMsg(null);
+    try {
+      const r = await fetch(SCHOOL_BASE + '/xc/result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin || '' },
+        body: JSON.stringify({ category: entryCat, position: entryPos, name: entryName.trim(), time: entryTime.trim(), event_date: eventDate })
+      });
+      const d = await r.json();
+      if (d.ok) {
+        setSaveMsg('Saved!');
+        setEntryPos(''); setEntryName(''); setEntryTime('');
+        fetchResults(eventDate);
+        setTimeout(function() { setSaveMsg(null); }, 2000);
+      } else { setSaveMsg(d.error || 'Error'); }
+    } catch (e) { setSaveMsg(e.message); }
+    setSaving(false);
+  }
+
+  const panelStyle = { padding: '12px 14px', maxWidth: '700px', margin: '0 auto', fontFamily: 'system-ui,sans-serif' };
+  const cardStyle = { background: 'var(--surface)', borderRadius: '10px', padding: '12px 14px', marginBottom: '10px', border: '1px solid var(--border)' };
+  const inputStyle = { padding: '7px 10px', borderRadius: '7px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '13px' };
+  const btnStyle = { padding: '7px 14px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' };
+
+  const catEntries = Object.entries(results);
+  const totalResults = catEntries.reduce(function(n, e) { return n + e[1].length; }, 0);
+
+  return React.createElement('div', { style: panelStyle },
+
+    // Header
+    React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 } },
+      React.createElement('div', null,
+        React.createElement('div', { style: { fontSize: 20, fontWeight: 700 } }, '🏃 XC District Results'),
+        React.createElement('div', { style: { fontSize: 12, color: 'var(--muted)', marginTop: 2 } },
+          totalResults + ' result(s) recorded' + (lastRefresh ? ' · updated ' + lastRefresh : '')
+        )
+      ),
+      React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+        React.createElement('input', { type: 'date', value: eventDate, onChange: function(e) { setEventDate(e.target.value); }, style: Object.assign({}, inputStyle, { fontSize: 12 }) }),
+        React.createElement('button', { onClick: function() { fetchResults(eventDate); }, style: Object.assign({}, btnStyle, { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', padding: '7px 10px' }) }, loading ? '⏳' : '↻'),
+        React.createElement('button', { onClick: function() { setEntryMode(!entryMode); }, style: Object.assign({}, btnStyle, { background: entryMode ? '#ef4444' : 'var(--accent)', color: '#fff' }) }, entryMode ? '✕ Close' : '+ Entry')
+      )
+    ),
+
+    // Quick entry form
+    entryMode && React.createElement('div', { style: Object.assign({}, cardStyle, { background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.3)' }) },
+      React.createElement('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 } }, 'Record Result'),
+      React.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' } },
+        React.createElement('select', {
+          value: entryCat, onChange: function(e) { setEntryCat(e.target.value); },
+          style: Object.assign({}, inputStyle, { minWidth: 110 })
+        },
+          React.createElement('option', { value: '' }, 'Age group'),
+          XC_CATEGORIES.map(function(c) { return React.createElement('option', { key: c, value: c }, c); })
+        ),
+        React.createElement('input', { style: Object.assign({}, inputStyle, { width: 60 }), type: 'number', min: 1, placeholder: 'Place', value: entryPos, onChange: function(e) { setEntryPos(e.target.value); } }),
+        React.createElement('input', { style: Object.assign({}, inputStyle, { flex: 1, minWidth: 120 }), type: 'text', placeholder: 'Name', value: entryName, onChange: function(e) { setEntryName(e.target.value); } }),
+        React.createElement('input', { style: Object.assign({}, inputStyle, { width: 80 }), type: 'text', placeholder: 'Time (8:06)', value: entryTime, onChange: function(e) { setEntryTime(e.target.value); } }),
+        React.createElement('button', {
+          onClick: saveEntry, disabled: saving || !entryCat || !entryPos || !entryName.trim(),
+          style: Object.assign({}, btnStyle, { background: '#059669', color: '#fff', whiteSpace: 'nowrap' })
+        }, saving ? '...' : 'Save'),
+        saveMsg && React.createElement('span', { style: { fontSize: 12, color: saveMsg === 'Saved!' ? '#22c55e' : '#ef4444', fontWeight: 600 } }, saveMsg)
+      )
+    ),
+
+    // No results state
+    totalResults === 0 && !loading && React.createElement('div', { style: Object.assign({}, cardStyle, { textAlign: 'center', padding: '30px', color: 'var(--muted)' }) },
+      React.createElement('div', { style: { fontSize: 28, marginBottom: 8 } }, '🏁'),
+      React.createElement('div', { style: { fontSize: 14, fontWeight: 600, marginBottom: 4 } }, 'No results yet for ' + eventDate),
+      React.createElement('div', { style: { fontSize: 12 } }, 'Use + Entry above or /xc in Telegram to record results')
+    ),
+
+    // Results grid — 2 columns on wide, 1 on narrow
+    totalResults > 0 && React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
+      XC_CATEGORIES.filter(function(cat) { return results[cat] && results[cat].length > 0; }).map(function(cat) {
+        const catResults = results[cat] || [];
+        const topThree = catResults.slice(0, 3);
+        const rest = catResults.slice(3);
+        return React.createElement('div', { key: cat, style: cardStyle },
+          React.createElement('div', { style: { fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent)', marginBottom: 10 } }, cat),
+
+          // Top 3 podium
+          topThree.map(function(r, i) {
+            return React.createElement('div', {
+              key: r.position + r.name,
+              style: {
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 10px', borderRadius: 8, marginBottom: 4,
+                background: i === 0 ? 'rgba(245,158,11,0.15)' : i === 1 ? 'rgba(156,163,175,0.1)' : 'rgba(180,120,60,0.1)',
+                border: i === 0 ? '1px solid rgba(245,158,11,0.3)' : '1px solid var(--border)'
+              }
+            },
+              React.createElement('span', { style: { fontSize: 18, minWidth: 28 } }, MEDALS[i] || (i+1) + '.'),
+              React.createElement('div', { style: { flex: 1 } },
+                React.createElement('div', { style: { fontWeight: 700, fontSize: 14 } }, r.name),
+                r.school && React.createElement('div', { style: { fontSize: 11, color: 'var(--muted)' } }, r.school)
+              ),
+              r.time && React.createElement('span', { style: { fontWeight: 700, fontSize: 13, color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' } }, r.time)
+            );
+          }),
+
+          // 4th+ places compact
+          rest.length > 0 && React.createElement('div', { style: { marginTop: 6, borderTop: '1px solid var(--border)', paddingTop: 6 } },
+            rest.map(function(r) {
+              return React.createElement('div', {
+                key: r.position + r.name,
+                style: { display: 'flex', alignItems: 'center', gap: 8, padding: '3px 4px', fontSize: 12 }
+              },
+                React.createElement('span', { style: { color: 'var(--muted)', minWidth: 24, fontWeight: 600 } }, r.position + '.'),
+                React.createElement('span', { style: { flex: 1 } }, r.name),
+                r.time && React.createElement('span', { style: { color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' } }, r.time)
+              );
+            })
+          )
+        );
+      })
+    )
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(() => {
@@ -2480,6 +2643,7 @@ function App() {
           <button className={'nav-btn'+(view==='kbt'?' active':'')} onClick={() => setView('kbt')}>🎯</button>
           <button className={'nav-btn'+(view==='pe'?' active':'')} onClick={() => setView('pe')}>🏫</button>
           <button className={'nav-btn'+(view==='scoreboard'?' active':'')} onClick={() => setView('scoreboard')}>📺</button>
+          <button className={'nav-btn'+(view==='xc'?' active':'')} onClick={() => setView('xc')}>🏃</button>
           <div className="nav-sep"/>
 
           <select className="model-select" value={model} onChange={e => { setModelS(e.target.value); LS.setModel(e.target.value); }}>
@@ -2501,6 +2665,7 @@ function App() {
         {view === 'kbt'      && <KBTPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'pe'       && <PEPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'scoreboard' && <ScoreboardPanel pin={LS.agentPin() || LS.pin()}/>}
+        {view === 'xc'         && <XCPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'sites'    && <SitesPanel/>}
         {view === 'calendar' && <CalendarPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'history'  && <HistoryPanel convos={convos} onOpen={id => { setActiveId(id); setView('chat'); }}/>}
