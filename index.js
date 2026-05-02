@@ -1790,6 +1790,163 @@ function PEPanel({ pin }) {
   );
 }
 
+
+// ─── ScoreboardPanel — KBT Live Scoreboard ───────────────────────────────────
+const KBT_BASE = 'https://falkor-kbt.luckdragon.io';
+
+function ScoreboardPanel({ pin }) {
+  const [gameCode, setGameCode] = React.useState('');
+  const [inputCode, setInputCode] = React.useState('');
+  const [gameState, setGameState] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  const [creating, setCreating] = React.useState(false);
+  const [newGameTheme, setNewGameTheme] = React.useState('');
+  const wsRef = React.useRef(null);
+  const pollRef = React.useRef(null);
+
+  function connectToGame(code) {
+    if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+
+    setGameCode(code);
+    setError(null);
+
+    // REST poll — simpler than WS inside falkor-ui
+    function poll() {
+      fetch(KBT_BASE + '/game/' + code + '/state', { headers: { 'X-Pin': pin || '' } })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d) setGameState(d); })
+        .catch(function() {});
+    }
+    poll();
+    pollRef.current = setInterval(poll, 3000);
+  }
+
+  React.useEffect(function() {
+    return function() {
+      if (wsRef.current) wsRef.current.close();
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  async function createGame() {
+    setCreating(true); setError(null);
+    try {
+      const resp = await fetch(KBT_BASE + '/game/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Pin': pin || '' },
+        body: JSON.stringify({ theme: newGameTheme || 'KBT Trivia Night', rounds: 4 }),
+      });
+      const data = await resp.json();
+      if (!data.ok && !data.code) throw new Error(data.error || 'Create failed');
+      const code = data.code;
+      setInputCode(code);
+      connectToGame(code);
+    } catch (e) { setError(e.message); }
+    setCreating(false);
+  }
+
+  function openScoreboard() {
+    if (!gameCode) return;
+    window.open(KBT_BASE + '/scoreboard/' + gameCode, '_blank');
+  }
+
+  function copyScoreboardUrl() {
+    const url = KBT_BASE + '/scoreboard/' + gameCode;
+    navigator.clipboard.writeText(url).catch(function() {});
+  }
+
+  const panelStyle = { padding: '16px', maxWidth: '600px', margin: '0 auto', fontFamily: 'system-ui, sans-serif' };
+  const cardStyle = { background: 'var(--surface)', borderRadius: '10px', padding: '14px', marginBottom: '12px', border: '1px solid var(--border)' };
+  const btnStyle = { padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' };
+  const inputStyle = { flex: 1, padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)', fontSize: '14px' };
+  const labelStyle = { fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block' };
+  const medals = ['🥇', '🥈', '🥉'];
+
+  return React.createElement('div', { style: panelStyle },
+    React.createElement('div', { style: { fontSize: 20, fontWeight: 700, marginBottom: 4 } }, '🎯 KBT Live Scoreboard'),
+    React.createElement('div', { style: { fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 } }, 'Create a game or connect to a live session'),
+
+    // Create new game
+    React.createElement('div', { style: cardStyle },
+      React.createElement('label', { style: labelStyle }, 'Create new game'),
+      React.createElement('div', { style: { display: 'flex', gap: 8, marginBottom: 8 } },
+        React.createElement('input', { style: inputStyle, type: 'text', placeholder: 'Theme (e.g. General Knowledge)', value: newGameTheme, onChange: function(e) { setNewGameTheme(e.target.value); } }),
+        React.createElement('button', { onClick: createGame, disabled: creating, style: Object.assign({}, btnStyle, { background: 'var(--accent)', color: '#fff', whiteSpace: 'nowrap' }) }, creating ? '⏳' : '+ New Game')
+      )
+    ),
+
+    // Connect to existing
+    React.createElement('div', { style: cardStyle },
+      React.createElement('label', { style: labelStyle }, 'Connect to existing game'),
+      React.createElement('div', { style: { display: 'flex', gap: 8 } },
+        React.createElement('input', { style: Object.assign({}, inputStyle, { textTransform: 'uppercase', letterSpacing: '3px', fontWeight: 700, fontSize: '16px' }), type: 'text', maxLength: 6, placeholder: 'GAME CODE', value: inputCode, onChange: function(e) { setInputCode(e.target.value.toUpperCase()); } }),
+        React.createElement('button', { onClick: function() { if (inputCode.length >= 4) connectToGame(inputCode.trim()); }, style: Object.assign({}, btnStyle, { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }) }, 'Connect')
+      )
+    ),
+
+    error && React.createElement('div', { style: { color: '#ef4444', fontSize: 13, padding: '10px', background: 'rgba(239,68,68,0.1)', borderRadius: 8, marginBottom: 12 } }, error),
+
+    // Game state
+    gameCode && React.createElement('div', { style: cardStyle },
+      React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 } },
+        React.createElement('div', null,
+          React.createElement('div', { style: { fontSize: 15, fontWeight: 700 } }, 'Game: ' + gameCode),
+          gameState && React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginTop: 2 } },
+            'Status: ' + (gameState.status || 'lobby') + '  •  Players: ' + (gameState.playerCount || 0) + '  •  Q ' + ((gameState.currentQuestion || 0) + 1) + '/' + (gameState.totalQuestions || '?')
+          )
+        ),
+        React.createElement('div', { style: { display: 'flex', gap: 8 } },
+          React.createElement('button', { onClick: openScoreboard, style: Object.assign({}, btnStyle, { background: '#7c3aed', color: '#fff', fontSize: 12, padding: '7px 14px' }) }, '📺 Open Scoreboard'),
+          React.createElement('button', { onClick: copyScoreboardUrl, style: Object.assign({}, btnStyle, { background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 12, padding: '7px 14px' }) }, '🔗 Copy URL')
+        )
+      ),
+
+      // Scoreboard URL hint
+      React.createElement('div', { style: { fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg)', padding: '6px 10px', borderRadius: 6, marginBottom: 14, wordBreak: 'break-all' } },
+        KBT_BASE + '/scoreboard/' + gameCode
+      ),
+
+      // Leaderboard
+      gameState && gameState.leaderboard && gameState.leaderboard.length > 0
+        ? React.createElement('div', null,
+            React.createElement('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 } }, 'Live Leaderboard'),
+            gameState.leaderboard.map(function(t, i) {
+              return React.createElement('div', {
+                key: t.team,
+                style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: 8, marginBottom: 6, background: i === 0 ? 'rgba(245,158,11,0.15)' : 'var(--bg)', border: i === 0 ? '1px solid rgba(245,158,11,0.3)' : '1px solid var(--border)' }
+              },
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+                  React.createElement('span', { style: { fontSize: 18 } }, medals[i] || (i + 1) + '.'),
+                  React.createElement('span', { style: { fontWeight: 600, fontSize: 14 } }, t.team)
+                ),
+                React.createElement('span', { style: { fontWeight: 800, fontSize: 18, color: '#f59e0b' } }, t.score + ' pts')
+              );
+            })
+          )
+        : React.createElement('div', { style: { color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', padding: '20px' } }, gameState ? 'No scores yet — game in lobby' : 'Loading...'),
+
+      // Current question if active
+      gameState && gameState.status === 'active' && gameState.questionText && React.createElement('div', {
+        style: { marginTop: 14, padding: '12px 16px', background: 'var(--bg)', borderRadius: 10, border: '1px solid var(--border)' }
+      },
+        React.createElement('div', { style: { fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 } },
+          'Round ' + (gameState.currentRound || 1) + ' — Q' + ((gameState.currentQuestion || 0) + 1) + (gameState.questionCategory ? ' — ' + gameState.questionCategory : '') + ' (' + (gameState.questionPoints || 1) + ' pt)'
+        ),
+        React.createElement('div', { style: { fontSize: 14, fontWeight: 600 } }, gameState.questionText),
+        gameState.answerRevealed && gameState.answerText && React.createElement('div', { style: { marginTop: 8, color: '#22c55e', fontWeight: 700, fontSize: 13 } }, 'Answer: ' + gameState.answerText)
+      )
+    ),
+
+    // Join instructions
+    gameCode && React.createElement('div', { style: Object.assign({}, cardStyle, { textAlign: 'center', background: 'var(--bg)' }) },
+      React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 } }, 'Players join at:'),
+      React.createElement('div', { style: { fontWeight: 700, fontSize: 14, color: 'var(--accent)' } }, 'falkor-kbt.luckdragon.io/join'),
+      React.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginTop: 4 } }, 'Game code: ' + gameCode)
+    )
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(() => {
@@ -2267,6 +2424,7 @@ function App() {
           <button className={'nav-btn'+(view==='nrl'?' active':'')} onClick={() => setView('nrl')}>NRL</button>
           <button className={'nav-btn'+(view==='kbt'?' active':'')} onClick={() => setView('kbt')}>🎯</button>
           <button className={'nav-btn'+(view==='pe'?' active':'')} onClick={() => setView('pe')}>🏫</button>
+          <button className={'nav-btn'+(view==='scoreboard'?' active':'')} onClick={() => setView('scoreboard')}>📺</button>
           <div className="nav-sep"/>
 
           <select className="model-select" value={model} onChange={e => { setModelS(e.target.value); LS.setModel(e.target.value); }}>
@@ -2287,6 +2445,7 @@ function App() {
         {view === 'nrl'      && <NRLPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'kbt'      && <KBTPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'pe'       && <PEPanel pin={LS.agentPin() || LS.pin()}/>}
+        {view === 'scoreboard' && <ScoreboardPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'sites'    && <SitesPanel/>}
         {view === 'calendar' && <CalendarPanel pin={LS.agentPin() || LS.pin()}/>}
         {view === 'history'  && <HistoryPanel convos={convos} onOpen={id => { setActiveId(id); setView('chat'); }}/>}
