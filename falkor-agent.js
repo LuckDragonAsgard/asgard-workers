@@ -667,6 +667,37 @@ export class FalkorAgent {
           await this.state.storage.delete('liveContext');
           await this.state.storage.delete('liveContextTs');
           server.send(JSON.stringify({ type: 'context_refreshed' }));
+        } else if (msg.type === 'bridge_register') {
+          // PC bridge registration (Phase 81)
+          const bridgeId = 'bridge_' + Date.now();
+          if (!this.bridges) this.bridges = new Map();
+          this.bridges.set(bridgeId, {
+            ws: server,
+            capabilities: msg.capabilities || [],
+            platform: msg.platform,
+            hostname: msg.hostname,
+            home: msg.home,
+            registeredAt: new Date().toISOString(),
+          });
+          server.send(JSON.stringify({
+            type: 'bridge_ack',
+            bridgeId,
+            message: 'Bridge registered. Falkor will route PC commands here.',
+          }));
+        } else if (msg.type === 'bridge_command') {
+          // Command result from bridge (response to earlier command)
+          // Store result in DO storage for async retrieval
+          const cmdId = msg.commandId;
+          if (cmdId && msg.data) {
+            await this.state.storage.put(`bridge_result_${cmdId}`, JSON.stringify(msg.data), { expirationTtl: 3600 });
+          }
+        } else if (msg.type === 'bridge_result') {
+          // Result callback from bridge
+          const cmdId = msg.commandId;
+          if (cmdId && msg.data) {
+            await this.state.storage.put(`bridge_result_${cmdId}`, JSON.stringify(msg.data), { expirationTtl: 3600 });
+          }
+
         }
       } catch (err) {
         server.send(JSON.stringify({ type: 'error', message: err.message }));
