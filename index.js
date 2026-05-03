@@ -1,6 +1,3 @@
---cbc90a3a1fe6b2ee4ffed10396145dd9d8c509c2bf9d2a79a4b301359389
-Content-Disposition: form-data; name="worker.js"
-
 const PUSH_URL = 'https://falkor-push.luckdragon.io';
 
 const JSON_MANIFEST = JSON.stringify({
@@ -25,7 +22,7 @@ const JSON_MANIFEST = JSON.stringify({
 });
 
 const SW_CODE = `
-const CACHE = 'falkor-v9.20.0';
+const CACHE = 'falkor-v9.21.0';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -114,7 +111,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/health') {
-      return new Response(JSON.stringify({status:'ok',version:'9.17.0',worker:'falkor-ui'}), {
+      return new Response(JSON.stringify({status:'ok',version:'9.21.0',worker:'falkor-ui'}), {
         headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}
       });
     }
@@ -2680,13 +2677,15 @@ function App() {
       if (ctx.state === 'suspended') await ctx.resume();
       const analyser = ctx.createAnalyser(); analyser.fftSize = 256; analyserRef.current = analyser;
       const src = ctx.createMediaStreamSource(stream); src.connect(analyser);
-      const mr = new MediaRecorder(stream, { mimeType:'audio/webm' });
+      const _mtype = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+      const mr = new MediaRecorder(stream, _mtype ? { mimeType:_mtype } : {});
       mediaRecorderRef.current = mr; chunksRef.current = [];
       mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
       mr.onstop = async () => {
         stream.getTracks().forEach(t => t.stop());
         setVoiceState('processing');
-        const blob = new Blob(chunksRef.current, { type:'audio/webm' });
+        const blob = new Blob(chunksRef.current, { type: _mtype || 'audio/webm' });
         try {
           const fd = new FormData(); fd.append('audio', blob, 'audio.webm');
           const res = await fetch(AI_URL + '/stt', { method:'POST', body:fd });
@@ -2998,7 +2997,32 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+// ─── Error Boundary ───────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(e) { return { err: e }; }
+  componentDidCatch(e, i) { console.error('[Falkor]', e, i); }
+  render() {
+    if (this.state.err) {
+      const s = { padding:'32px 20px', textAlign:'center', fontFamily:'system-ui,sans-serif', color:'#e8e8ea' };
+      const msg = (this.state.err && this.state.err.message) || String(this.state.err);
+      return React.createElement('div', { style: s },
+        React.createElement('div', { style:{fontSize:36,marginBottom:12} }, '⚠️'),
+        React.createElement('div', { style:{fontWeight:700,fontSize:18,marginBottom:8} }, 'Falkor failed to load'),
+        React.createElement('div', { style:{fontSize:12,color:'#72728a',marginBottom:20,wordBreak:'break-word'} }, msg),
+        React.createElement('button', {
+          onClick: () => window.location.reload(),
+          style:{padding:'10px 24px',background:'#6c63ff',color:'#fff',border:'none',borderRadius:'8px',cursor:'pointer',fontSize:15}
+        }, 'Reload')
+      );
+    }
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  React.createElement(ErrorBoundary, null, React.createElement(App))
+);
 </script>
 
 <script>
@@ -3096,6 +3120,3 @@ function installApp(){if(_deferredInstall){_deferredInstall.prompt();_deferredIn
     });
   }
 };
-
-
---cbc90a3a1fe6b2ee4ffed10396145dd9d8c509c2bf9d2a79a4b301359389--
