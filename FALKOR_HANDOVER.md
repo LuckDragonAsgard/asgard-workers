@@ -1,146 +1,71 @@
-# Falkor — Session Handover (2026-05-04, evening)
+# Falkor / Asgard — Session Handover (2026-05-04)
 
 ## Who you are talking to
-Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer Trivia (KBT), developer of the Falkor AI assistant and luckdragon.io platform. Emails: pgallivan@outlook.com / pat_gallivan@hotmail.com. Casual, delegates fully. AFL fan (Bulldogs).
+Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer Trivia (KBT), developer of the Falkor / Asgard portfolio on luckdragon.io. Casual, delegates fully. AFL fan (Bulldogs).
 
----
+## What it is
+**Asgard Project Hub** at `falkor.luckdragon.io` — operator dashboard for the 48-project portfolio. Per Paddy's `Falkor_Blueprint.md`, this is the operator/admin panel; the personal AI ("Jarvis") features come later.
 
-## ⛔ FILE-LOCATION RULE (READ FIRST)
-- DEFAULT: do **not** save things to `G:\My Drive\Luck Dragon\` — Paddy has flagged repeatedly not to clutter Drive.
-- Code / configs / handover docs → GitHub (this repo).
-- Office files he asks for → return via `present_files` only.
-- If unsure, ASK first.
+GitHub source of truth: `LuckDragonAsgard/asgard-workers` — falkor-tools.js (the hub) plus the falkor-* worker fleet.
 
----
+## Live now at falkor.luckdragon.io
 
-## What Falkor is
-Falkor is Paddy's personal AI assistant — Cloudflare Workers fleet (15+ workers) at falkor.luckdragon.io. Features: voice (Hey Falkor wake word, always-on), Telegram bot, AFL+NRL tipping comps, KBT trivia game engine, PE lesson planner, XC results, image gen + vision, proactive daily briefing, local PC bridge.
+Worker: **falkor-tools v2.2.0** — Asgard-style project hub.
 
-GitHub repo: **LuckDragonAsgard/asgard-workers** (ID: 1222393804) — source of truth for the fleet.
-Claude auto-memory: `project_falkor.md` (full phase history + endpoints).
+Six tabs in the sidebar:
+- **📋 Projects** — 48 tile grid; search, filter by category/status, sort by Priority/Cost/Name/Updated/Status. Default sort = priority (income_priority).
+- **🕒 Recent** — last 30 projects sorted by last_updated.
+- **💰 Finance** — totals (total spend, monthly recurring, avg per project) + per-project cost table.
+- **🛠 Tools** — direct links: CF Dashboard, Workers list, DNS, AI Gateway, GitHub repos, Stripe, Vercel, Supabase, Drive, Asgard Vault, Falkor APIs.
+- **💬 Chat** — always visible right sidebar; sends through `/api/chat` proxy → asgard-ai (groq-fast). "Chat about this" on any project pre-loads project context (URL/GitHub/tech/desc/features) so AI answers are scoped.
+- **⚙ System** — live worker fleet health (14 workers).
 
----
+Every project tile → modal with **🌐 Open live · 📦 GitHub · ✏️ Edit code (github.dev) · 💬 Chat about this** plus all metadata (URL, GitHub, Domain, Tech, Status, Priority, Cost, Cost notes, Progress %, Y1/Y2/Y3, Scale, Detail, Updated, Next, Notes, Features).
 
-## Live fleet — verified 2026-05-04 via /health
+## Login
+- URL: `https://falkor.luckdragon.io`
+- PIN (Paddy): `2967` — POSTed to `falkor-push.luckdragon.io/user/verify`
+- AGENT_PIN (fleet, X-Pin for inter-worker calls): `JilSS1zLn3Rl7mWrM6fOJc69`
+- VAULT_PIN (asgard-vault): `535554`
 
-| Worker | Domain | Live |
-|---|---|---|
-| falkor-ui | **falkor.luckdragon.io** | v9.21.0 |
-| falkor-agent | falkor-agent.luckdragon.io | v2.9.0 (Phase 81 bridge handlers deployed) |
-| falkor-kbt | falkor-kbt.luckdragon.io | v2.8.0 |
-| falkor-workflows | falkor-workflows.luckdragon.io | v3.11.0 |
-| falkor-school | falkor-school.luckdragon.io | v1.5.0 |
-| falkor-sport | falkor-sport.luckdragon.io | v1.6.0 |
-| falkor-telegram | falkor-telegram.luckdragon.io | v1.7.0 |
-| asgard-ai | asgard-ai.luckdragon.io | v6.5.0 (deployment_id 9de28641d9c84a3fa47a82466c55c116) |
-| falkor-brain | falkor-brain.luckdragon.io | v1.0.0 |
-| falkor-web | falkor-web.luckdragon.io | v1.2.0 |
-| falkor-code | falkor-code.luckdragon.io | v1.4.0 |
-| falkor-push | falkor-push.luckdragon.io | v1.1.2 |
-| falkor-dashboard | falkor-dashboard.luckdragon.io | v3.1.0 |
-| falkor-widget | falkor-widget.luckdragon.io | v1.0.0 |
-| falkor-deploy | falkor-deploy.luckdragon.io | up (PIN-gated) |
-
-**Note:** `falkor-ui.luckdragon.io` is NXDOMAIN — UI is at **falkor.luckdragon.io**.
-
----
-
-## ⏳ In-flight work (pick up here)
-
-### 1. Sport Portal architecture push — PENDING (from prior chat, 2026-05-04)
-Prior chat created a Sport Portal architecture doc and a cost-tracking dashboard locally; commit was made but the **GitHub push is still pending** — was waiting on a verification code from email when the chat ended.
-
-Likely artifacts from that session (not in Drive, were chat-only present_files):
-- `HANDOVER-Sport-Portal-Push-2026-05-04.md`
-- `Memory-SportPortal-Architecture.md`
-- `COST-TRACKING-DASHBOARD.md`
-- updates to `CLAUDE.md`
-
-NEXT STEP if Paddy confirms continuing: get the 6-digit GitHub verification code from his email and complete the push. Target repo most likely the SSP / sportportal repo (NOT asgard-workers — that's the Falkor fleet).
-
-### 2. Phase 81 — Local Bridge — TEST PENDING
-Code DEPLOYED 2026-05-04 (commit `5e054ea`, deployment_id `f80acecaf6fb4428a1cbda36e09cf7e0` for falkor-agent v2.9.0).
-
-What exists:
-- falkor-agent bridge protocol: `bridge_register` / `bridge_command` / `bridge_result` WS handlers, DO storage of bridge results.
-- falkor-ui v9.21.0: 🔌 PC bridge status pill in header.
-- `falkor-bridge.js` (Node script — file/shell/screenshot/disk access, safe-roots only), `launch-bridge.vbs` (silent launcher), `install-bridge-startup.bat` (Windows Startup install).
-
-Pushed to this GitHub repo. Files also exist in `G:\My Drive\Luck Dragon\` from earlier work.
-
-To test (Paddy runs these locally):
-1. Open terminal in `G:\My Drive\Luck Dragon\`
-2. `npm install ws` (one-time)
-3. `node falkor-bridge.js`
-4. Check falkor.luckdragon.io — PC pill should go green.
-5. Test prompt: "list files on my desktop"
-
-Auto-start on login: run `install-bridge-startup.bat` as admin.
-
----
-
-## ✅ Recently shipped (2026-05-03 → 2026-05-04)
-- **Account consolidation COMPLETE** — Cloudflare, Stripe, GitHub, GDrive all on `paddy@luckdragon.io` (verified 2026-05-03).
-- **luckdragon.io homepage** — 525 SSL error fixed, zone `ca610439`.
-- **Carnival Timing v8.5.2** (carnivaltiming.com) — paywall + help + sitemap + admin dashboard live, pre-launch polish complete.
-- **School Sport Portal** (schoolsportportal.com.au) — $1/student/yr, Stripe live, help + sitemap + auto-reply + cross-links live.
-- **SportCarnival** (sportcarnival.com.au) — sitemap + cross-links live.
-- **Phase 81 Bridge** — code deployed (test pending, see above).
-
----
+## Worker fleet (versions live 2026-05-04)
+- falkor-tools v2.2.0 (the hub at falkor.luckdragon.io — this repo)
+- falkor-agent v2.9.0 (DO + Phase 81 bridge handlers)
+- falkor-kbt v2.8.0
+- falkor-workflows v3.11.0
+- falkor-school v1.5.0
+- falkor-sport v1.6.0
+- falkor-telegram v1.7.0
+- asgard-ai v6.5.0 (LLM router + AI Gateway)
+- falkor-brain v1.0.0 (Vectorize RAG)
+- falkor-web, falkor-code, falkor-push, falkor-dashboard, falkor-widget — all healthy
 
 ## Deploy patterns
-- **Simple workers** (no DO/KV bindings): `POST https://asgard-tools.luckdragon.io/admin/deploy` with `X-Pin: VAULT_PIN`. Always add `skip_auto_commit: true` for automated runs.
-- **Workers with DO/Vectorize bindings** (falkor-agent, falkor-kbt, falkor-brain): use the CF API directly with multipart PUT — see `deploy_phase81.py` template. Pass `keep_bindings: ["secret_text"]` in metadata to preserve secrets.
-- **GitHub Contents API**: use `LuckDragonAsgard/asgard-workers` (NOT any pgallivan repo). Token in vault as `GITHUB_TOKEN`.
-- **CF Worker gotchas**: multipart download extraction, service-worker vs ESM format mismatch, `CF_TOKEN_LD` vs `CF_API_TOKEN`, full account ID required. See `feedback_cf_worker_deploy.md` in auto-memory.
+- Simple workers (no DO bindings): POST `https://asgard-tools.luckdragon.io/admin/deploy` with `X-Pin: VAULT_PIN`
+- Workers with DO/Vectorize bindings (falkor-agent, falkor-kbt, falkor-brain): use CF API multipart PUT directly. Pass `keep_bindings: ["secret_text"]` in metadata. See `deploy_phase81.py` and `deploy_hub_pivot.py` in /outputs for working templates.
+- falkor-tools deploy: `python3 deploy_hub_pivot.py` (multipart upload + custom domain bind)
+- GitHub Contents API: `LuckDragonAsgard/asgard-workers` (NOT any pgallivan repo)
 
----
-
-## Security (current)
-- **falkor.luckdragon.io login (Paddy):** `2967` — POSTed to falkor-push `/user/verify`.
-- **AGENT_PIN** (fleet workers, X-Pin header for inter-worker calls): `JilSS1zLn3Rl7mWrM6fOJc69` (rotated 2026-05-01).
-- **VAULT_PIN** (asgard-vault): `535554` — confirmed active 2026-05-03.
-- **falkor-dashboard worker PIN** (separate from main UI): `luckdragon`.
-- **Vault read**: `GET https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: 535554`.
-- See `reference_falkor_security.md` in Claude auto-memory for full breakdown.
-
----
-
-## Other live projects (context)
-- **KBT Trivia Tools** — asset pipeline, Google Slides `[q]` placeholder, 6 tool files. GDrive default/quiz/ folder + ~20 per-game templates.
-- **Bomber Boat** (bomberboat.com.au) — CF Pages + Worker, GitHub `PaddyGallivan/bomber-boat`.
-- **Superleague Yeah v4** (superleague.streamlinewebapps.com) — AFL fantasy draft v4.28, GitHub `LuckDragonAsgard/superleague-yeah-v4`.
-- **WPS Cross Country 2026** — 6 age groups, qualifiers + Firebase draw with bib numbers done.
-- **WPS Y2 Maths Intervention** — 7-week term pack, 14 hands-on lessons, Vic Curric 2.0 + VTLM 2.0 aligned.
-- **Face Morph Tool** — 50/50 alpha blend, toggle system, photo alignment pipeline. See `reference_facemorph_rules.md` for full workflow.
-- **Jaclyn Rooney — 75 Cecil St** — desktop building review done April 2026.
-
----
+## Architectural decisions (today's session)
+1. **falkor.luckdragon.io now serves the falkor-tools worker** (the project hub). The previous personal-AI Falkor UI (falkor-ui worker) is parked — its DNS was unbound. When we build Jarvis features later, they go on top of this hub or at a separate URL.
+2. **CHAT proxy:** browser fetch from falkor.luckdragon.io to asgard-ai.luckdragon.io was returning 503 (browser-specific issue, server-side curl fine). Solution: `/api/chat` on falkor-tools forwards server-side to asgard-ai. Same-origin from the browser's perspective.
+3. **No-cache headers:** every HTML response has `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` + `Pragma: no-cache` + `Expires: 0`. Paddy doesn't have to clear cache or hard-refresh.
+4. **Saved 4 mascot images** are referenced in Drive (`G:\My Drive\ChatGPT Image May 3, 2026, 08_29_*.png`) — Cavalier King Charles Spaniel character sheets. Not yet embedded in UI; still using 🐉 emoji placeholder.
 
 ## How Paddy likes to work
-- Casual, direct — no fluff, no post-work summaries.
-- Delegates fully — just do it.
-- **Don't clutter Drive** — see file rule at top.
-- Handovers/status docs → THIS GitHub repo (`LuckDragonAsgard/asgard-workers/FALKOR_HANDOVER.md`).
-- Check GitHub before assuming worker state.
-- Screenshot when debugging UI.
-- Take screenshots when debugging Asgard.
+- Casual, direct — no fluff, no post-work summaries
+- **Don't auto-save to Drive.** Code/configs/handovers → GitHub. Office files he asks for → present_files only.
+- **Never tell him to hard-refresh / clear cache.** Server sends no-cache headers; that's the deploy's job.
+- Source of truth = GitHub. Memory in Claude is just an index/aide-memoire.
 
----
+## Next-up (Jarvis features when ready)
+- Per-project CRUD in the modal (POST/PUT to dashboard API)
+- Embed the Cavalier mascot images
+- Voice input on chat
+- Code editor inline (Monaco) so editing happens in-hub
+- Per-project AI agent that can actually deploy/push code (vs just chat about it)
 
-## Known drift / cleanups
-1. **Cowork project instructions** auto-fetch this very file. Confirmed working.
-2. **falkor-agent versioning** has gone non-linear: source = `2.9.0`, prior commit messages claim `1.9.1`. `/health` is the truth.
-3. Prior **HANDOVER-Sport-Portal-Push-2026-05-04.md** from earlier chat was a chat-only present_file — content NOT persisted unless Paddy saved it. If continuing that work, ask Paddy to paste the verification code and confirm target repo.
-
----
-
-## How to start the next chat
-Paddy will likely say one of:
-- *"Bridge test"* → walk through Phase 81 test steps above.
-- *"Sport Portal architecture push — continuing"* → ask for the GitHub verification code, confirm target repo, complete push.
-- *"What did we do yesterday?"* → summarise from "Recently shipped".
-- A fresh project ask → ask which project, then proceed.
-
-Per project instructions, this file is auto-fetched at chat start. Brief Paddy from the In-flight work section first.
+## Known drift / housekeeping
+- `asgard-ai` browser-side returns 503 on direct fetch. Worked around with `/api/chat` proxy. Might be CF bot protection on certain origins. Worth investigating later but not blocking.
+- Old Cowork project instructions still auto-fetch `asgard-source/docs/HANDOVER.md` (the legacy Mona-era doc). Update them in Cowork settings to point at:  
+  `https://ra
