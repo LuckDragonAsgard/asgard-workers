@@ -332,22 +332,29 @@ function renderChatPane(){
   STATE.chat.push({role:"user",content:text});inp.value="";refreshChat();
   btn.disabled=true;
   try{
-   let message=text;
+   let r,d;
    if(STATE.chatContext){
-    const c=STATE.chatContext;
-    const lines=["PROJECT CONTEXT:","Name: "+(c.name||"")];
-    if(c.url)lines.push("Live URL: "+c.url);
-    if(c.github)lines.push("GitHub: "+c.github);
-    if(c.tech)lines.push("Tech: "+c.tech);
-    if(c.status)lines.push("Status: "+c.status);
-    if(c.cost)lines.push("Cost: "+c.cost);
-    if(c.desc)lines.push("Description: "+c.desc);
-    if(c.features)lines.push("Features: "+c.features);
-    message=lines.join(String.fromCharCode(10))+String.fromCharCode(10,10)+"USER QUESTION: "+text;
+    // Use the agent-chat endpoint with full project context — AI can read/edit repo files
+    r=await fetch("/api/agent-chat",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext})});
+    d=await r.json();
+    let reply=d.reply||d.error||"No response";
+    if(d.tool_calls&&d.tool_calls.length){
+     const summary=d.tool_calls.map(t=>{
+      if(t.tool==="write_file"&&t.output&&t.output.ok)return "Edited "+t.output.path+" (commit "+t.output.commit+")";
+      if(t.tool==="write_file"&&t.output&&t.output.error)return "Edit FAILED on "+t.input.path+": "+t.output.error;
+      if(t.tool==="read_file"&&t.output&&!t.output.error)return "Read "+t.input.path;
+      if(t.tool==="list_files"&&t.output&&!t.output.error)return "Listed "+(t.input.path||"/");
+      return t.tool+" -> "+(t.output&&t.output.error?"err":"ok");
+     }).join(" \u00b7 ");
+     reply=reply+String.fromCharCode(10,10)+"["+summary+"]";
+    }
+    STATE.chat.push({role:"assistant",content:reply});
+   } else {
+    // General chat via /api/chat -> asgard-ai
+    r=await fetch(CHAT_API,{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,model:"groq-fast"})});
+    d=await r.json();
+    STATE.chat.push({role:"assistant",content:d.reply||d.content||d.error||"No response"});
    }
-   const r=await fetch(CHAT_API,{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message,model:"groq-fast"})});
-   const d=await r.json();
-   STATE.chat.push({role:"assistant",content:d.reply||d.content||d.error||"No response"});
   }catch(err){STATE.chat.push({role:"assistant",content:"Error: "+err.message})}
   btn.disabled=false;refreshChat();inp.focus();
  });
@@ -493,7 +500,7 @@ const NOCACHE={
 };
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
     if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.2.0',mode:'asgard-hub-recent-tools'},{headers:{...CORS,...NOCACHE}});
@@ -515,6 +522,139 @@ export default {
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
+    if(url.pathname==='/api/agent-chat'&&request.method==='POST'){
+      try {
+        const body = await request.json();
+        const userMsg = body.message || '';
+        const project = body.project || null;
+        const history = Array.isArray(body.history) ? body.history : [];
+
+        // Parse owner/repo from project.github URL
+        let owner=null, repo=null, defaultBranch='main';
+        if (project && project.github) {
+          const m = project.github.match(/github\.com\/([^/]+)\/([^/?#]+)/);
+          if (m) { owner=m[1]; repo=m[2].replace(/\.git$/,''); }
+        }
+
+        const tools = [
+          { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
+            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
+          { name:'read_file', description:'Read a file from the project repo.',
+            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path to file in repo' } }, required:['path'] } },
+          { name:'write_file', description:'Write/overwrite a file in the project repo and commit. Use after the user confirms a change.',
+            input_schema:{ type:'object', properties:{ path:{ type:'string' }, content:{ type:'string' }, message:{ type:'string', description:'Commit message' } }, required:['path','content','message'] } },
+        ];
+
+        const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
+
+        async function execTool(name, input) {
+          if (!owner || !repo) return { error:'No GitHub repo bound to this project — cannot run tool calls.' };
+          if (name === 'list_files') {
+            const p = (input.path||'').replace(/^\//,'');
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'list_files HTTP '+r.status };
+            const d = await r.json();
+            if (!Array.isArray(d)) return { error:'Path is a file, not a directory' };
+            return { files: d.map(f => ({ name:f.name, type:f.type, size:f.size })) };
+          }
+          if (name === 'read_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'read_file HTTP '+r.status };
+            const d = await r.json();
+            if (!d.content) return { error:'No content (might be a directory)' };
+            const decoded = atob(d.content.replace(/\n/g,''));
+            return { path:p, sha:d.sha, content: decoded.length>40000 ? decoded.substring(0,40000)+String.fromCharCode(10)+"[truncated]" : decoded };
+          }
+          if (name === 'write_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            // get sha if exists
+            let sha=null;
+            try {
+              const r0 = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+              if (r0.ok) { const d0 = await r0.json(); sha = d0.sha; }
+            } catch(e){}
+            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))), branch: defaultBranch };
+            if (sha) payload.sha = sha;
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            const d = await r.json();
+            if (!r.ok) return { error:'write_file HTTP '+r.status, detail: d.message || JSON.stringify(d).substring(0,300) };
+            return { ok:true, commit: d.commit?.sha?.substring(0,7), html_url: d.commit?.html_url, path: p };
+          }
+          return { error:'Unknown tool: '+name };
+        }
+
+        // System prompt with project context
+        let system = "You are a coding agent embedded in Paddy's Asgard project hub. You can read and edit files in the project's GitHub repo via tools.";
+        if (project) {
+          const ctx = ['Project: '+(project.name||'')];
+          if (project.url) ctx.push('Live URL: '+project.url);
+          if (project.github) ctx.push('GitHub: '+project.github);
+          if (project.tech) ctx.push('Tech: '+project.tech);
+          if (project.status) ctx.push('Status: '+project.status);
+          if (project.desc) ctx.push('Description: '+project.desc);
+          if (project.features) ctx.push('Features: '+project.features);
+          system += String.fromCharCode(10,10) + ctx.join(String.fromCharCode(10));
+        }
+        system += String.fromCharCode(10,10) + "When the user asks for a change, ALWAYS read the relevant files first to understand the current state, then propose the change clearly, then call write_file to commit. Use concise commit messages. If you do not have enough info, list_files first. Be terse - this is a chat, not a report.";
+
+        // Anthropic tool-use loop
+        const messages = [...history, { role:'user', content: userMsg }];
+        const toolResults = [];
+        let iterations = 0;
+        const maxIter = 8;
+        let finalText = '';
+
+        while (iterations < maxIter) {
+          iterations++;
+          const aReq = await fetch('https://api.anthropic.com/v1/messages', {
+            method:'POST',
+            headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01', 'content-type':'application/json' },
+            body: JSON.stringify({
+              model: 'claude-haiku-4-5-20251001',
+              max_tokens: 4096,
+              system,
+              tools,
+              messages,
+            }),
+          });
+          if (!aReq.ok) {
+            const err = await aReq.text();
+            return Response.json({ error:'Anthropic API '+aReq.status, detail: err.substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
+          }
+          const a = await aReq.json();
+          // Append assistant message
+          messages.push({ role:'assistant', content: a.content });
+
+          if (a.stop_reason === 'tool_use') {
+            const toolUses = a.content.filter(c => c.type === 'tool_use');
+            const results = [];
+            for (const tu of toolUses) {
+              const out = await execTool(tu.name, tu.input);
+              toolResults.push({ tool: tu.name, input: tu.input, output: out });
+              results.push({ type:'tool_result', tool_use_id: tu.id, content: JSON.stringify(out).substring(0, 50000) });
+            }
+            messages.push({ role:'user', content: results });
+            continue;
+          }
+
+          // end
+          for (const c of a.content) if (c.type === 'text') finalText += c.text;
+          break;
+        }
+
+        return Response.json({
+          ok:true,
+          reply: finalText || '(no text response)',
+          tool_calls: toolResults,
+          iterations,
+        }, { headers:{...CORS,...NOCACHE} });
+
+      } catch (e) {
+        return Response.json({ error:'Agent failure', detail: String(e).substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
+      }
+    }
+
     return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
   },
 };
