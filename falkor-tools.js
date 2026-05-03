@@ -95,13 +95,13 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 </style></head>
 <body><div id="app"></div>
 <script>
-const VERIFY_API="https://falkor-push.luckdragon.io/user/verify",PROJECTS_API="https://falkor-dashboard.luckdragon.io/api/projects",CHAT_API="/api/chat";
+const VERIFY_API="https://falkor-push.luckdragon.io/user/verify",PROJECTS_API="/api/projects",CHAT_API="/api/chat";
 const $=(s,r=document)=>r.querySelector(s);
 const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")n.className=v;else if(k==="onclick")n.addEventListener("click",v);else if(k==="html")n.innerHTML=v;else n.setAttribute(k,v)}for(const k of kids){if(k==null||k===false)continue;if(typeof k==="string"||typeof k==="number")n.appendChild(document.createTextNode(String(k)));else if(k && k.nodeType)n.appendChild(k);else n.appendChild(document.createTextNode(String(k)))}return n};
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const parseCost=c=>{if(!c)return 0;const m=String(c).match(/[0-9.]+/);return m?parseFloat(m[0]):0};
 
-const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"all",sort:"priority",view:"projects",chat:[],chatContext:null};
+const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"projects",chat:[],chatContext:null};
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
@@ -151,6 +151,7 @@ function renderSidebar(){
  sb.appendChild(navItem("projects","\uD83D\uDCCB","Projects"));
  sb.appendChild(navItem("recent","\uD83D\uDD52","Recent"));
  sb.appendChild(navItem("finance","\uD83D\uDCB0","Finance"));
+ sb.appendChild(navItem("revenue","\uD83D\uDCC8","Revenue"));
  sb.appendChild(navItem("tools","\uD83D\uDEE0","Tools"));
  sb.appendChild(navItem("chat","\uD83D\uDCAC","Chat"));
  sb.appendChild(navItem("system","\u2699","System"));
@@ -168,6 +169,7 @@ function renderMain(){
  if(STATE.view==="projects")return renderProjects(m);
  if(STATE.view==="recent")return renderRecent(m);
  if(STATE.view==="finance")return renderFinance(m);
+ if(STATE.view==="revenue")return renderRevenue(m);
  if(STATE.view==="tools")return renderTools(m);
  if(STATE.view==="chat")return renderChatMain(m);
  if(STATE.view==="system")return renderSystem(m);
@@ -195,7 +197,7 @@ function renderProjects(m){
  catSel.addEventListener("change",()=>{STATE.cat=catSel.value;refreshGrid()});
  ctrl.appendChild(catSel);
  const ssel=el("select");
- ["all","live","active","dev","building","planned","idea","archived","dormant"].forEach(s=>ssel.appendChild(el("option",{value:s},s)));
+ [["active-only","Active only"],["all","All statuses"],["live","Live"],["active","Active"],["dev","Dev"],["building","Building"],["planned","Planned"],["idea","Idea"],["merged","Merged"],["archived","Archived"],["dormant","Dormant"]].forEach(([v,l])=>ssel.appendChild(el("option",{value:v},l)));
  ssel.value=STATE.status;
  ssel.addEventListener("change",()=>{STATE.status=ssel.value;refreshGrid()});
  ctrl.appendChild(ssel);
@@ -217,7 +219,7 @@ function refreshGrid(){
  const ql=STATE.q.toLowerCase();
  let filtered=STATE.projects.filter(p=>{
   if(STATE.cat!=="all"&&(p.category||"").toLowerCase()!==STATE.cat)return false;
-  if(STATE.status!=="all"&&(p.status||"").toLowerCase()!==STATE.status)return false;
+  if(STATE.status==="active-only"){const s=(p.status||"").toLowerCase();if(["merged","archived","dormant"].includes(s))return false}else if(STATE.status!=="all"&&(p.status||"").toLowerCase()!==STATE.status)return false;
   if(!ql)return true;
   return ["name","desc","features","tech","domains","category","url"].some(k=>String(p[k]||"").toLowerCase().includes(ql));
  });
@@ -468,6 +470,51 @@ function renderTools(m){
  });
  m.appendChild(wrap);return m;
 }
+function renderRevenue(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Revenue (projected)"));m.appendChild(top);
+ const isMerged = p => ["merged","archived","dormant"].includes((p.status||"").toLowerCase());
+ const list = STATE.projects.filter(p=>!isMerged(p)).map(p=>{
+  const y1=Number(p.y1||p.revenue_y1||0);
+  const y2=Number(p.y2||p.revenue_y2||0);
+  const y3=Number(p.y3||p.revenue_y3||0);
+  return {...p,_y1:y1,_y2:y2,_y3:y3,_total:y1+y2+y3};
+ }).sort((a,b)=>b._total-a._total);
+ const t1=list.reduce((s,p)=>s+p._y1,0);
+ const t2=list.reduce((s,p)=>s+p._y2,0);
+ const t3=list.reduce((s,p)=>s+p._y3,0);
+ const wrap=el("div",{style:"padding:20px;display:grid;gap:14px"});
+ const cards=el("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"});
+ const fmt=n=>"$"+(n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(1)+"k":n.toFixed(0));
+ const card=(label,val,sub)=>{const c=el("div",{class:"fcard"});c.appendChild(el("div",{class:"fcard-label"},label));c.appendChild(el("div",{class:"fcard-val"},val));if(sub)c.appendChild(el("div",{class:"fcard-sub"},sub));return c};
+ cards.appendChild(card("Year 1 projected",fmt(t1), list.length+" projects"));
+ cards.appendChild(card("Year 2 projected",fmt(t2),""));
+ cards.appendChild(card("Year 3 projected",fmt(t3),""));
+ cards.appendChild(card("3-year total",fmt(t1+t2+t3),""));
+ wrap.appendChild(cards);
+ wrap.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:10px"},"Top revenue projects (by 3-year total). Click a row for full detail."));
+ const tbl=el("div",{style:"display:grid;gap:4px"});
+ list.forEach(p=>{
+  if(p._total===0)return;
+  const row=el("div",{style:"display:grid;grid-template-columns:1fr 80px 80px 80px 90px 90px;gap:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;align-items:center"});
+  row.addEventListener("click",()=>openModal(p));
+  const left=el("div");
+  left.appendChild(el("div",{style:"font-weight:600"},p.name||"\u2014"));
+  if(p.url)left.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:2px"},p.url));
+  row.appendChild(left);
+  row.appendChild(el("div",{style:"text-align:right;color:var(--muted)"},fmt(p._y1)));
+  row.appendChild(el("div",{style:"text-align:right;color:var(--muted)"},fmt(p._y2)));
+  row.appendChild(el("div",{style:"text-align:right;color:var(--muted)"},fmt(p._y3)));
+  row.appendChild(el("div",{style:"color:var(--accent);font-weight:600;text-align:right"},fmt(p._total)));
+  row.appendChild(el("span",{class:"badge "+(p.status||"").toLowerCase(),style:"text-align:center"},p.status||"\u2014"));
+  tbl.appendChild(row);
+ });
+ // header row
+ const hdr=el("div",{style:"display:grid;grid-template-columns:1fr 80px 80px 80px 90px 90px;gap:10px;padding:6px 12px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px"});
+ ["Project","Y1","Y2","Y3","3yr total","Status"].forEach((h,i)=>hdr.appendChild(el("div",{style:i>0&&i<5?"text-align:right":""},h)));
+ wrap.appendChild(hdr);
+ wrap.appendChild(tbl);
+ m.appendChild(wrap);return m;
+}
 function renderSystem(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"System"));m.appendChild(top);
  const wrap=el("div",{style:"padding:20px;display:grid;gap:10px"});
@@ -504,6 +551,26 @@ export default {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
     if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.2.0',mode:'asgard-hub-recent-tools'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/api/projects'){
+      try {
+        const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+          body: JSON.stringify({ sql }),
+        });
+        const d = await r.json();
+        if (!d.success) return Response.json({ projects:[], error: d.errors }, { headers:{...CORS,...NOCACHE} });
+        // Format cost as a string for tile display ($1.58 -> "$1.58/mo")
+        const projects = (d.result?.[0]?.results || []).map(p => ({
+          ...p,
+          cost: p.cost > 0 ? '$'+p.cost.toFixed(2)+'/mo' : (p.cost === 0 ? '' : p.cost),
+        }));
+        return Response.json({ projects }, { headers:{...CORS,...NOCACHE} });
+      } catch(e) {
+        return Response.json({ error:'D1 query failed', detail: String(e).substring(0,300) }, { status:500, headers:{...CORS,...NOCACHE} });
+      }
+    }
     if(url.pathname==='/api/chat'&&request.method==='POST'){
       // Server-side proxy to dodge browser CORS issues with asgard-ai
       const pin = request.headers.get('X-Pin') || '';
@@ -543,6 +610,21 @@ export default {
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path to file in repo' } }, required:['path'] } },
           { name:'write_file', description:'Write/overwrite a file in the project repo and commit. Use after the user confirms a change.',
             input_schema:{ type:'object', properties:{ path:{ type:'string' }, content:{ type:'string' }, message:{ type:'string', description:'Commit message' } }, required:['path','content','message'] } },
+          { name:'update_project_metadata', description:"Update this project metadata in the Asgard D1 products table. Use to fix URL, status, dates, costs, revenue projections, descriptions. Auto-stamps last_updated.",
+            input_schema:{ type:'object', properties:{
+              live_url:{type:'string'},
+              github_url:{type:'string'},
+              status:{type:'string',description:'live | active | dev | building | idea | merged | archived | dormant'},
+              description:{type:'string'},
+              cost_monthly:{type:'number'},
+              cost_notes:{type:'string'},
+              revenue_y1:{type:'number'},
+              revenue_y2:{type:'number'},
+              revenue_y3:{type:'number'},
+              next_action:{type:'string'},
+              progress_pct:{type:'number'},
+              notes:{type:'string'},
+            }, required:[] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
@@ -565,6 +647,26 @@ export default {
             if (!d.content) return { error:'No content (might be a directory)' };
             const decoded = atob(d.content.replace(/\n/g,''));
             return { path:p, sha:d.sha, content: decoded.length>40000 ? decoded.substring(0,40000)+String.fromCharCode(10)+"[truncated]" : decoded };
+          }
+          if (name === 'update_project_metadata') {
+            if (!project || !project.id) return { error:'No project id; cannot update metadata.' };
+            const allowed = ['live_url','github_url','status','description','cost_monthly','cost_notes','revenue_y1','revenue_y2','revenue_y3','next_action','progress_pct','notes'];
+            const sets = []; const params = [];
+            for (const k of allowed) {
+              if (input[k] !== undefined) { sets.push(k+' = ?'); params.push(input[k]); }
+            }
+            if (sets.length === 0) return { error:'No fields to update' };
+            sets.push("last_updated = datetime('now')");
+            params.push(project.id);
+            const sql = "UPDATE products SET "+sets.join(', ')+" WHERE id = ?";
+            const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+              method:'POST',
+              headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+              body: JSON.stringify({ sql, params }),
+            });
+            const d = await r.json();
+            if (!d.success) return { error:'D1 update failed', detail: JSON.stringify(d.errors||[]).substring(0,300) };
+            return { ok:true, updated_fields: Object.keys(input), changes: d.result?.[0]?.meta?.changes };
           }
           if (name === 'write_file') {
             const p = (input.path||'').replace(/^\//,'');
