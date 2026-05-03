@@ -70,9 +70,10 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Security
-- AGENT_PIN (fleet workers): `JilSS1zLn3Rl7mWrM6fOJc69` (rotated 2026-05-01)
+- **falkor.luckdragon.io login (Paddy):** `2967` — POSTed to falkor-push `/user/verify`
+- AGENT_PIN (fleet workers, X-Pin header for inter-worker calls): `JilSS1zLn3Rl7mWrM6fOJc69` (rotated 2026-05-01)
 - VAULT_PIN (asgard-vault): `535554` — confirmed active 2026-05-03
-- Dashboard PIN (falkor-dashboard only): `luckdragon`
+- falkor-dashboard worker PIN (separate from main UI): `luckdragon`
 - Vault: `GET https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: 535554`
 - See `reference_falkor_security.md` in Claude auto-memory for full breakdown
 
@@ -91,5 +92,4 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ## Known drift (things to clean up)
 1. **Cowork project instructions** still auto-fetch the old `asgard-source/docs/HANDOVER.md`. To update: in Cowork, open this project's settings and replace the URL with:
    `https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md`
-2. Versioning across falkor-agent has gone non-linear (Phase 77 source = `version: '2.9.0'`, Phase 81 commit message claims "v1.9.1" but `/version` still reports "2.9.0"). Pick a scheme and stick to it on the next phase bump.
-3. asgard-ai source lives in `asgard-source/workers/asgard-ai.js` (multipa
+2. Versioning across falkor-agent has gone non-linear (Phase 77 source = `version: '2.9.0'`, Phase 81 commit message claims "v1.9.1" but `/version` still repor
