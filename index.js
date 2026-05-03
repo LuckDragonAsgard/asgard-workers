@@ -1,3 +1,6 @@
+--cbc90a3a1fe6b2ee4ffed10396145dd9d8c509c2bf9d2a79a4b301359389
+Content-Disposition: form-data; name="worker.js"
+
 const PUSH_URL = 'https://falkor-push.luckdragon.io';
 
 const JSON_MANIFEST = JSON.stringify({
@@ -22,7 +25,7 @@ const JSON_MANIFEST = JSON.stringify({
 });
 
 const SW_CODE = `
-const CACHE = 'falkor-v9.18.0';
+const CACHE = 'falkor-v9.20.0';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -361,6 +364,34 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 /* ── Connection banner ── */
 .conn-banner{text-align:center;padding:6px;font-size:12px;background:rgba(245,158,11,.12);color:var(--warning);border-bottom:1px solid rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;gap:6px;animation:pulse-banner 2s infinite}
 @keyframes pulse-banner{0%,100%{opacity:.8}50%{opacity:1}}
+
+/* ── Home Panel ── */
+.home-panel{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.home-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.home-greeting{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.home-ts{font-size:11px;color:var(--muted)}
+.home-refresh{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:4px;border-radius:6px;line-height:1;transition:color .15s}
+.home-refresh:hover{color:var(--accent2)}
+.hcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s,transform .1s}
+.hcard:hover{border-color:var(--accent);transform:translateY(-1px)}
+.hcard-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.hcard-main{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:4px}
+.hcard-sub{font-size:13px;color:var(--muted);line-height:1.4}
+.hcard-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.hcard-pill{font-size:12px;padding:3px 9px;border-radius:20px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);color:var(--accent2);font-weight:600;white-space:nowrap;cursor:pointer}
+.hcard-pill.pe-ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25);color:#4ade80}
+.hcard-pill.pe-no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#f87171}
+.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.home-grid{grid-template-columns:1fr}}
+.hcard-team-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.hcard-team-row:last-child{border-bottom:none}
+.hcard-team-row .pos{color:var(--muted);font-size:12px;width:20px;flex-shrink:0}
+.hcard-team-row .team{flex:1;font-weight:500}
+.hcard-team-row .pts{color:var(--muted);font-size:12px}
+.hcard-team-row.highlight{color:var(--accent2)}
+.hcard-team-row.highlight .pts{color:var(--accent2)}
+.home-skeleton{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.9}}
 </style>
 </head>
 <body>
@@ -599,34 +630,6 @@ function SettingsPanel({ onClose, theme, onThemeToggle, voiceEnabled, onVoiceTog
   );
 }
 
-
-/* ── Home Panel ── */
-.home-panel{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.home-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-.home-greeting{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.home-ts{font-size:11px;color:var(--muted)}
-.home-refresh{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;padding:4px;border-radius:6px;line-height:1;transition:color .15s}
-.home-refresh:hover{color:var(--accent2)}
-.hcard{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s,transform .1s}
-.hcard:hover{border-color:var(--accent);transform:translateY(-1px)}
-.hcard-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-.hcard-main{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:4px}
-.hcard-sub{font-size:13px;color:var(--muted);line-height:1.4}
-.hcard-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.hcard-pill{font-size:12px;padding:3px 9px;border-radius:20px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);color:var(--accent2);font-weight:600;white-space:nowrap;cursor:pointer}
-.hcard-pill.pe-ok{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25);color:#4ade80}
-.hcard-pill.pe-no{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#f87171}
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:480px){.home-grid{grid-template-columns:1fr}}
-.hcard-team-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
-.hcard-team-row:last-child{border-bottom:none}
-.hcard-team-row .pos{color:var(--muted);font-size:12px;width:20px;flex-shrink:0}
-.hcard-team-row .team{flex:1;font-weight:500}
-.hcard-team-row .pts{color:var(--muted);font-size:12px}
-.hcard-team-row.highlight{color:var(--accent2)}
-.hcard-team-row.highlight .pts{color:var(--accent2)}
-.home-skeleton{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;animation:shimmer 1.5s infinite}
-@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.9}}
 
 
 // ─── HomePanel ────────────────────────────────────────────────────────────────
@@ -2867,7 +2870,7 @@ function App() {
         {wsState === 'connecting' && <div className="conn-banner">⚡ Connecting to Falkor…</div>}
         {wsState === 'disconnected' && <div className="conn-banner" style={{background:'rgba(239,68,68,.1)',color:'var(--danger)',borderColor:'rgba(239,68,68,.2)'}}>⚠️ Disconnected — reconnecting…</div>}
 
-        <div className="topbar"><button id="install-btn" onclick="installApp()" title="Install Falkor" style="display:none;align-items:center;gap:6px;background:#d97757;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 5v6m0 0l-3-3m3 3l3-3M7 17h10"/></svg>Install</button>
+        <div className="topbar"><button id="install-btn" onClick={()=>installApp()} title="Install Falkor" style={{display:'none',alignItems:'center',gap:'6px',background:'#d97757',color:'#fff',border:'none',borderRadius:'8px',padding:'6px 12px',fontSize:'13px',fontWeight:600,cursor:'pointer'}}><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2zm0 5v6m0 0l-3-3m3 3l3-3M7 17h10"/></svg>Install</button>
           <button className="icon-btn" onClick={() => setSidebarOpen(true)}>☰</button>
           <span className="topbar-title">{activeConvo?.title || 'Falkor'}</span>
 
@@ -3094,3 +3097,5 @@ function installApp(){if(_deferredInstall){_deferredInstall.prompt();_deferredIn
   }
 };
 
+
+--cbc90a3a1fe6b2ee4ffed10396145dd9d8c509c2bf9d2a79a4b301359389--
