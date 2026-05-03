@@ -24,7 +24,7 @@ Claude auto-memory: project_falkor.md (full phase history + endpoints).
 | falkor-school | falkor-school.luckdragon.io | v1.5.0 |
 | falkor-sport | falkor-sport.luckdragon.io | v1.6.0 |
 | falkor-telegram | falkor-telegram.luckdragon.io | v1.7.0 |
-| asgard-ai | asgard-ai.luckdragon.io | v6.4.0 *(memory claims v6.5.0 — Phase 80 image-gen rebuild not fully deployed; needs reconciliation)* |
+| asgard-ai | asgard-ai.luckdragon.io | v6.5.0 (deployed 2026-05-04, deployment_id 9de28641d9c84a3fa47a82466c55c116) |
 | falkor-brain | falkor-brain.luckdragon.io | v1.0.0 |
 | falkor-web | falkor-web.luckdragon.io | v1.2.0 |
 | falkor-code | falkor-code.luckdragon.io | v1.4.0 |
@@ -89,7 +89,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Known drift (things to clean up)
-1. **asgard-ai:** live v6.4.0, memory + Phase 80 claim v6.5.0. Either redeploy v6.5.0 or correct memory.
-2. **Old `asgard-source/docs/HANDOVER.md`:** still being auto-fetched by Cowork project instructions. Update project instructions to point at THIS file:
+1. **Cowork project instructions** still auto-fetch the old `asgard-source/docs/HANDOVER.md`. To update: in Cowork, open this project's settings and replace the URL with:
    `https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md`
-3. Versioning across falkor-agent has gone non-linear (Phase 77 = "v2.9.0", Phase 81 commit message claims "v1.9.1" but `/version` still reports "2.9.0"). Pick a scheme and stick to it.
+2. Versioning across falkor-agent has gone non-linear (Phase 77 source = `version: '2.9.0'`, Phase 81 commit message claims "v1.9.1" but `/version` still reports "2.9.0"). Pick a scheme and stick to it on the next phase bump.
+3. asgard-ai source lives in `asgard-source/workers/asgard-ai.js` (multipa
