@@ -10,14 +10,17 @@ GitHub source of truth: `LuckDragonAsgard/asgard-workers` — falkor-tools.js (t
 
 ## Live now at falkor.luckdragon.io
 
-Worker: **falkor-tools v2.2.0** — Asgard-style project hub.
+Worker: **falkor-tools v2.3.0** — Asgard-style project hub WITH agentic chat that can read & edit project repos.
 
 Six tabs in the sidebar:
 - **📋 Projects** — 48 tile grid; search, filter by category/status, sort by Priority/Cost/Name/Updated/Status. Default sort = priority (income_priority).
 - **🕒 Recent** — last 30 projects sorted by last_updated.
 - **💰 Finance** — totals (total spend, monthly recurring, avg per project) + per-project cost table.
 - **🛠 Tools** — direct links: CF Dashboard, Workers list, DNS, AI Gateway, GitHub repos, Stripe, Vercel, Supabase, Drive, Asgard Vault, Falkor APIs.
-- **💬 Chat** — always visible right sidebar; sends through `/api/chat` proxy → asgard-ai (groq-fast). "Chat about this" on any project pre-loads project context (URL/GitHub/tech/desc/features) so AI answers are scoped.
+- **💬 Chat** — always visible right sidebar.
+  - **General chat** (no project selected) → `/api/chat` proxy → asgard-ai (groq-fast, fast).
+  - **Project-scoped chat** ("Chat about this" on any tile) → `/api/agent-chat` → **Anthropic Claude Haiku 4.5 with tools**: `list_files`, `read_file`, `write_file` against the project's GitHub repo. The AI can actually browse the repo, read files, and commit edits. Up to 8 tool-use iterations per turn. Tool outputs surface in the chat as `[Listed /docs · Read README.md · Edited foo.md (commit a1b2c3d)]`.
+  - On most projects, GitHub commits auto-deploy via GitHub Actions / CF Pages, so an AI edit ships to production.
 - **⚙ System** — live worker fleet health (14 workers).
 
 Every project tile → modal with **🌐 Open live · 📦 GitHub · ✏️ Edit code (github.dev) · 💬 Chat about this** plus all metadata (URL, GitHub, Domain, Tech, Status, Priority, Cost, Cost notes, Progress %, Y1/Y2/Y3, Scale, Detail, Updated, Next, Notes, Features).
@@ -59,13 +62,6 @@ Every project tile → modal with **🌐 Open live · 📦 GitHub · ✏️ Edit
 - Source of truth = GitHub. Memory in Claude is just an index/aide-memoire.
 
 ## Next-up (Jarvis features when ready)
-- Per-project CRUD in the modal (POST/PUT to dashboard API)
+- Per-project CRUD in the modal (POST/PUT to dashboard API to add/edit/delete projects)
 - Embed the Cavalier mascot images
-- Voice input on chat
-- Code editor inline (Monaco) so editing happens in-hub
-- Per-project AI agent that can actually deploy/push code (vs just chat about it)
-
-## Known drift / housekeeping
-- `asgard-ai` browser-side returns 503 on direct fetch. Worked around with `/api/chat` proxy. Might be CF bot protection on certain origins. Worth investigating later but not blocking.
-- Old Cowork project instructions still auto-fetch `asgard-source/docs/HANDOVER.md` (the legacy Mona-era doc). Update them in Cowork settings to point at:  
-  `https://ra
+- Voice input
