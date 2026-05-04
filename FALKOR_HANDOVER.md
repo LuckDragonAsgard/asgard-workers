@@ -162,10 +162,11 @@ Public product demo ladder (also `ssp-portal`):
 
 24 WPS runners total. Bib numbers confirmed against /wd26 spectator page (source of truth — embedded R{} dictionary).
 
-**Physical bibs status (2026-05-04):** Paddy does NOT have physical bibs printed. Solved Mon 4 May with print-and-pin PDFs:
-- `WD26/WD26_bibs.pdf` (Drive, Luck Dragon 2.0/WD26) — 192 numbered tear-off cards, 4/A4, school-coloured stripe, name + race printed.
-- `WD26/WD26_roster.pdf` — finish-line marshal reference, 1 section per race.
-- Workflow Thursday morning: cut bibs → safety-pin/tape on at warm-up (~9am) → CT marshal mode types bib as runner finishes → /wd26 renders name from embedded R{} dictionary.
+**Physical bibs status (2026-05-04):** Paddy does NOT have physical bibs printed. Solved Mon 4 May with print-and-pin PDFs in this repo (`wd26/`):
+- [`wd26/WD26_bibs.pdf`](wd26/WD26_bibs.pdf) — 192 numbered tear-off cards, 4/A4, school-coloured stripe, name + race printed.
+- [`wd26/WD26_roster.pdf`](wd26/WD26_roster.pdf) — finish-line marshal reference, 1 section per race.
+- [`wd26/DRYRUN_TUESDAY.md`](wd26/DRYRUN_TUESDAY.md) — Tue 5 May dry-run plan with `WD26TEST` throwaway code.
+- Workflow Thursday morning: download/print → cut bibs → safety-pin/tape on at warm-up (~9am) → CT marshal mode types bib as runner finishes → /wd26 renders name from embedded R{} dictionary.
 - Sacred Heart bibs (13–16, 45–48, 77–80, 109–112, 141–144, 173–176) printed as "TBC"; if SH attends, write names on the day.
 
 ---
@@ -218,7 +219,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ## Recently shipped (2026-05-03 → 2026-05-04)
 
 **WD26 race-day prep (2026-05-04 afternoon):**
-- Generated print-and-pin bib PDF (`WD26_bibs.pdf`) + finish-line roster (`WD26_roster.pdf`) → `H:\My Drive\Luck Dragon 2.0\WD26\` (Drive folder). Resolves "no physical bibs" gap.
+- Generated print-and-pin bib PDF + finish-line roster + Tuesday dry-run plan → `LuckDragonAsgard/asgard-workers/wd26/` (GitHub, NOT Drive — Drive deprecated). Resolves "no physical bibs" gap.
 - Corrected 11 Boys WPS bib numbers: handover had 124–127, /wd26 has them at 125–128 (page is source of truth — bib 124 = Banjo Kane WNPS, *not* WPS).
 - Verified end-to-end live: /wd26 200, WS auto-connects to `wss://carnival-timing-ws.../ws/WD26`, ct-access `WPS-2026` validates as ssp/WPS, carnival-results D1 v1.2.0 ready (no WD26 row yet — clean).
 
