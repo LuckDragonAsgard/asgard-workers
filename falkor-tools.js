@@ -1176,6 +1176,22 @@ function renderHome(m){
  micBtn.addEventListener("mouseup",stop);micBtn.addEventListener("mouseleave",stop);
  micBtn.addEventListener("touchstart",e=>{e.preventDefault();micBtn.dispatchEvent(new Event("mousedown"))});micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
  const sendBtn=el("button",{class:"primary",type:"submit",style:"background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600"},"Send");
+ const upload=el("button",{type:"button",style:"background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;color:var(--muted);width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:14px",title:"Attach image"},"\ud83d\udcce");
+ const fileInp=el("input",{type:"file",accept:"image/*",style:"display:none"});
+ upload.appendChild(fileInp);
+ upload.addEventListener("click",e=>{if(e.target!==fileInp)fileInp.click();});
+ fileInp.addEventListener("change",async()=>{
+   const f=fileInp.files[0]; if(!f)return;
+   if(f.size>5*1024*1024){alert("Image too large (5MB max)");fileInp.value="";return;}
+   const b64=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
+   if(!STATE.pendingImages)STATE.pendingImages=[];
+   STATE.pendingImages.push({src:b64,name:f.name,type:f.type});
+   upload.textContent="\ud83d\udcce "+STATE.pendingImages.length;
+   upload.style.color="var(--accent)";
+   upload.style.borderColor="var(--accent)";
+   fileInp.value="";
+ });
+ form.appendChild(upload);
  form.appendChild(micBtn);form.appendChild(inp);form.appendChild(sendBtn);
 
  form.addEventListener("submit",async(e)=>{
