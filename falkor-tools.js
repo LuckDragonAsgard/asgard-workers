@@ -23,12 +23,13 @@ html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,'Se
   .sidebar .nav-item .icon{font-size:18px;width:auto;line-height:1.1}
   .sidebar .nav-item span:nth-child(2){display:block;font-size:9px;line-height:1.1;margin-top:2px;color:inherit;text-align:center}
   .sidebar .nav-item.active{background:var(--panel2);color:var(--accent)}
-  /* Hide less-used tabs on mobile — keep 6: Projects, Finance, Tools, Chat, Sport, System */
-  .sidebar > :nth-child(3){display:none !important} /* Guide */
-  .sidebar > :nth-child(4){display:none !important} /* Recent */
-  .sidebar > :nth-child(6){display:none !important} /* Revenue */
-  .sidebar > :nth-child(10){display:none !important} /* School */
-  .sidebar > :nth-child(11){display:none !important} /* KBT */
+  /* Mobile: keep Home, Projects, Chat, Sport, School, System (6) */
+  .sidebar > :nth-child(4){display:none !important} /* Guide */
+  .sidebar > :nth-child(5){display:none !important} /* Recent */
+  .sidebar > :nth-child(6){display:none !important} /* Finance */
+  .sidebar > :nth-child(7){display:none !important} /* Revenue */
+  .sidebar > :nth-child(8){display:none !important} /* Tools */
+  .sidebar > :nth-child(12){display:none !important} /* KBT */
   .main{grid-column:1;grid-row:1;min-height:0;padding-bottom:0}
   .topbar{padding:10px 12px}
   .controls{padding:10px 12px;gap:6px}
@@ -147,6 +148,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fk-md{width:48px;height:48px}
 .fk-sm{width:32px;height:32px}
 .fk-xs{width:24px;height:24px}
+@keyframes fk-pulse{0%,100%{opacity:.45}50%{opacity:1;transform:scale(1.08)}}
 </style></head>
 <body><div id="app"></div>
 <script>
@@ -156,7 +158,7 @@ const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const parseCost=c=>{if(!c)return 0;const m=String(c).match(/[0-9.]+/);return m?parseFloat(m[0]):0};
 
-const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"projects",chat:[],chatContext:null};
+const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:[],chatContext:null};
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
@@ -203,6 +205,7 @@ function renderSidebar(){
  brand.appendChild(el("div",{class:"brand-sub"},"Project hub \u00b7 luckdragon.io"));
  sb.appendChild(brand);
  const navItem=(id,icon,label)=>{const it=el("div",{class:"nav-item"+(STATE.view===id?" active":"")});it.appendChild(el("span",{style:"width:18px;text-align:center"},icon));it.appendChild(el("span",{},label));it.addEventListener("click",()=>{STATE.view=id;render()});return it};
+ sb.appendChild(navItem("home","\uD83C\uDFE0","Home"));
  sb.appendChild(navItem("projects","\uD83D\uDCCB","Projects"));
  sb.appendChild(navItem("guide","\u2728","Guide"));
  sb.appendChild(navItem("recent","\uD83D\uDD52","Recent"));
@@ -248,6 +251,7 @@ function renderSidebar(){
 
 function renderMain(){
  const m=el("div",{class:"main"});
+ if(STATE.view==="home")return renderHome(m);
  if(STATE.view==="projects")return renderProjects(m);
  if(STATE.view==="guide")return renderGuide(m);
  if(STATE.view==="recent")return renderRecent(m);
@@ -262,13 +266,105 @@ function renderMain(){
  return m;
 }
 
-function renderProjects(m){
+function renderHome(m){
+ const top=el("div",{class:"topbar"});
+ const userName=(STATE.user&&STATE.user.name)||"Paddy";
+ const hr=new Date().getHours();
+ const greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
+ top.appendChild(el("h1",{},greet+", "+userName));
+ m.appendChild(top);
+ const PIN=STATE.agentPin||"";
+ const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px"});
+
+ // Top: AI briefing — full width
+ const briefCard=el("div",{style:"background:linear-gradient(135deg,rgba(255,107,53,.12),rgba(168,85,247,.06));border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start"});
+ briefCard.appendChild(el("div",{class:"fk fk-explain fk-md",style:"flex:0 0 auto"}));
+ const briefBody=el("div",{style:"flex:1;font-size:14px;line-height:1.6"},"Loading today\u2019s briefing…");
+ briefCard.appendChild(briefBody);
+ wrap.appendChild(briefCard);
+ fetch("/api/briefing",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{briefBody.textContent=d.briefing||d.error||"(no briefing)"}).catch(()=>{briefBody.textContent="(briefing unavailable right now)"});
+
+ // Two-column grid for proactive cards
+ const grid=el("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px"});
+
+ // PE advisor card — quick today summary
+ const peC=el("div",{class:"fcard"});
+ peC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
+  el("div",{class:"fk fk-thumbsup fk-xs"}),
+  el("div",{class:"fcard-label",style:"flex:1"},"TODAY\u2019S PE OUTLOOK")
+ ));
+ const peBody=el("div",{style:"font-size:13px;line-height:1.5"},"Loading…");
+ peC.appendChild(peBody);
+ fetch("https://falkor-school.luckdragon.io/pe-advisor",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{
+  peBody.innerHTML="";
+  const rec=d.recommendation||"-";
+  const color=rec==="OUTDOOR"?"var(--green)":rec==="INDOOR"?"var(--red)":"var(--amber)";
+  peBody.appendChild(el("div",{style:"font-size:18px;font-weight:700;color:"+color+";margin-bottom:4px"},rec));
+  if(d.verdict)peBody.appendChild(el("div",{style:"color:var(--muted);font-size:12px;margin-bottom:6px"},d.verdict));
+  const c=d.current_conditions||{};
+  peBody.appendChild(el("div",{style:"font-size:11px;color:var(--muted)"},(c.temp||"-")+"\u00b0C \u00b7 "+(c.condition||"-")+" \u00b7 UV "+(c.uv||"-")));
+ }).catch(()=>peBody.textContent="unavailable");
+ grid.appendChild(peC);
+
+ // Pending project actions
+ const taskC=el("div",{class:"fcard"});
+ taskC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
+  el("div",{class:"fk fk-point fk-xs"}),
+  el("div",{class:"fcard-label",style:"flex:1"},"NEXT ACTIONS (TOP 5)")
+ ));
+ const taskBody=el("div",{style:"font-size:12px"},"Loading…");
+ taskC.appendChild(taskBody);
+ fetch("/api/projects").then(r=>r.json()).then(d=>{
+  taskBody.innerHTML="";
+  const projs=(d.projects||[]).filter(p=>p.next&&!["archived","merged","dormant"].includes((p.status||"").toLowerCase())).slice(0,5);
+  if(projs.length===0){taskBody.textContent="No pending actions logged.";return}
+  projs.forEach(p=>{
+   const r=el("div",{style:"padding:8px;background:var(--panel2);border-radius:6px;margin-bottom:4px;cursor:pointer"});
+   r.addEventListener("click",()=>openModal(p));
+   r.appendChild(el("div",{style:"font-weight:600;font-size:12px"},p.name||"-"));
+   r.appendChild(el("div",{style:"color:var(--muted);font-size:11px;margin-top:2px"},(p.next||"").substring(0,90)));
+   taskBody.appendChild(r);
+  });
+ }).catch(()=>taskBody.textContent="unavailable");
+ grid.appendChild(taskC);
+
+ // AFL spotlight: Essendon next game
+ const aflC=el("div",{class:"fcard"});
+ aflC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
+  el("div",{class:"fk fk-cheer fk-xs"}),
+  el("div",{class:"fcard-label",style:"flex:1"},"AFL")
+ ));
+ const aflBody=el("div",{style:"font-size:12px"},"Loading…");
+ aflC.appendChild(aflBody);
+ fetch("https://falkor-sport.luckdragon.io/afl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()).then(d=>{
+  aflBody.innerHTML="";
+  const ladder=Array.isArray(d)?d:(d.ladder||[]);
+  const ess=ladder.find(t=>(t.team||"").toLowerCase()==="essendon");
+  if(ess)aflBody.appendChild(el("div",{style:"font-weight:600;color:var(--accent);font-size:14px"},"Essendon: rank #"+ess.rank));
+  aflBody.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:4px"},"Top 4: "+ladder.slice(0,4).map(t=>t.team).join(", ")));
+ }).catch(()=>aflBody.textContent="unavailable");
+ grid.appendChild(aflC);
+
+ // Active live games / Tools shortcut
+ const linksC=el("div",{class:"fcard"});
+ linksC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
+  el("div",{class:"fk fk-wave fk-xs"}),
+  el("div",{class:"fcard-label",style:"flex:1"},"QUICK JUMPS")
+ ));
+ const lc=el("div",{style:"display:flex;flex-direction:column;gap:4px;font-size:13px"});
+ [["\uD83D\uDCCB All projects","projects"],["\uD83C\uDFC9 Sport","sport"],["\uD83C\uDFAF KBT host","kbt"],["\uD83C\uDFEB School","school"],["\uD83D\uDCB0 Finance","finance"],["\uD83D\uDCC8 Revenue","revenue"]].forEach(([label,view])=>{
+  const a=el("a",{href:"#",style:"padding:6px 10px;background:var(--panel2);border-radius:6px;color:var(--text);text-decoration:none"},label);
+  a.addEventListener("click",(e)=>{e.preventDefault();STATE.view=view;render()});
+  lc.appendChild(a);
+ });
+ linksC.appendChild(lc);
+ grid.appendChild(linksC);
+
+ wrap.appendChild(grid);
+ m.appendChild(wrap);return m;
+}function renderProjects(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Projects"));
- // Daily briefing card (lazy-loaded)
- const brief=el("div",{style:"padding:14px 20px;background:linear-gradient(135deg,rgba(255,107,53,0.1),rgba(168,85,247,0.05));border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;display:flex;gap:14px;align-items:flex-start"});
- brief.appendChild(el("div",{class:"fk fk-explain fk-sm",style:"flex:0 0 auto"}));
- const briefBody=el("div",{style:"flex:1;color:var(--text)"},"Loading briefing\u2026");
- brief.appendChild(briefBody);
+ 
  const total=STATE.projects.length;
  const live=STATE.projects.filter(p=>["live","active"].includes((p.status||"").toLowerCase())).length;
  const building=STATE.projects.filter(p=>["dev","building"].includes((p.status||"").toLowerCase())).length;
@@ -276,9 +372,7 @@ function renderProjects(m){
  const stats=el("div",{class:"stats"});
  [[total,"total"],[live,"live"],[building,"building"],[archived,"archived"]].forEach(([n,l])=>stats.appendChild(el("div",{class:"stat"},el("strong",{},String(n)),l)));
  top.appendChild(stats);m.appendChild(top);
- m.appendChild(brief);
- // Lazy-fetch the briefing
- fetch("/api/briefing",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json()).then(d=>{briefBody.textContent=d.briefing||d.error||"(no briefing)"}).catch(e=>{briefBody.textContent="(briefing unavailable)"});
+ 
  const ctrl=el("div",{class:"controls"});
  const search=el("input",{type:"text",placeholder:"Search projects\u2026",value:STATE.q});
  search.addEventListener("input",()=>{STATE.q=search.value;refreshGrid()});
@@ -438,7 +532,11 @@ function renderChatPane(){
  for(const m of STATE.chat){
    if(m.role==="assistant"){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
-    wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
+    let mascotClass="fk-smile";
+    if(m.pending) mascotClass="fk-think";
+    else if(m.resultMood==="success") mascotClass="fk-celebrate";
+    else if(m.resultMood==="error") mascotClass="fk-confused";
+    wrap.appendChild(el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"+(m.pending?";animation:fk-pulse 1.2s ease-in-out infinite":"")}));
     const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
     bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
     if(m.images&&m.images.length){
@@ -496,7 +594,10 @@ function renderChatPane(){
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
-  STATE.chat.push({role:"user",content:text});inp.value="";refreshChat();
+  STATE.chat.push({role:"user",content:text});
+  // Add a "thinking" placeholder while AI works
+  STATE.chat.push({role:"assistant",content:"…",pending:true});
+  inp.value="";refreshChat();
   btn.disabled=true;
   try{
    // Always route through agent-chat — has full toolset (web/D1/CF/browser/etc.)
@@ -533,7 +634,10 @@ function renderChatPane(){
     }
     return [];
    });
-   STATE.chat.push({role:"assistant",content:reply,images:images});
+   // Remove the pending placeholder, push real reply
+   if(STATE.chat.length && STATE.chat[STATE.chat.length-1].pending) STATE.chat.pop();
+   const hadErr = (d.tool_calls||[]).some(t => t.output?.error);
+   STATE.chat.push({role:"assistant",content:reply,images:images,resultMood: hadErr?"error":(d.tool_calls||[]).length>0?"success":"normal"});
    // Auto-speak if TTS enabled
    if(localStorage.getItem("falkor.tts")==="1" && reply){
     try{
@@ -559,7 +663,11 @@ function refreshChat(){
  for(const m of STATE.chat){
    if(m.role==="assistant"){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
-    wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
+    let mascotClass="fk-smile";
+    if(m.pending) mascotClass="fk-think";
+    else if(m.resultMood==="success") mascotClass="fk-celebrate";
+    else if(m.resultMood==="error") mascotClass="fk-confused";
+    wrap.appendChild(el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"+(m.pending?";animation:fk-pulse 1.2s ease-in-out infinite":"")}));
     const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
     bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
     if(m.images&&m.images.length){
@@ -816,22 +924,94 @@ function renderSport(m){
  const tabs=el("div",{style:"display:flex;gap:6px;flex-wrap:wrap"});
  const out=el("div",{id:"sport-out",style:"min-height:200px"});
  const PIN=STATE.agentPin||"";
- const fmt=(promise,format)=>{out.innerHTML='Loading\u2026';promise.then(d=>{out.innerHTML="";out.appendChild(format(d))}).catch(e=>{out.textContent="Error: "+e.message})};
- const ladderTable=(rows,cols)=>{const t=el("div",{style:"display:grid;gap:4px"});const hdr=el("div",{style:"display:grid;grid-template-columns:40px 1fr 60px 60px 60px 80px;gap:8px;padding:6px 12px;font-size:11px;color:var(--muted);text-transform:uppercase"});["#","Team","W","L","D","Pts %"].forEach(h=>hdr.appendChild(el("div",{},h)));t.appendChild(hdr);rows.forEach(r=>{const row=el("div",{style:"display:grid;grid-template-columns:40px 1fr 60px 60px 60px 80px;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px"});row.appendChild(el("div",{style:"color:var(--accent);font-weight:600"},String(r.rank||r.position||"")));row.appendChild(el("div",{style:"font-weight:600"},r.team||r.name||""));row.appendChild(el("div",{},String(r.wins||r.W||0)));row.appendChild(el("div",{},String(r.losses||r.L||0)));row.appendChild(el("div",{},String(r.draws||r.D||0)));row.appendChild(el("div",{},String(r.points||r.pts||0)+" \u00b7 "+String(r.percentage||r.pct||"-")));t.appendChild(row)});return t};
- const tab=(label,loader)=>{const b=el("button",{},label);b.addEventListener("click",async()=>{Array.from(tabs.children).forEach(c=>c.style.background="");b.style.background="var(--panel2)";loader()});return b};
+ const fmt=(promise,format)=>{out.innerHTML='';out.appendChild(el("div",{class:"fk fk-think fk-md",style:"margin:20px auto;display:block"}));promise.then(d=>{out.innerHTML="";out.appendChild(format(d))}).catch(e=>{out.textContent="Error: "+e.message})};
+ const ladderTable=(rows)=>{const t=el("div",{style:"display:grid;gap:4px"});const hdr=el("div",{style:"display:grid;grid-template-columns:40px 1fr 50px 50px 50px 90px;gap:8px;padding:6px 12px;font-size:11px;color:var(--muted);text-transform:uppercase"});["#","Team","W","L","D","Pts %"].forEach(h=>hdr.appendChild(el("div",{},h)));t.appendChild(hdr);rows.forEach(r=>{const row=el("div",{style:"display:grid;grid-template-columns:40px 1fr 50px 50px 50px 90px;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px"});row.appendChild(el("div",{style:"color:var(--accent);font-weight:600"},String(r.rank||r.position||"")));row.appendChild(el("div",{style:"font-weight:600"},r.team||r.name||""));row.appendChild(el("div",{},String(r.wins||r.W||0)));row.appendChild(el("div",{},String(r.losses||r.L||0)));row.appendChild(el("div",{},String(r.draws||r.D||0)));row.appendChild(el("div",{},String(r.points||r.pts||0)+" \u00b7 "+String(r.percentage||r.pct||"-")));t.appendChild(row)});return t};
+ const tipsView=(d)=>{
+  const c=el("div",{style:"display:grid;gap:10px"});
+  const games=d.games||d.fixtures||[];
+  if(games.length===0){c.appendChild(el("div",{style:"text-align:center;padding:30px;color:var(--muted)"},"No games to tip yet."));return c}
+  c.appendChild(el("div",{style:"font-size:12px;color:var(--muted)"},"Round "+(d.round||"?")+" \u00b7 "+games.length+" games"));
+  games.forEach(g=>{
+   const gr=el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px"});
+   gr.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-bottom:6px"},g.venue||g.start||""));
+   const row=el("div",{style:"display:grid;grid-template-columns:1fr 50px 1fr;gap:8px;align-items:center"});
+   const homeBtn=el("button",{style:"background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;cursor:pointer;font-weight:600"},g.homeTeam||g.home||"?");
+   const vs=el("div",{style:"text-align:center;color:var(--muted);font-size:11px"},"vs");
+   const awayBtn=el("button",{style:"background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;cursor:pointer;font-weight:600"},g.awayTeam||g.away||"?");
+   const submit=async(team)=>{[homeBtn,awayBtn].forEach(b=>b.style.background="var(--panel2)");(team===g.homeTeam?homeBtn:awayBtn).style.background="var(--accent)";try{await fetch("https://falkor-sport.luckdragon.io/afl/comp/tip?pin="+encodeURIComponent(PIN),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({player:STATE.user.name||"Paddy",season:2026,round:d.round,gameId:g.id||g.gameId,homeTeam:g.homeTeam||g.home,awayTeam:g.awayTeam||g.away,tip:team})})}catch(e){}};
+   homeBtn.addEventListener("click",()=>submit(g.homeTeam||g.home));
+   awayBtn.addEventListener("click",()=>submit(g.awayTeam||g.away));
+   row.appendChild(homeBtn);row.appendChild(vs);row.appendChild(awayBtn);
+   gr.appendChild(row);
+   c.appendChild(gr);
+  });
+  return c;
+ };
+ const tab=(label,loader)=>{const b=el("button",{},label);b.addEventListener("click",async()=>{Array.from(tabs.children).forEach(c=>{c.style.background="";c.style.borderColor="var(--border)"});b.style.background="var(--panel2)";b.style.borderColor="var(--accent)";loader()});return b};
  tabs.appendChild(tab("\uD83C\uDFC9 AFL Ladder",()=>fmt(fetch("https://falkor-sport.luckdragon.io/afl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>ladderTable(Array.isArray(d)?d:(d.ladder||[])))));
  tabs.appendChild(tab("\uD83C\uDFC8 NRL Ladder",()=>fmt(fetch("https://falkor-sport.luckdragon.io/nrl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>ladderTable(Array.isArray(d)?d:(d.ladder||[])))));
- tabs.appendChild(tab("\uD83C\uDFC7 Racing comp",()=>fmt(fetch("https://falkor-sport.luckdragon.io/racing/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>{const x=el("pre",{style:"white-space:pre-wrap;font-size:13px;background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);overflow:auto"});x.textContent=JSON.stringify(d,null,2);return x})));
- wrap.appendChild(tabs);wrap.appendChild(out);
- m.appendChild(wrap);
- // auto-load AFL by default
+ tabs.appendChild(tab("\uD83C\uDFAF AFL Tipping",()=>fmt(fetch("https://falkor-sport.luckdragon.io/afl/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),tipsView)));
+ tabs.appendChild(tab("\uD83C\uDFAF NRL Tipping",()=>fmt(fetch("https://falkor-sport.luckdragon.io/nrl/tipping?pin="+encodeURIComponent(PIN)).then(r=>r.json()),tipsView)));
+ tabs.appendChild(tab("\uD83C\uDFC7 Racing",()=>fmt(fetch("https://falkor-sport.luckdragon.io/racing/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>{const x=el("div");if(d.leaderboard&&Array.isArray(d.leaderboard)){x.appendChild(el("div",{style:"font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px"},"Leaderboard"));d.leaderboard.forEach((p,i)=>{const r=el("div",{style:"display:grid;grid-template-columns:30px 1fr 60px;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-size:13px"});r.appendChild(el("div",{style:"color:var(--accent);font-weight:600"},(i===0?"\uD83E\uDD47":i===1?"\uD83E\uDD48":i===2?"\uD83E\uDD49":"#"+(i+1))));r.appendChild(el("div",{style:"font-weight:600"},p.player||p.name||""));r.appendChild(el("div",{style:"text-align:right"},String(p.points||p.score||0)));x.appendChild(r)})}else{const pre=el("pre",{style:"white-space:pre-wrap;font-size:11px;background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);overflow:auto"});pre.textContent=JSON.stringify(d,null,2);x.appendChild(pre)}return x})));
+ wrap.appendChild(tabs);wrap.appendChild(out);m.appendChild(wrap);
  setTimeout(()=>{if(tabs.firstChild)tabs.firstChild.click()},100);
  return m;
 }
 function renderSchool(m){
- const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"School (PE / XC)"));m.appendChild(top);
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"School (PE / XC / Lessons)"));m.appendChild(top);
  const PIN=STATE.agentPin||"";
  const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px;max-width:900px"});
+
+ // Lesson plan generator
+ const lessonCard=el("div",{class:"fcard"});
+ lessonCard.appendChild(el("div",{class:"fcard-label"},"PE LESSON PLANNER (5-DAY)"));
+ const lf=el("div",{style:"display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px"});
+ const yrIn=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+ ["Mixed F-6","Foundation","1","2","3","4","5","6"].forEach(v=>yrIn.appendChild(el("option",{value:v},"Year "+v)));
+ const durIn=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+ [30,40,45,60].forEach(v=>durIn.appendChild(el("option",{value:String(v)},v+" min")));
+ durIn.value="45";
+ const themeIn=el("input",{type:"text",placeholder:"Theme (e.g. Athletics)",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+ const sizeIn=el("input",{type:"number",placeholder:"Class size",value:"25",min:"1",max:"60",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+ lf.appendChild(yrIn);lf.appendChild(durIn);lf.appendChild(themeIn);lf.appendChild(sizeIn);
+ lessonCard.appendChild(lf);
+ const planBtn=el("button",{class:"primary",style:"margin-top:10px"},"Generate week");
+ lessonCard.appendChild(planBtn);
+ const planOut=el("div",{style:"margin-top:12px"});
+ lessonCard.appendChild(planOut);
+ planBtn.addEventListener("click",async()=>{
+  planOut.innerHTML="";planOut.appendChild(el("div",{class:"fk fk-think fk-md",style:"margin:10px auto;display:block"}));
+  planOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating 5-day plan… (~30s)"));
+  planBtn.disabled=true;
+  try{
+   const r=await fetch("https://falkor-school.luckdragon.io/lesson-week",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({year_level:yrIn.value,duration:Number(durIn.value),theme:themeIn.value||null,class_size:Number(sizeIn.value)})});
+   const d=await r.json();
+   planOut.innerHTML="";
+   if(d.error){planOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+d.error));return}
+   if(d.weather_note)planOut.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-bottom:8px;background:var(--panel2);padding:6px 10px;border-radius:6px"},"☁ "+d.weather_note));
+   const days=d.days||d.lessons||[];
+   if(days.length===0){const pre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel2);padding:10px;border-radius:6px"});pre.textContent=d.plan||d.raw||JSON.stringify(d,null,2);planOut.appendChild(pre);return}
+   days.forEach((day,i)=>{
+    const dc=el("details",{style:"background:var(--panel2);border-radius:8px;padding:10px;margin-bottom:6px"});
+    const sm=el("summary",{style:"cursor:pointer;font-weight:600;font-size:13px"},"Day "+(i+1)+(day.focus?" — "+day.focus:""));
+    dc.appendChild(sm);
+    const body=el("div",{style:"margin-top:8px;font-size:12px;line-height:1.6"});
+    if(day.warm_up)body.appendChild(el("div",{},el("strong",{style:"color:var(--accent)"},"Warm-up: "),day.warm_up));
+    if(day.main_activity)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--accent)"},"Main: "),day.main_activity));
+    if(day.game)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--accent)"},"Game: "),day.game));
+    if(day.equipment)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--muted)"},"Equipment: "),Array.isArray(day.equipment)?day.equipment.join(", "):day.equipment));
+    if(day.curriculum)body.appendChild(el("div",{style:"margin-top:4px;font-size:11px;color:var(--muted)"},"📚 "+day.curriculum));
+    dc.appendChild(body);
+    planOut.appendChild(dc);
+   });
+   const cp=el("button",{style:"margin-top:8px;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer"},"Copy as text");
+   cp.addEventListener("click",()=>{navigator.clipboard.writeText(d.plan||d.raw||JSON.stringify(d,null,2));cp.textContent="Copied!"});
+   planOut.appendChild(cp);
+  }catch(e){planOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+e.message))}
+  planBtn.disabled=false;
+ });
+ wrap.appendChild(lessonCard);
+
  // PE advisor card
  const pe=el("div",{class:"fcard"});
  pe.appendChild(el("div",{class:"fcard-label"},"PE OUTDOOR ADVISOR"));
@@ -881,17 +1061,67 @@ function renderKBT(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"KBT Trivia"));m.appendChild(top);
  const PIN=STATE.agentPin||"";
  const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px;max-width:900px"});
- const card=el("div",{class:"fcard"});
- card.appendChild(el("div",{class:"fcard-label"},"GAME STATUS LOOKUP"));
- const row=el("div",{style:"display:flex;gap:8px;margin-top:8px"});
- const inp=el("input",{type:"text",placeholder:"Game code (e.g. ABC123)",style:"flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
- const btn=el("button",{class:"primary"},"Look up");
- row.appendChild(inp);row.appendChild(btn);card.appendChild(row);
- const body=el("div",{style:"margin-top:10px"});
- btn.addEventListener("click",()=>{body.textContent="Loading\u2026";fetch("https://falkor-kbt.luckdragon.io/game/"+encodeURIComponent(inp.value)+"/status",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{body.innerHTML="";const pre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel2);padding:10px;border-radius:6px"});pre.textContent=JSON.stringify(d,null,2);body.appendChild(pre);}).catch(e=>{body.textContent="Error: "+e.message})});
- card.appendChild(body);
- wrap.appendChild(card);
- wrap.appendChild(el("div",{style:"font-size:12px;color:var(--muted);text-align:center;margin-top:10px"},"More KBT controls (build pack, scoreboard, host panel) live in the falkor-kbt worker. Ask Falkor in chat to drive them."));
+
+ // === Build a question pack ===
+ const buildCard=el("div",{class:"fcard"});
+ buildCard.appendChild(el("div",{class:"fcard-label"},"BUILD A QUESTION PACK"));
+ const bf=el("div",{style:"display:grid;grid-template-columns:1fr 90px 90px;gap:8px;margin-top:8px"});
+ const themeIn=el("input",{type:"text",placeholder:"Theme (e.g. Aussie 90s pop, AFL legends)",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px"});
+ const roundsIn=el("input",{type:"number",placeholder:"Rounds",value:"4",min:"1",max:"8",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px"});
+ const qprIn=el("input",{type:"number",placeholder:"Q/round",value:"5",min:"3",max:"15",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px"});
+ bf.appendChild(themeIn);bf.appendChild(roundsIn);bf.appendChild(qprIn);
+ buildCard.appendChild(bf);
+ const buildBtn=el("button",{class:"primary",style:"margin-top:10px"},"Build pack");
+ buildCard.appendChild(buildBtn);
+ const buildOut=el("div",{style:"margin-top:12px;font-size:13px"});
+ buildCard.appendChild(buildOut);
+ buildBtn.addEventListener("click",async()=>{
+  const theme=themeIn.value.trim()||"general knowledge Australia";
+  buildOut.innerHTML="";buildOut.appendChild(el("div",{class:"fk fk-think fk-md",style:"margin:10px auto;display:block"}));
+  buildOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating "+roundsIn.value+" rounds × "+qprIn.value+" questions… (~30s)"));
+  buildBtn.disabled=true;
+  try{
+   const r=await fetch("https://falkor-kbt.luckdragon.io/build-pack",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({theme,rounds:Number(roundsIn.value),qpr:Number(qprIn.value)})});
+   const d=await r.json();
+   buildOut.innerHTML="";
+   if(d.error){buildOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+d.error));return}
+   const head=el("div",{style:"display:flex;align-items:baseline;gap:10px;margin-bottom:8px"});
+   head.appendChild(el("div",{style:"font-size:15px;font-weight:700"},theme));
+   if(d.suno_prompt)head.appendChild(el("div",{style:"font-size:11px;color:var(--muted)"},"🎵 Suno prompt available"));
+   buildOut.appendChild(head);
+   (d.rounds||d.pack?.rounds||[]).forEach((rnd,i)=>{
+    const rb=el("details",{style:"background:var(--panel2);border-radius:8px;padding:10px;margin-bottom:6px"});
+    const sm=el("summary",{style:"cursor:pointer;font-weight:600;font-size:13px"},"Round "+(i+1)+": "+(rnd.category||rnd.title||"?"));
+    rb.appendChild(sm);
+    (rnd.questions||[]).forEach((q,j)=>{
+     const qd=el("div",{style:"margin-top:8px;padding:8px;background:var(--panel);border-radius:6px;font-size:12px"});
+     qd.appendChild(el("div",{style:"font-weight:600"},(j+1)+". "+(q.q||q.question||"")));
+     qd.appendChild(el("div",{style:"color:var(--accent);margin-top:4px"},"Ans: "+(q.a||q.answer||"")));
+     if(q.fun_fact)qd.appendChild(el("div",{style:"color:var(--muted);margin-top:2px;font-style:italic"},"💡 "+q.fun_fact));
+     rb.appendChild(qd);
+    });
+    buildOut.appendChild(rb);
+   });
+   const copy=el("button",{style:"margin-top:8px;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer"},"Copy answer sheet");
+   copy.addEventListener("click",()=>{navigator.clipboard.writeText(JSON.stringify(d,null,2));copy.textContent="Copied!"});
+   buildOut.appendChild(copy);
+  }catch(e){buildOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+e.message))}
+  buildBtn.disabled=false;
+ });
+ wrap.appendChild(buildCard);
+
+ // === Live games list + host controls ===
+ const liveCard=el("div",{class:"fcard"});
+ liveCard.appendChild(el("div",{class:"fcard-label"},"LIVE GAMES"));
+ const liveBody=el("div",{style:"margin-top:8px;font-size:13px"},"Loading…");
+ liveCard.appendChild(liveBody);
+ const refresh=async()=>{liveBody.textContent="Loading…";try{const r=await fetch("https://falkor-kbt.luckdragon.io/game/list",{headers:{"X-Pin":PIN}});const d=await r.json();liveBody.innerHTML="";const games=d.games||(Array.isArray(d)?d:[]);if(games.length===0){liveBody.appendChild(el("div",{style:"color:var(--muted);font-size:12px;text-align:center;padding:20px"},"No live games. Use the build-pack form above to generate a quiz, then host it via the falkor-kbt API."));return}games.forEach(g=>{const gr=el("div",{style:"display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:10px;background:var(--panel2);border-radius:6px;margin-bottom:6px;align-items:center"});gr.appendChild(el("div",{},el("div",{style:"font-weight:600"},g.code||g.id||"?"),el("div",{style:"font-size:11px;color:var(--muted)"},g.theme||g.title||"")));gr.appendChild(el("span",{class:"badge "+(g.status||"").toLowerCase()},g.status||"?"));const view=el("a",{href:"https://falkor-kbt.luckdragon.io/scoreboard/"+(g.code||g.id),target:"_blank",style:"color:var(--accent);font-size:12px;text-decoration:none"},"📺 Scoreboard");gr.appendChild(view);liveBody.appendChild(gr)});}catch(e){liveBody.textContent="Error: "+e.message}};
+ const refreshBtn=el("button",{style:"margin-top:8px;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer"},"↻ Refresh");
+ refreshBtn.addEventListener("click",refresh);
+ liveCard.appendChild(refreshBtn);
+ wrap.appendChild(liveCard);
+ setTimeout(refresh,200);
+
  m.appendChild(wrap);return m;
 }
 function renderSystem(m){
@@ -929,7 +1159,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.2.0',mode:'asgard-hub-jarvis-voice'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.5.0',mode:'asgard-hub-home'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -1696,6 +1926,45 @@ upBtn.onclick=async()=>{
               params:["paddy","user",userMsg,projId,projName,null, "paddy","assistant", finalText || "(no text)", projId,projName, toolsUsed],
             }),
           });
+          // Auto-extract memorable facts every 5 turns (10 rows = 5 user+assistant pairs)
+          const cR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+            body: JSON.stringify({ sql:"SELECT COUNT(*) AS n FROM falkor_chat_history WHERE user_id='paddy'" }),
+          });
+          const cd = await cR.json();
+          const total = cd.result?.[0]?.results?.[0]?.n || 0;
+          if (total % 10 === 0 && total > 0) {
+            // Pull last 10 rows, ask Haiku to extract memorable facts
+            const lastR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+              method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+              body: JSON.stringify({ sql:"SELECT role, content FROM falkor_chat_history WHERE user_id='paddy' ORDER BY id DESC LIMIT 10" }),
+            });
+            const lastD = await lastR.json();
+            const transcript = (lastD.result?.[0]?.results || []).reverse().map(r => r.role+': '+r.content.substring(0,500)).join(String.fromCharCode(10));
+            const exReq = await fetch('https://api.anthropic.com/v1/messages', {
+              method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+              body: JSON.stringify({
+                model:'claude-haiku-4-5-20251001', max_tokens: 800,
+                system:'Extract 0-3 NEW memorable facts about Paddy or his platform from the transcript. Return JSON array of {category, fact, importance(1-10)}. Skip if nothing new. Do NOT save things you already know (login PINs, the no-Drive rule, no-hard-refresh, his style, his profile). Only NEW concrete facts. Output ONLY valid JSON array, no prose.',
+                messages:[{role:'user',content:'Recent conversation:'+String.fromCharCode(10)+transcript}],
+              }),
+            });
+            const exD = await exReq.json();
+            const exText = (exD.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
+            try {
+              const arr = JSON.parse(exText.replace(/^[^\[]*/,'').replace(/[^\]]*$/,''));
+              if (Array.isArray(arr)) {
+                for (const f of arr) {
+                  if (!f.fact) continue;
+                  await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                    method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                    body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)",
+                      params:["paddy", f.category||"auto-extracted", String(f.fact).substring(0,500), "auto-haiku-every-5-turns", Math.min(10, Math.max(1, f.importance||5))] }),
+                  });
+                }
+              }
+            } catch(e){}
+          }
         } catch(e){}
 
         return Response.json({
