@@ -1181,12 +1181,12 @@ function renderHome(m){
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
-  STATE.chat.push({role:"user",content:text});
+  STATE.chat.push({role:"user",content:text});if(STATE.pendingImages)STATE.pendingImages=[];const upBtn=document.querySelector(".chat-upload");if(upBtn){upBtn.textContent="\ud83d\udcce";upBtn.style.color="var(--muted)";}
   STATE.chat.push({role:"assistant",content:"…",pending:true});
   inp.value="";refreshChat();
   sendBtn.disabled=true;
   try{
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
    const live=STATE.chat[STATE.chat.length-1];
    if(live&&live.pending){live.pending=false;live.streaming=true;live.content=""}
@@ -1520,14 +1520,14 @@ function renderChatPane(){
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
-  STATE.chat.push({role:"user",content:text});
+  STATE.chat.push({role:"user",content:text});if(STATE.pendingImages)STATE.pendingImages=[];const upBtn=document.querySelector(".chat-upload");if(upBtn){upBtn.textContent="\ud83d\udcce";upBtn.style.color="var(--muted)";}
   // Add a "thinking" placeholder while AI works
   STATE.chat.push({role:"assistant",content:"…",pending:true});
   inp.value="";refreshChat();
   btn.disabled=true;
   try{
    // Streaming: route through agent-chat-stream — tokens arrive word-by-word
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});
    if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
    // Convert pending placeholder into live streaming bubble
    const live = STATE.chat[STATE.chat.length-1];
@@ -3348,6 +3348,7 @@ upBtn.onclick=async()=>{
       const userMsg = body.message || '';
       const project = body.project || null;
       const history = Array.isArray(body.history) ? body.history : [];
+      const userImages = Array.isArray(body.images) ? body.images : [];
       const enc = new TextEncoder();
       const stream = new ReadableStream({
         async start(controller) {
@@ -3377,7 +3378,7 @@ upBtn.onclick=async()=>{
               const hd = await hr.json();
               priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
             } catch(e){}
-            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies. CRITICAL: Never claim a tool failed based on prior chat history — always actually call the tool fresh. If a previous turn shows an error, that error may have been fixed since. ALWAYS try the tool before reporting an error to Paddy." + "\n\n=== ZERO-TOLERANCE PERSISTENCE RULES (NEVER VIOLATE) ===\n\nNEVER write to ephemeral/temp paths. Other Claude chats have repeatedly saved files to AppData, /tmp, /sessions, Local Settings — paths the user CANNOT ACCESS later. THIS IS THE MOST IMPORTANT RULE.\n\nALL persistence goes to one of these locations only:\n1. GitHub (LuckDragonAsgard/asgard-workers) — for code/configs — use write_file/edit_file/multi_edit\n2. Cloudflare D1 — for structured data — use run_d1_query\n3. CF KV (env.ASSETS) — for session state\n4. CF Vectorize via falkor-brain — for semantic memory\n5. User Drive (G:\\My Drive\\Luck Dragon\\) — ONLY when user explicitly asks for an Office file (docx/pptx/xlsx/pdf)\n\nNEVER ALLOWED: AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path.\n\nIf you need to remember anything across sessions, save to D1 falkor_memory or commit to GitHub. Period.\n\n=== FALKOR-TOOLS.JS CODEBASE RULES (CRITICAL — READ CAREFULLY) ===\n\nVARIABLES IN scope of fetch handler:\n- request (NOT req)\n- request.method (NOT method)\n- env.CF_ACCOUNT_ID, env.D1_DB_ID, env.CF_API_TOKEN, env.AGENT_PIN, env.ANTHROPIC_API_KEY, env.GITHUB_TOKEN, env.VAULT_PIN, env.VAULT_URL\n- env.ASSETS (KV binding)\n- url = new URL(request.url)\n- DO NOT USE: env.DB, env.ASGARD, env.AI, env.CF, defaultBranch — these don't exist\n\nD1 DATABASE PATTERN (use this exact shape):\n  const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {\n    method:'POST',\n    headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},\n    body: JSON.stringify({sql:'SELECT...', params:[a,b,c]}),\n  });\n  const d = await r.json();\n  const rows = d.result?.[0]?.results || [];\n\nENDPOINT PATTERN (copy this shape):\n  if(url.pathname==='/api/your/path'&&request.method==='POST'){\n    try {\n      const body = await request.json();\n      // ... logic ...\n      return Response.json({ok:true, ...}, {headers:{...CORS,...NOCACHE}});\n    } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }\n  }\n\nWORKFLOW for adding new endpoints:\n1. grep_file path=falkor-tools.js pattern=\"existing similar endpoint\" — find anchor\n2. read_file with start_line/end_line for context (15 lines)\n3. edit_file with full context as old_string (include 5+ surrounding lines for uniqueness)\n4. cf_deploy_worker name=falkor-tools\n5. verify_endpoint url=/api/your/path expected_field=ok — REAL VERIFICATION not just status code\n\nNEVER:\n- Use env.DB.prepare() — D1 client binding doesn't work, USE FETCH PATTERN\n- Use req or method — they're undefined\n- Run cf_deploy_worker without verifying with verify_endpoint after\n- Trust 522 errors — those mean infra issue, retry verify with delay\n- Skip verification — always confirm endpoint returns expected JSON\n\nALWAYS:\n- Use multi_edit to bundle related changes (atomic commit)\n- Include 5+ lines context in edit_file old_string to ensure uniqueness\n- After deploy, sleep 5s, then verify\n- If verify fails, READ the response, FIX the code, redeploy\n- Commit messages: describe WHAT and WHY (not 'edit_file via Falkor agent')\n=== END RULES ===\n\nFor deeper how-tos (adding sub-workers, DOs, integrations, troubleshooting common errors), read: https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch via web_fetch when stuck." + memBlock;
+            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies. CRITICAL: Never claim a tool failed based on prior chat history — always actually call the tool fresh. If a previous turn shows an error, that error may have been fixed since. ALWAYS try the tool before reporting an error to Paddy.\n\nYOU ARE THE CHAT UI. The chat interface Paddy is talking to you in is rendered by falkor-tools.js (this very codebase) and served from https://falkor.luckdragon.io. It is NOT Anthropic\'s Claude web UI — it is YOUR OWN UI that you self-edit. When Paddy asks for a change to the chat (image upload, voice, layout, anything), you CAN do it: edit_file falkor-tools.js → cf_deploy_worker name=falkor-tools → verify. Never tell Paddy you can\'t modify the chat — you absolutely can." + "\n\n=== ZERO-TOLERANCE PERSISTENCE RULES (NEVER VIOLATE) ===\n\nNEVER write to ephemeral/temp paths. Other Claude chats have repeatedly saved files to AppData, /tmp, /sessions, Local Settings — paths the user CANNOT ACCESS later. THIS IS THE MOST IMPORTANT RULE.\n\nALL persistence goes to one of these locations only:\n1. GitHub (LuckDragonAsgard/asgard-workers) — for code/configs — use write_file/edit_file/multi_edit\n2. Cloudflare D1 — for structured data — use run_d1_query\n3. CF KV (env.ASSETS) — for session state\n4. CF Vectorize via falkor-brain — for semantic memory\n5. User Drive (G:\\My Drive\\Luck Dragon\\) — ONLY when user explicitly asks for an Office file (docx/pptx/xlsx/pdf)\n\nNEVER ALLOWED: AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path.\n\nIf you need to remember anything across sessions, save to D1 falkor_memory or commit to GitHub. Period.\n\n=== FALKOR-TOOLS.JS CODEBASE RULES (CRITICAL — READ CAREFULLY) ===\n\nVARIABLES IN scope of fetch handler:\n- request (NOT req)\n- request.method (NOT method)\n- env.CF_ACCOUNT_ID, env.D1_DB_ID, env.CF_API_TOKEN, env.AGENT_PIN, env.ANTHROPIC_API_KEY, env.GITHUB_TOKEN, env.VAULT_PIN, env.VAULT_URL\n- env.ASSETS (KV binding)\n- url = new URL(request.url)\n- DO NOT USE: env.DB, env.ASGARD, env.AI, env.CF, defaultBranch — these don't exist\n\nD1 DATABASE PATTERN (use this exact shape):\n  const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {\n    method:'POST',\n    headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},\n    body: JSON.stringify({sql:'SELECT...', params:[a,b,c]}),\n  });\n  const d = await r.json();\n  const rows = d.result?.[0]?.results || [];\n\nENDPOINT PATTERN (copy this shape):\n  if(url.pathname==='/api/your/path'&&request.method==='POST'){\n    try {\n      const body = await request.json();\n      // ... logic ...\n      return Response.json({ok:true, ...}, {headers:{...CORS,...NOCACHE}});\n    } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }\n  }\n\nWORKFLOW for adding new endpoints:\n1. grep_file path=falkor-tools.js pattern=\"existing similar endpoint\" — find anchor\n2. read_file with start_line/end_line for context (15 lines)\n3. edit_file with full context as old_string (include 5+ surrounding lines for uniqueness)\n4. cf_deploy_worker name=falkor-tools\n5. verify_endpoint url=/api/your/path expected_field=ok — REAL VERIFICATION not just status code\n\nNEVER:\n- Use env.DB.prepare() — D1 client binding doesn't work, USE FETCH PATTERN\n- Use req or method — they're undefined\n- Run cf_deploy_worker without verifying with verify_endpoint after\n- Trust 522 errors — those mean infra issue, retry verify with delay\n- Skip verification — always confirm endpoint returns expected JSON\n\nALWAYS:\n- Use multi_edit to bundle related changes (atomic commit)\n- Include 5+ lines context in edit_file old_string to ensure uniqueness\n- After deploy, sleep 5s, then verify\n- If verify fails, READ the response, FIX the code, redeploy\n- Commit messages: describe WHAT and WHY (not 'edit_file via Falkor agent')\n=== END RULES ===\n\nFor deeper how-tos (adding sub-workers, DOs, integrations, troubleshooting common errors), read: https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch via web_fetch when stuck." + memBlock;
             if (project) {
               const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
               if (project.url) ctx.push('Live: '+project.url);
@@ -3387,7 +3388,14 @@ upBtn.onclick=async()=>{
               system += String.fromCharCode(10) + ctx.join(String.fromCharCode(10));
             }
             const tools = AGENT_TOOLS;  // shared with non-streaming
-            const messages = [...priorTurns, ...history, { role:'user', content: userMsg }];
+            const userContent = userImages.length ? [
+              ...userImages.map(im => ({
+                type: 'image',
+                source: { type: 'base64', media_type: (im.src||'').match(/^data:([^;]+);/)?.[1] || 'image/png', data: (im.src||'').split(',')[1] || '' }
+              })),
+              { type: 'text', text: userMsg }
+            ] : userMsg;
+            const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
             const toolResults = [];
             let iterations = 0;
             const maxIter = 15;
