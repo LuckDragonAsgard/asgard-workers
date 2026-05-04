@@ -375,6 +375,19 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                         if (p!==0 || b!==0 || br!==0) {
                           return { error: 'PRE-FLIGHT FAILED: inline JS is unbalanced (parens='+p+', braces='+b+', brackets='+br+'). Refusing to deploy a broken UI.', deploy_blocked: true };
                         }
+                        // Anti-dupe: catch duplicate Object.defineProperty(X, "Y") that throws TypeError at runtime
+                        const dpMatches = [...js.matchAll(/Object\.defineProperty\s*\(\s*([\w.]+)\s*,\s*["']([^"']+)["']/g)];
+                        const seen = new Map();
+                        for (const m of dpMatches) {
+                          const key = m[1]+':'+m[2];
+                          if (seen.has(key)) {
+                            return { error: 'PRE-FLIGHT FAILED: duplicate Object.defineProperty for '+key+' would throw TypeError. Refusing to deploy.', deploy_blocked: true };
+                          }
+                          seen.set(key, true);
+                        }
+                        // Anti-orphan: catch ");" that follow a function/arrow declaration close (common in incomplete edits)
+                        // Keep this lightweight — just look for the most common pattern: `);` at start of line following `}`
+                        // Skip — covered by balance check
                       }
                     }
                   }
