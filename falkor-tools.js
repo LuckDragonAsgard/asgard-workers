@@ -16,12 +16,20 @@ html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,'Se
 .layout{display:grid;grid-template-columns:220px 1fr 360px;height:100vh;overflow:hidden}
 @media(max-width:1100px){.layout{grid-template-columns:200px 1fr}.chat-pane{display:none}}
 @media(max-width:720px){
-  .layout{grid-template-columns:1fr;grid-template-rows:1fr 60px;height:100dvh}
-  .sidebar{grid-column:1;grid-row:2;flex-direction:row;border-right:none;border-top:1px solid var(--border);padding:6px 4px;gap:2px;overflow-x:auto;overflow-y:hidden}
-  .sidebar .brand,.sidebar .sidebar-foot,.sidebar .nav-item span:nth-child(2){display:none}
-  .sidebar .nav-item{flex:1;justify-content:center;padding:10px 8px;min-width:48px;font-size:18px}
-  .sidebar .nav-item .icon{font-size:20px}
-  .main{grid-column:1;grid-row:1;min-height:0}
+  .layout{grid-template-columns:1fr;grid-template-rows:1fr 56px;height:100vh;height:100dvh}
+  .sidebar{grid-column:1;grid-row:2;flex-direction:row;border-right:none;border-top:1px solid var(--border);padding:0;gap:0;overflow:hidden;justify-content:space-around;align-items:center}
+  .sidebar .brand,.sidebar .sidebar-foot{display:none}
+  .sidebar .nav-item{flex:1;flex-direction:column;justify-content:center;align-items:center;padding:6px 2px;min-width:0;font-size:9px;gap:0;border-radius:0;border:none;height:56px}
+  .sidebar .nav-item .icon{font-size:18px;width:auto;line-height:1.1}
+  .sidebar .nav-item span:nth-child(2){display:block;font-size:9px;line-height:1.1;margin-top:2px;color:inherit;text-align:center}
+  .sidebar .nav-item.active{background:var(--panel2);color:var(--accent)}
+  /* Hide less-used tabs on mobile — keep 6: Projects, Finance, Tools, Chat, Sport, System */
+  .sidebar > :nth-child(3){display:none !important} /* Guide */
+  .sidebar > :nth-child(4){display:none !important} /* Recent */
+  .sidebar > :nth-child(6){display:none !important} /* Revenue */
+  .sidebar > :nth-child(10){display:none !important} /* School */
+  .sidebar > :nth-child(11){display:none !important} /* KBT */
+  .main{grid-column:1;grid-row:1;min-height:0;padding-bottom:0}
   .topbar{padding:10px 12px}
   .controls{padding:10px 12px;gap:6px}
   .controls input{flex:1 1 100%;min-width:0}
@@ -213,6 +221,25 @@ function renderSidebar(){
  const foot=el("div",{class:"sidebar-foot"});
  const pill=el("div",{class:"user-pill"});
  pill.appendChild(el("span",{},"\uD83D\uDC64 "+(STATE.user&&STATE.user.name||"Paddy")));
+ // Push notification toggle
+ const pushBtn=el("button",{title:"Toggle push notifications",style:"background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0 6px"},localStorage.getItem("falkor.push")==="on"?"\uD83D\uDD14":"\uD83D\uDD15");
+ pushBtn.addEventListener("click",async(e)=>{
+  e.stopPropagation();
+  const on=localStorage.getItem("falkor.push")==="on";
+  if(!on){
+   if(!("serviceWorker" in navigator)){alert("Push not supported");return}
+   try{
+    const reg=await navigator.serviceWorker.register("data:text/javascript,").catch(()=>navigator.serviceWorker.ready);
+    const v=await fetch("/api/push/vapid",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json());
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:v.publicKey||v.key});
+    await fetch("/api/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({subscription:sub})});
+    localStorage.setItem("falkor.push","on");pushBtn.textContent="\uD83D\uDD14";
+   }catch(err){alert("Push subscribe failed: "+err.message)}
+  } else {
+   localStorage.setItem("falkor.push","off");pushBtn.textContent="\uD83D\uDD15";
+  }
+ });
+ pill.appendChild(pushBtn);
  const out=el("button",{},"Sign out");
  out.addEventListener("click",()=>{clearAuth();STATE.user=null;STATE.agentPin=null;render()});
  pill.appendChild(out);foot.appendChild(pill);sb.appendChild(foot);
@@ -237,6 +264,11 @@ function renderMain(){
 
 function renderProjects(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Projects"));
+ // Daily briefing card (lazy-loaded)
+ const brief=el("div",{style:"padding:14px 20px;background:linear-gradient(135deg,rgba(255,107,53,0.1),rgba(168,85,247,0.05));border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;display:flex;gap:14px;align-items:flex-start"});
+ brief.appendChild(el("div",{class:"fk fk-explain fk-sm",style:"flex:0 0 auto"}));
+ const briefBody=el("div",{style:"flex:1;color:var(--text)"},"Loading briefing\u2026");
+ brief.appendChild(briefBody);
  const total=STATE.projects.length;
  const live=STATE.projects.filter(p=>["live","active"].includes((p.status||"").toLowerCase())).length;
  const building=STATE.projects.filter(p=>["dev","building"].includes((p.status||"").toLowerCase())).length;
@@ -244,6 +276,9 @@ function renderProjects(m){
  const stats=el("div",{class:"stats"});
  [[total,"total"],[live,"live"],[building,"building"],[archived,"archived"]].forEach(([n,l])=>stats.appendChild(el("div",{class:"stat"},el("strong",{},String(n)),l)));
  top.appendChild(stats);m.appendChild(top);
+ m.appendChild(brief);
+ // Lazy-fetch the briefing
+ fetch("/api/briefing",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json()).then(d=>{briefBody.textContent=d.briefing||d.error||"(no briefing)"}).catch(e=>{briefBody.textContent="(briefing unavailable)"});
  const ctrl=el("div",{class:"controls"});
  const search=el("input",{type:"text",placeholder:"Search projects\u2026",value:STATE.q});
  search.addEventListener("input",()=>{STATE.q=search.value;refreshGrid()});
@@ -377,6 +412,10 @@ function renderChatPane(){
  const p=el("div",{class:"chat-pane"});
  const head=el("div",{class:"chat-head"});
  head.appendChild(el("span",{},"\uD83D\uDCAC Chat"));
+ // Speaker toggle (TTS on/off)
+ const ttsToggle=el("button",{title:"Toggle voice replies",style:"background:none;border:1px solid var(--border);color:"+(localStorage.getItem("falkor.tts")==="1"?"var(--accent)":"var(--muted)")+";cursor:pointer;font-size:14px;padding:2px 8px;border-radius:6px;margin-left:6px"},localStorage.getItem("falkor.tts")==="1"?"\uD83D\uDD0A":"\uD83D\uDD07");
+ ttsToggle.addEventListener("click",()=>{const on=localStorage.getItem("falkor.tts")==="1";localStorage.setItem("falkor.tts",on?"0":"1");ttsToggle.style.color=on?"var(--muted)":"var(--accent)";ttsToggle.textContent=on?"\uD83D\uDD07":"\uD83D\uDD0A"});
+ head.appendChild(ttsToggle);
  // Mobile close button
  const closeBtn=el("button",{style:"display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px 8px;margin-left:auto"},"\u00d7");
  closeBtn.addEventListener("click",()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.remove("mobile-open")});
@@ -420,7 +459,39 @@ function renderChatPane(){
  p.appendChild(msgs);
  const form=el("form",{class:"chat-form"});
  const inp=el("input",{type:"text",placeholder:STATE.chatContext?("Ask about "+(STATE.chatContext.name||"this project")+"\u2026"):"Type a message\u2026"});
+ // Voice (push-to-talk) button
+ const micBtn=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer",title:"Hold to record voice (Web Speech API)"},"\uD83C\uDFA4");
+ let recorder=null,chunks=[];
+ micBtn.addEventListener("mousedown",async()=>{
+  try{
+   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+   chunks=[];recorder=new MediaRecorder(stream,{mimeType:"audio/webm"});
+   recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};
+   recorder.start();micBtn.style.background="var(--accent)";micBtn.textContent="\u23FA";
+  }catch(e){alert("Mic blocked: "+e.message)}
+ });
+ const stop=async()=>{
+  if(!recorder||recorder.state==="inactive")return;
+  recorder.stop();micBtn.style.background="var(--panel2)";micBtn.textContent="\uD83C\uDFA4";
+  await new Promise(r=>recorder.onstop=r);
+  recorder.stream.getTracks().forEach(t=>t.stop());
+  const blob=new Blob(chunks,{type:"audio/webm"});
+  micBtn.disabled=true;micBtn.textContent="\u2026";
+  try{
+   const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"audio/webm","X-Pin":STATE.agentPin||""},body:blob});
+   const d=await r.json();
+   if(d.text||d.transcript){inp.value=(d.text||d.transcript).trim();form.dispatchEvent(new Event("submit",{cancelable:true}))}
+   else{inp.value=JSON.stringify(d).substring(0,80)}
+  }catch(e){inp.value="STT err: "+e.message}
+  micBtn.disabled=false;micBtn.textContent="\uD83C\uDFA4";
+ };
+ micBtn.addEventListener("mouseup",stop);
+ micBtn.addEventListener("mouseleave",stop);
+ micBtn.addEventListener("touchstart",e=>{e.preventDefault();micBtn.dispatchEvent(new Event("mousedown"))});
+ micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
+
  const btn=el("button",{class:"primary",type:"submit"},"\u2192");
+ form.appendChild(micBtn);
  form.appendChild(inp);form.appendChild(btn);
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
@@ -463,6 +534,13 @@ function renderChatPane(){
     return [];
    });
    STATE.chat.push({role:"assistant",content:reply,images:images});
+   // Auto-speak if TTS enabled
+   if(localStorage.getItem("falkor.tts")==="1" && reply){
+    try{
+     const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:reply.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});
+     if(r.ok){const blob=await r.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}
+    }catch(e){}
+   }
   }catch(err){STATE.chat.push({role:"assistant",content:"Error: "+err.message})}
   btn.disabled=false;refreshChat();inp.focus();
  });
@@ -826,7 +904,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.1.0',mode:'asgard-hub-jarvis'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.2.0',mode:'asgard-hub-jarvis-voice'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -974,6 +1052,71 @@ upBtn.onclick=async()=>{
       const ct = obj.metadata?.content_type || 'application/octet-stream';
       const bin = Uint8Array.from(atob(obj.value), c => c.charCodeAt(0));
       return new Response(bin, {headers:{'Content-Type':ct,'Cache-Control':'public, max-age=31536000, immutable',...CORS}});
+    }
+    if(url.pathname==='/api/stt'&&request.method==='POST'){
+      try {
+        const pin = request.headers.get('X-Pin') || '';
+        const upstream = await fetch('https://asgard-ai.luckdragon.io/stt', {
+          method:'POST',
+          headers:{ 'Content-Type': request.headers.get('Content-Type') || 'audio/webm', 'X-Pin': pin },
+          body: request.body,
+        });
+        const text = await upstream.text();
+        return new Response(text, { status: upstream.status, headers:{ 'Content-Type':'application/json', ...CORS, ...NOCACHE } });
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/tts'&&request.method==='POST'){
+      try {
+        const pin = request.headers.get('X-Pin') || '';
+        const body = await request.text();
+        const upstream = await fetch('https://asgard-ai.luckdragon.io/speak', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'X-Pin': pin },
+          body,
+        });
+        const buf = await upstream.arrayBuffer();
+        return new Response(buf, { status: upstream.status, headers:{ 'Content-Type': upstream.headers.get('content-type')||'audio/mpeg', ...CORS } });
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/briefing'){
+      try {
+        // Synthesize a daily summary from D1 data + tools
+        const ctxR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query',{
+          method:'POST',headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:"SELECT project_name, status, next_action, last_updated FROM products WHERE status NOT IN ('archived','merged','dormant') AND next_action IS NOT NULL AND next_action != '' ORDER BY income_priority DESC, last_updated DESC LIMIT 12"}),
+        });
+        const cd = await ctxR.json();
+        const items = cd.result?.[0]?.results || [];
+        const ctx = items.map(p => '- '+p.project_name+(p.next_action?' \u2014 next: '+p.next_action.substring(0,120):'')).join(String.fromCharCode(10));
+        const aReq = await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',
+          headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+          body: JSON.stringify({
+            model:'claude-haiku-4-5-20251001',
+            max_tokens: 600,
+            system:'You are Falkor, briefing Paddy on his portfolio. Style: Jarvis-esque, dry, terse, helpful. No emojis. Pick 2-3 things worth focusing on TODAY.',
+            messages:[{role:'user',content:'Active projects with pending next-actions:'+String.fromCharCode(10)+ctx+String.fromCharCode(10,10)+'Write a 4-sentence morning briefing.'}],
+          }),
+        });
+        const a = await aReq.json();
+        const text = (a.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+        return Response.json({ ok:true, briefing: text, items_considered: items.length, generated_at: new Date().toISOString() }, { headers:{...CORS,...NOCACHE} });
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/push/vapid'){
+      try {
+        const r = await fetch('https://falkor-push.luckdragon.io/vapid/key',{ headers:{'X-Pin':env.AGENT_PIN}});
+        return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json',...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/push/subscribe'&&request.method==='POST'){
+      try {
+        const body = await request.text();
+        const r = await fetch('https://falkor-push.luckdragon.io/subscribe',{
+          method:'POST',headers:{'Content-Type':'application/json','X-Pin':env.AGENT_PIN},body,
+        });
+        return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json',...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/chat'&&request.method==='POST'){
       // Server-side proxy to dodge browser CORS issues with asgard-ai
