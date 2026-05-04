@@ -33,7 +33,7 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 | https://schoolsportportal.com.au/sitemap.xml | SSP sitemap | ✅ 200 |
 | https://carnivaltiming.com/help | CT getting-started page | ✅ 200 |
 | https://carnivaltiming.com/sitemap.xml | CT sitemap | ✅ 200 |
-| https://sportcarnival.com.au/sitemap.xml | SC sitemap | ✅ 200 (only `/` listed — see drift below) |
+| https://sportcarnival.com.au/sitemap.xml | SC sitemap | ✅ 200 — lists `/`, `/privacy`, `/terms` (`/wd26` deliberately excluded) |
 | https://falkor-ct-ai.luckdragon.io | CT AI backend (summarise / flag-times / suggest-heats / commentary) | ✅ v1.0.0 |
 | https://ct-access.luckdragon.io | CT paywall worker (validate / create / stripe-webhook / admin/codes) | ✅ Live (PIN-gated) |
 | https://carnival-results.pgallivan.workers.dev | D1 API for published results | ✅ Live (no /health route) |
@@ -114,4 +114,4 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
   - Qualifier board (across heats toward finals)
 
 ### Vision (the actual product)
-"**Enter student data once, automate across all sports**" — SSP becomes the source-of-truth roster that feeds CT, Sp
+"**Enter student data once, automate across all sports**" — SSP becomes the source-of-
