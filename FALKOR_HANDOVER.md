@@ -212,6 +212,20 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## ✅ Recently shipped (2026-05-03 → 2026-05-04)
 
+**Firebase → Cloudflare migration COMPLETE (2026-05-04, e2e session, Phase 2 done):**
+- `/williamstowndistrict` rewritten — Firebase Auth + RTDB removed; new D1-backed page with email magic-link login + `/api/scores` + `/api/users` + admin coach provisioning. Page size shrunk 143 KB → 19 KB.
+- `carnival-results v1.2.0` — added auth (`/auth/login` `/auth/verify` `/auth/me` `/auth/logout`), scores (`GET/POST/DELETE /api/scores`), users (`GET/POST/DELETE /api/users`). Bearer-token sessions HMAC-signed with `STAFF_SESSION_SECRET` (in vault).
+- `carnival-timing-ws` — `pushToFirebase()` removed entirely. D1 is sole archive.
+- `ssp-portal` — no-cache header on GH-fetched pages + cache-bust on subrequest URL.
+- All served pages now have **0 Firebase mentions** (verified e2e).
+- Magic-link login tested end-to-end: `pgallivan@outlook.com` → email sent via Resend, token stored in D1.
+- D1 schema: `carnivals`, `results`, `users`, `division_winners`, `auth_tokens`, `scores`.
+
+**Remaining for Paddy (GCP/Firebase final cleanup, no urgency):**
+1. Revoke 3 legacy GCP service-account keys (steps in [`docs/FIREBASE_DECOMMISSION.md`](docs/FIREBASE_DECOMMISSION.md))
+2. Delete Firebase project `willy-district-sport` (after 1-week verification)
+
+
 **Firebase → Cloudflare migration Phase 1 (2026-05-04, e2e session):**
 - Bulk migrated Firebase /fl/ → D1 carnival-results (12 real carnivals, 4 result rows; 210 LOAD-* test entries skipped).
 - carnival-timing-ws now double-writes to D1 alongside dormant Firebase mirror — WD26 race results will permanently land in D1.
