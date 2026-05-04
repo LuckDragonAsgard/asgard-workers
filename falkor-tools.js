@@ -1014,6 +1014,16 @@ function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
 function clearAuth(){localStorage.removeItem("asgard.user")}
 
+// Browser error reporter — POSTs uncaught errors + rejections to /api/falkor/error-log
+(function(){
+  let _sent=0; const _MAX=10;
+  function _report(payload){
+    if(_sent>=_MAX)return; _sent++;
+    try{fetch("/api/falkor/error-log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({ts:new Date().toISOString(),ua:navigator.userAgent,view:(window.STATE&&STATE.view)||""},payload))}).catch(()=>{});}catch(e){}
+  }
+  window.addEventListener("error", e => _report({message:e.message,stack:e.error?.stack||"",url:e.filename,line:e.lineno,col:e.colno}));
+  window.addEventListener("unhandledrejection", e => _report({message:"unhandled-rejection: "+String(e.reason).substring(0,300),stack:e.reason?.stack||""}));
+})();
 window.render=render;function render(){
  const app=$("#app");app.innerHTML="";
  if(!STATE.user){renderLogin(app);return}
@@ -2313,6 +2323,16 @@ export default {
           }
         } catch(e){}
       }
+      // Every hour at :30 — run smoke test + Telegram on failure
+      else if (cron === '30 * * * *') {
+        try {
+          const r = await fetch('https://falkor.luckdragon.io/api/falkor/smoke-test', { method:'POST', headers:{'X-Pin':env.AGENT_PIN}, signal: AbortSignal.timeout(60000) });
+          const d = await r.json();
+          await env.ASSETS.put('cron:smoke:'+now.toISOString(), JSON.stringify({passed:d.passed,total:d.total,failed:d.failed,at:Date.now()}), {expirationTtl:7*86400});
+        } catch(e) {
+          await env.ASSETS.put('cron:smoke_err:'+now.toISOString(), String(e).substring(0,400), {expirationTtl:7*86400});
+        }
+      }
       // Every 5 minutes — verify served JS parses (catches black-screen bugs that pass worker syntax check)
       else if (cron === '*/5 * * * *') {
         try {
@@ -3277,6 +3297,125 @@ upBtn.onclick=async()=>{
     }
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
+    }
+    if(url.pathname==='/api/falkor/error-log'&&request.method==='POST'){
+      try {
+        const b = await request.json();
+        const ts = new Date().toISOString();
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'INSERT INTO falkor_browser_errors (ts,message,stack,url,line,col,ua,view) VALUES (?,?,?,?,?,?,?,?)', params:[ts, String(b.message||'').substring(0,500), String(b.stack||'').substring(0,2000), String(b.url||'').substring(0,200), parseInt(b.line)||null, parseInt(b.col)||null, String(b.ua||'').substring(0,200), String(b.view||'').substring(0,40)]})
+        });
+        return Response.json({ok:true}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/falkor/error-log'&&request.method==='GET'){
+      try {
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT * FROM falkor_browser_errors ORDER BY ts DESC LIMIT 50'})
+        });
+        const d = await r.json();
+        return Response.json({ok:true, errors: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/falkor/smoke-test'&&request.method==='POST'){
+      try {
+        const runAt = new Date().toISOString();
+        const checks = [];
+        async function run(name, fn) {
+          const t0 = Date.now();
+          try {
+            const detail = await fn();
+            checks.push({name, ok:true, ms:Date.now()-t0, detail});
+          } catch(e) {
+            checks.push({name, ok:false, ms:Date.now()-t0, detail: String(e).substring(0,200)});
+          }
+        }
+        // Check 1: /health responds
+        await run('health', async () => {
+          const r = await fetch('https://falkor.luckdragon.io/health', { signal: AbortSignal.timeout(8000) });
+          if (!r.ok) throw new Error('http '+r.status);
+          const d = await r.json();
+          if (!d.ok) throw new Error('not ok');
+          return d.version;
+        });
+        // Check 2: served HTML still parses
+        await run('served_js_parses', async () => {
+          const r = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served', { signal: AbortSignal.timeout(8000) });
+          const d = await r.json();
+          if (!d.ok) throw new Error((d.errors||[]).join('|'));
+          return 'parses';
+        });
+        // Check 3: agent-chat round-trip
+        await run('agent_chat', async () => {
+          const r = await fetch('https://falkor.luckdragon.io/api/agent-chat', {
+            method:'POST', headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN || '2967'},
+            body: JSON.stringify({message:'reply with the single word OK', project:null}),
+            signal: AbortSignal.timeout(45000)
+          });
+          if (!r.ok) throw new Error('http '+r.status);
+          const d = await r.json();
+          if (!d.reply) throw new Error('no reply');
+          return d.reply.substring(0,40);
+        });
+        // Check 4: D1 reachable
+        await run('d1', async () => {
+          const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+            body: JSON.stringify({sql:'SELECT COUNT(*) as c FROM project_hub'}),
+            signal: AbortSignal.timeout(8000)
+          });
+          const d = await r.json();
+          const c = d.result?.[0]?.results?.[0]?.c;
+          if (typeof c !== 'number') throw new Error('no count');
+          return c+' projects';
+        });
+        // Check 5: fleet health (server proxy)
+        await run('fleet', async () => {
+          const r = await fetch('https://falkor.luckdragon.io/api/fleet/health', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(45000) });
+          const d = await r.json();
+          if (!d.ok) throw new Error('not ok');
+          if (d.healthy < d.total) throw new Error(d.healthy+'/'+d.total+' healthy');
+          return d.healthy+'/'+d.total;
+        });
+        // Check 6: chat/threads endpoint
+        await run('chat_threads', async () => {
+          const r = await fetch('https://falkor.luckdragon.io/api/chat/threads', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(8000) });
+          const d = await r.json();
+          if (!d.ok) throw new Error('not ok');
+          return (d.threads||[]).length+' threads';
+        });
+        // Persist results
+        for (const c of checks) {
+          await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+            body: JSON.stringify({sql:'INSERT INTO falkor_smoke_results (run_at,check_name,ok,ms,detail) VALUES (?,?,?,?,?)', params:[runAt, c.name, c.ok?1:0, c.ms, String(c.detail||'').substring(0,200)]})
+          });
+        }
+        const passed = checks.filter(c=>c.ok).length;
+        const failed = checks.filter(c=>!c.ok);
+        // Telegram alert if any failed
+        if (failed.length > 0) {
+          try {
+            await fetch('https://falkor-telegram.luckdragon.io/send', {
+              method:'POST', headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
+              body: JSON.stringify({target:'paddy', text: 'Falkor smoke test FAILED at '+runAt+': '+failed.map(f=>f.name+'='+f.detail).join(' | ')})
+            });
+          } catch(e){}
+        }
+        return Response.json({ok:true, run_at:runAt, passed, total:checks.length, checks, failed:failed.length}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/falkor/smoke-history'&&request.method==='GET'){
+      try {
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT run_at, check_name, ok, ms, detail FROM falkor_smoke_results ORDER BY id DESC LIMIT 100'})
+        });
+        const d = await r.json();
+        return Response.json({ok:true, results: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/fleet/health'&&request.method==='GET'){
       try {
