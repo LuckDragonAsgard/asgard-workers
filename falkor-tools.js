@@ -271,8 +271,23 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 bindings.push({ type: 'durable_object_namespace', name: bname, class_name: cls });
               }
               const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings, keep_bindings:['secret_text','kv_namespace','durable_object_namespace','d1','queue','r2_bucket','analytics_engine'] };
+              // Only send migrations on FIRST deploy of a DO class. Check if worker exists first.
               if (requestedDOs.length > 0) {
-                metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
+                try {
+                  const ex = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname+'/bindings', { headers:{'Authorization':'Bearer '+env.CF_API_TOKEN} });
+                  if (ex.status === 404) {
+                    metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
+                  } else {
+                    const exj = await ex.json();
+                    const existingDOs = (exj.result||[]).filter(b => b.type === 'durable_object_namespace').map(b => b.class_name);
+                    const newDOs = requestedDOs.filter(c => !existingDOs.includes(c));
+                    if (newDOs.length > 0) {
+                      metadata.migrations = { tag: 'v'+(Date.now()), new_sqlite_classes: newDOs };
+                    }
+                  }
+                } catch(e) {
+                  metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
+                }
               }
               const boundary = '----b42deploy'+Date.now();
               const enc = new TextEncoder();
