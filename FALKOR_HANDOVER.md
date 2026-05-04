@@ -137,7 +137,7 @@ Public product demo ladder (also `ssp-portal`):
 11. **VIC DET Privacy Impact Assessment** kick-off — MEDIUM
 
 ### Medium-term (post-XC carnival)
-- **Wire CT XC bib lookup to Google Sheet** (district draw) — currently uses Firebase. Worker has `/api/draw`, `/api/results`, `/api/sheet` endpoints — needs `GSHEET_ID` env var.
+- ~~**Wire CT XC bib lookup to Google Sheet**~~ — SUPERSEDED 2026-05-04 by `carnival-results` D1 migration. `sportcarnival-hub` v3.2.0 now reads from D1 (`/api/results?carnival=CODE`, `/api/list`). `/api/sheet` returns 410. CT app still double-writes to both Firebase and D1; Firebase reads no longer required.
 - **Make `/wd26` data-driven** — currently hard-coded HTML. Refactor to pull from Google Sheet so other districts can be added as `/wd-<code>` paths.
 - **"Try it with your district" form** on the demo page — collect name + email and route to SSP signup.
 - **CT Phase 1 roadmap:** event program builder, house points tally, DNS/DNF, false-start RECALL, PWA, photo finish zoom, full-day export, qualifier board.
@@ -212,6 +212,20 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## ✅ Recently shipped (2026-05-03 → 2026-05-04)
 
+**sportcarnival-hub v3.2.0 (2026-05-04, e2e session):**
+- `/api/results?carnival=CODE` and `/api/draw?carnival=CODE` now read from `carnival-results` D1 (no Sheet/Firebase dep on the read path).
+- New `/api/list` endpoint returns published carnivals.
+- `/api/sheet` deprecated (returns 410).
+- WD26 returns `{"status":"pending"}` until Thursday (no error).
+
+**sportcarnival-hub v3.1.1 (2026-05-04):**
+- Routes `/williamstownps/{crosscountry|athletics|swimming}` (noindex) + `/demo-school/{crosscountry|athletics|swimming}` (public).
+- HTML embedded inline (~210 KB worker total).
+
+**ct-access (2026-05-04):**
+- Added `DELETE /admin/codes/:code` (PIN-protected). Source archived in `asgard-workers/workers/ct-access/worker.js`.
+
+
 **sportcarnival-hub v3.0.0 (2026-05-04 evening):**
 - Homepage `/` now serves a public **demo** (Demo Valley District XC 2026, 8 fictional schools, simulated live results, CTAs to SSP + CT).
 - Real Williamstown district data moved to `/wd26` (aliases: `/williamstown`, `/williamstown-2026`). `x-robots-tag: noindex`, blocked in robots.txt.
@@ -282,7 +296,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## Known drift / cleanups
 
-1. **WPS XC sub-page 404** — `/williamstownps/crosscountry` files are still in the `sportcarnival-hub` GitHub repo but the worker doesn't route static files. Add a route handler in `_innerFetch` if Paddy wants the per-school view.
+1. ~~WPS XC sub-page 404~~ — RESOLVED 2026-05-04. `sportcarnival-hub` v3.1.1 routes `/williamstownps/{crosscountry|athletics|swimming}` (noindex) and `/demo-school/{crosscountry|athletics|swimming}` (public). HTML embedded inline.
 2. **falkor-agent versioning** non-linear: source = `2.9.0`, prior commit messages claim `1.9.1`. `/health` is the truth.
 3. **Privacy/Terms** are now hosted on sportcarnival.com.au/privacy and /terms. Should also be mirrored to schoolsportportal.com.au/privacy and /terms (audit critical).
 4. **ssp-contact** still on pgallivan domain — should migrate to luckdragon.io.
