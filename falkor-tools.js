@@ -15,7 +15,35 @@ const HTML = `<!doctype html>
 html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:grid;grid-template-columns:220px 1fr 360px;height:100vh;overflow:hidden}
 @media(max-width:1100px){.layout{grid-template-columns:200px 1fr}.chat-pane{display:none}}
-@media(max-width:720px){.layout{grid-template-columns:1fr}.sidebar{display:none}}
+@media(max-width:720px){
+  .layout{grid-template-columns:1fr;grid-template-rows:1fr 60px;height:100dvh}
+  .sidebar{grid-column:1;grid-row:2;flex-direction:row;border-right:none;border-top:1px solid var(--border);padding:6px 4px;gap:2px;overflow-x:auto;overflow-y:hidden}
+  .sidebar .brand,.sidebar .sidebar-foot,.sidebar .nav-item span:nth-child(2){display:none}
+  .sidebar .nav-item{flex:1;justify-content:center;padding:10px 8px;min-width:48px;font-size:18px}
+  .sidebar .nav-item .icon{font-size:20px}
+  .main{grid-column:1;grid-row:1;min-height:0}
+  .topbar{padding:10px 12px}
+  .controls{padding:10px 12px;gap:6px}
+  .controls input{flex:1 1 100%;min-width:0}
+  .controls select,.controls button{flex:0 0 auto}
+  .grid{padding:10px 12px;gap:8px;grid-template-columns:1fr}
+  .tile{min-height:auto;padding:12px}
+  .modal{max-width:100vw;max-height:100dvh;border-radius:0;padding:18px 14px}
+  .modal-bg{padding:0}
+  .actions-row{gap:6px}
+  .actions-row a,.actions-row button{padding:10px 12px;font-size:13px;flex:1;text-align:center;min-width:0}
+  .row{grid-template-columns:90px 1fr;font-size:12px}
+  /* Mobile chat: appears as overlay when chat tab active */
+  .chat-pane{display:none;position:fixed;inset:0;z-index:50;border-left:none;background:var(--bg)}
+  .chat-pane.mobile-open{display:flex}
+  .chat-head{padding:14px 16px;font-size:16px;border-bottom:1px solid var(--border)}
+  .chat-msgs{padding:14px}
+  .chat-form{padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom));gap:6px}
+  .chat-form input{font-size:16px;padding:12px}
+  .msg{font-size:14px;max-width:88%}
+  .stats{font-size:11px;gap:10px}
+  .fee-row,.fcard{font-size:13px}
+}
 .sidebar{background:var(--panel);border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
 .brand{padding:10px 8px 14px;border-bottom:1px solid var(--border);margin-bottom:10px}
 .brand-name{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -172,7 +200,11 @@ function renderSidebar(){
  sb.appendChild(navItem("finance","\uD83D\uDCB0","Finance"));
  sb.appendChild(navItem("revenue","\uD83D\uDCC8","Revenue"));
  sb.appendChild(navItem("tools","\uD83D\uDEE0","Tools"));
- sb.appendChild(navItem("chat","\uD83D\uDCAC","Chat"));
+ const chatNav=navItem("chat","\uD83D\uDCAC","Chat");
+ chatNav.addEventListener("click",(e)=>{
+  if(window.innerWidth<=720){e.stopPropagation();const cp=document.querySelector(".chat-pane");if(cp){cp.classList.toggle("mobile-open");if(cp.classList.contains("mobile-open"))setTimeout(()=>{const i=cp.querySelector("input");if(i)i.focus()},100);return}}
+ },true);
+ sb.appendChild(chatNav);
  sb.appendChild(navItem("system","\u2699","System"));
  const foot=el("div",{class:"sidebar-foot"});
  const pill=el("div",{class:"user-pill"});
@@ -294,7 +326,7 @@ function openModal(p){
   actions.appendChild(el("a",{href:editUrl,target:"_blank",rel:"noopener"},"\u270F Edit code"));
  }
  const cBtn=el("button",{},"\uD83D\uDCAC Chat about this");
- cBtn.addEventListener("click",()=>{STATE.chatContext=p;STATE.chat.push({role:"system",content:"\u2014 Now talking about "+(p.name||"project")+" \u2014"});bg.remove();render();});
+ cBtn.addEventListener("click",()=>{STATE.chatContext=p;STATE.chat.push({role:"system",content:"\u2014 Now talking about "+(p.name||"project")+" \u2014"});bg.remove();render();if(window.innerWidth<=720){setTimeout(()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.add("mobile-open")},50)}});
  actions.appendChild(cBtn);m.appendChild(actions);
  if(p.desc)m.appendChild(el("div",{class:"desc"},p.desc));
  const rows=[
@@ -332,6 +364,11 @@ function renderChatPane(){
  const p=el("div",{class:"chat-pane"});
  const head=el("div",{class:"chat-head"});
  head.appendChild(el("span",{},"\uD83D\uDCAC Chat"));
+ // Mobile close button
+ const closeBtn=el("button",{style:"display:none;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px 8px;margin-left:auto"},"\u00d7");
+ closeBtn.addEventListener("click",()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.remove("mobile-open")});
+ if(window.innerWidth<=720)closeBtn.style.display="block";
+ head.appendChild(closeBtn);
  if(STATE.chatContext){
   head.appendChild(el("span",{style:"margin-left:8px;font-size:11px;color:var(--accent);background:rgba(255,107,53,0.1);padding:3px 8px;border-radius:99px"},"\u2192 "+(STATE.chatContext.name||"project")));
   const clr=el("button",{style:"margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px"},"clear");
@@ -570,7 +607,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.7.0',mode:'asgard-hub-unified-agent'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.9.0',mode:'asgard-hub-self-editable'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -809,6 +846,12 @@ upBtn.onclick=async()=>{
             input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
           { name:'browser_scroll', description:"Scroll the user's browser page by x,y pixels. Set absolute=true to scroll to position instead of by delta.",
             input_schema:{ type:'object', properties:{ x:{type:'number'}, y:{type:'number'}, absolute:{type:'boolean'} }, required:[] } },
+          { name:'generate_image', description:"Generate an image from a text prompt via asgard-ai image generation (Flux / SDXL / Gemini Imagen depending on availability). Returns a URL or base64 of the generated PNG.",
+            input_schema:{ type:'object', properties:{ prompt:{type:'string'}, model:{type:'string',description:'optional model hint: flux, sdxl, gemini'}, width:{type:'number'}, height:{type:'number'} }, required:['prompt'] } },
+          { name:'cf_kv_list', description:"List keys in the falkor-tools ASSETS KV namespace, with optional prefix filter. Useful for browsing uploaded mascots or browser results.",
+            input_schema:{ type:'object', properties:{ prefix:{type:'string'} }, required:[] } },
+          { name:'cf_kv_get', description:"Get a value from the ASSETS KV namespace by key.",
+            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
@@ -948,6 +991,32 @@ upBtn.onclick=async()=>{
               }
             }
             return { error: 'browser timeout — is the Falkor Bridge extension installed and connected?' };
+          }
+          if (name === 'generate_image') {
+            try {
+              const r = await fetch('https://asgard-ai.luckdragon.io/image/generate', {
+                method:'POST',
+                headers:{ 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN },
+                body: JSON.stringify({ prompt: input.prompt, model: input.model, width: input.width, height: input.height }),
+              });
+              const text = await r.text();
+              try { const d = JSON.parse(text); return d; }
+              catch(e) { return { ok:false, error: 'image gen returned non-json', body: text.substring(0,300) }; }
+            } catch(e) { return { error: 'image gen failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'cf_kv_list') {
+            try {
+              const u = 'https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/storage/kv/namespaces/84ba4a49116b4e62913498de3dbacfa5/keys'+(input.prefix?'?prefix='+encodeURIComponent(input.prefix):'');
+              const r = await fetch(u, { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
+              const d = await r.json();
+              return { keys: (d.result||[]).map(k => k.name) };
+            } catch(e) { return { error: 'kv list failed' }; }
+          }
+          if (name === 'cf_kv_get') {
+            try {
+              const v = await env.ASSETS.get(input.key);
+              return { key: input.key, value: v ? (v.length>5000 ? v.substring(0,5000)+'...[truncated]' : v) : null };
+            } catch(e) { return { error: 'kv get failed' }; }
           }
           if (name && name.startsWith('browser_')) {
             const action = name.replace('browser_','');
