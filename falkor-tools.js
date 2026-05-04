@@ -3274,28 +3274,52 @@ upBtn.onclick=async()=>{
     }
 
     if(url.pathname==='/api/falkor/verify-served'){
-      // Health check: if no heartbeat from a real browser in last 10 min, the served JS is probably broken.
-      // Combine with: HTML size sanity, contains expected markers.
+      // Real verifier: parse inline JS for syntax/structural errors that would break the SPA at load.
       try {
         const html = HTML;
         const errors = [];
-        // Sanity: HTML has the SPA shell
         if (!html.includes('<div id="app">')) errors.push({error:'missing #app div'});
         if (html.length < 30000) errors.push({error:'HTML too small: '+html.length+' bytes (expected >30KB)'});
-        // Heartbeat freshness — if any heartbeat exists, check it's recent
-        let lastHB = null;
-        try {
-          const v = await env.ASSETS.get('falkor:heartbeat:latest');
-          if (v) {
-            lastHB = parseInt(v);
-            const ageMs = Date.now() - lastHB;
-            // Stale if >30 min — page might be broken (or no one's loaded it)
-            if (ageMs > 30*60*1000) errors.push({error:'no heartbeat in '+Math.round(ageMs/60000)+' min — page may be broken or unused'});
+        // Extract inline <script>
+        const scriptM = html.match(/<script>([\s\S]*?)<\/script>/);
+        if (scriptM) {
+          const js = scriptM[1];
+          // Balance check (string/comment/template aware) — same as pre-flight
+          let p=0,b=0,br=0,i=0; const n=js.length;
+          while(i<n){const c=js[i];
+            if(c==='/' && js[i+1]==='/'){while(i<n&&js[i]!=='\n')i++;continue;}
+            if(c==='/' && js[i+1]==='*'){i+=2;while(i<n&&!(js[i]==='*'&&js[i+1]==='/'))i++;i+=2;continue;}
+            if(c==='"'||c==='\''||c==='`'){const q=c;i++;while(i<n){if(js[i]==='\\'){i+=2;continue;}if(js[i]===q){i++;break;}if(q==='`'&&js[i]==='$'&&js[i+1]==='{'){i+=2;let d=1;while(i<n&&d>0){if(js[i]==='{')d++;else if(js[i]==='}')d--;i++;}continue;}i++;}continue;}
+            if(c==='(')p++;else if(c===')')p--;
+            else if(c==='{')b++;else if(c==='}')b--;
+            else if(c==='[')br++;else if(c===']')br--;
+            i++;
           }
-        } catch(e){}
+          if (p!==0 || b!==0 || br!==0) {
+            errors.push({error:'inline JS unbalanced (parens='+p+', braces='+b+', brackets='+br+')'});
+          }
+          // Anti-dupe Object.defineProperty
+          const dpMatches = [...js.matchAll(/Object\.defineProperty\s*\(\s*([\w.]+)\s*,\s*["']([^"']+)["']/g)];
+          const seen = new Map();
+          for (const dm of dpMatches) {
+            const key = dm[1]+':'+dm[2];
+            if (seen.has(key)) {
+              errors.push({error:'duplicate Object.defineProperty for '+key+' would throw TypeError'});
+              break;
+            }
+            seen.set(key, true);
+          }
+        } else {
+          errors.push({error:'no <script> tag found in served HTML'});
+        }
+        // Heartbeat freshness (informational only — not a failure)
+        let lastHB = null;
+        try { const v = await env.ASSETS.get('falkor:heartbeat:latest'); if (v) lastHB = parseInt(v); } catch(e){}
         return Response.json({ok: errors.length===0, errors, html_size: html.length, last_heartbeat: lastHB, last_heartbeat_age_sec: lastHB ? Math.round((Date.now()-lastHB)/1000) : null}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    });
       }
     }
 
