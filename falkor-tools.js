@@ -347,6 +347,39 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             try {
               const wname = (input.name||'').replace(/[^a-zA-Z0-9-]/g,'');
               if (!wname) return { error: 'worker name required' };
+              // PRE-FLIGHT: for falkor-tools, syntactically validate the inline HTML JS BEFORE deploying.
+              // (CF rejects worker source-level syntax errors itself — but inline HTML JS is invisible to CF.)
+              if (wname === 'falkor-tools') {
+                try {
+                  const preR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js?ref=main', { headers: ghHeaders });
+                  if (preR.ok) {
+                    const preD = await preR.json();
+                    const preSrc = decodeURIComponent(escape(atob(preD.content.replace(/\n/g,''))));
+                    // Find the served HTML constant and the inline <script>
+                    const htmlMatch = preSrc.match(/const HTML_TEMPLATE = `([\s\S]*?)`;/) || preSrc.match(/const html = `([\s\S]*?)`;\s*return new Response\(html/) || preSrc.match(/return new Response\(`([\s\S]*?)`,/);
+                    if (htmlMatch) {
+                      const html = htmlMatch[1];
+                      const scriptM = html.match(/<script>([\s\S]*?)<\/script>/);
+                      if (scriptM) {
+                        const js = scriptM[1];
+                        let p=0,b=0,br=0,i=0;const n=js.length;
+                        while(i<n){const c=js[i];
+                          if(c==='/' && js[i+1]==='/'){while(i<n&&js[i]!=='\n')i++;continue;}
+                          if(c==='/' && js[i+1]==='*'){i+=2;while(i<n&&!(js[i]==='*'&&js[i+1]==='/'))i++;i+=2;continue;}
+                          if(c==='"'||c==='\''||c==='`'){const q=c;i++;while(i<n){if(js[i]==='\\'){i+=2;continue;}if(js[i]===q){i++;break;}if(q==='`'&&js[i]==='$'&&js[i+1]==='{'){i+=2;let d=1;while(i<n&&d>0){if(js[i]==='{')d++;else if(js[i]==='}')d--;i++;}continue;}i++;}continue;}
+                          if(c==='(')p++;else if(c===')')p--;
+                          else if(c==='{')b++;else if(c==='}')b--;
+                          else if(c==='[')br++;else if(c===']')br--;
+                          i++;
+                        }
+                        if (p!==0 || b!==0 || br!==0) {
+                          return { error: 'PRE-FLIGHT FAILED: inline JS is unbalanced (parens='+p+', braces='+b+', brackets='+br+'). Refusing to deploy a broken UI.', deploy_blocked: true };
+                        }
+                      }
+                    }
+                  }
+                } catch(e) { /* if pre-flight check itself fails, allow deploy (don't block on infrastructure issues) */ }
+              }
               const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
               if (!ghr.ok) return { error: 'worker source not found in repo: '+wname+'.js (HTTP '+ghr.status+')' };
               const ghd = await ghr.json();
@@ -392,11 +425,29 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                     const js = scriptMatch[1];
                     // Crude balance check
                     let p=0, b=0, br=0;
-                    for (let i=0; i<js.length; i++) {
+                    let i=0; const n=js.length;
+                    while (i<n) {
                       const c = js[i];
-                      if (c === '(') p++; else if (c === ')') p--;
-                      if (c === '{') b++; else if (c === '}') b--;
-                      if (c === '[') br++; else if (c === ']') br--;
+                      // line comment
+                      if (c==='/' && js[i+1]==='/') { while(i<n && js[i]!=='\n') i++; continue; }
+                      // block comment
+                      if (c==='/' && js[i+1]==='*') { i+=2; while(i<n && !(js[i]==='*'&&js[i+1]==='/')) i++; i+=2; continue; }
+                      // string literals (single, double, backtick)
+                      if (c==='"' || c==='\'' || c==='`') {
+                        const q=c; i++;
+                        while (i<n) {
+                          if (js[i]==='\\') { i+=2; continue; }
+                          if (js[i]===q) { i++; break; }
+                          // template literal ${...} — recursively skip but treat braces as balanced inside
+                          if (q==='`' && js[i]==='$' && js[i+1]==='{') { i+=2; let depth=1; while(i<n && depth>0){ if(js[i]==='{')depth++; else if(js[i]==='}')depth--; i++; } continue; }
+                          i++;
+                        }
+                        continue;
+                      }
+                      if (c==='(') p++; else if (c===')') p--;
+                      else if (c==='{') b++; else if (c==='}') b--;
+                      else if (c==='[') br++; else if (c===']') br--;
+                      i++;
                     }
                     if (p !== 0 || b !== 0 || br !== 0) {
                       // Auto-rollback: revert to previous commit
@@ -3702,7 +3753,7 @@ upBtn.onclick=async()=>{
               const hd = await hr.json();
               priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
             } catch(e){}
-            let system = "You are Falkor — Paddy's coding agent. Casual, direct, terse. No apologies.\n\n** YOU ARE THE CHAT UI Paddy is messaging you in. ** That UI lives at https://falkor.luckdragon.io and is rendered by falkor-tools.js (your repo). NOT Anthropic's Claude web UI. If you call browser_screenshot and see another Claude tab, that is a SEPARATE conversation in another window — it is NOT where Paddy is talking to you. Paddy types into your falkor.luckdragon.io chat. You CAN edit that chat: edit_file → cf_deploy_worker name=falkor-tools → verify. Never refuse a UI change.\n\nCode rules: use `request` not `req`, `env.CF_ACCOUNT_ID/D1_DB_ID/CF_API_TOKEN/GITHUB_TOKEN/ASSETS`. NO `env.DB.prepare` — use fetch-to-D1 pattern. Save persistence to GitHub (LuckDragonAsgard/asgard-workers) or D1, never to /tmp or AppData. After deploy, verify_endpoint. Full playbook at https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch when stuck." + memBlock;
+            let system = "You are Falkor — Paddy's coding agent. Casual, direct, terse. No apologies.\n\n** YOU ARE THE CHAT UI Paddy is messaging you in. ** That UI lives at https://falkor.luckdragon.io and is rendered by falkor-tools.js (your repo). NOT Anthropic's Claude web UI. If you call browser_screenshot and see another Claude tab, that is a SEPARATE conversation in another window — it is NOT where Paddy is talking to you. Paddy types into your falkor.luckdragon.io chat. You CAN edit that chat: edit_file → cf_deploy_worker name=falkor-tools → verify. Never refuse a UI change.\n\nCode rules: use `request` not `req`, `env.CF_ACCOUNT_ID/D1_DB_ID/CF_API_TOKEN/GITHUB_TOKEN/ASSETS`. NO `env.DB.prepare` — use fetch-to-D1 pattern. Save persistence to GitHub (LuckDragonAsgard/asgard-workers) or D1, never to /tmp or AppData.\n\n** ANTI-BLACK-SCREEN ** When using edit_file or multi_edit, ALWAYS include enough surrounding context (10+ lines) so the diff is unambiguous. After ANY edit to falkor-tools.js, IMMEDIATELY run cf_deploy_worker — it pre-flights the inline JS for orphan parens/braces and REFUSES if unbalanced. If cf_deploy_worker returns deploy_blocked=true, READ the source again and fix the orphan before retrying. Never use write_file on falkor-tools.js — it bypasses pre-flight.\n\nAfter deploy, verify_endpoint. Full playbook at https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch when stuck." + memBlock;
             if (project) {
               const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
               if (project.url) ctx.push('Live: '+project.url);
