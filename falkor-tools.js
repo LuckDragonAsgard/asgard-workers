@@ -92,6 +92,25 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fee-row{display:grid;grid-template-columns:1fr 100px 90px;gap:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;align-items:center}
 .fee-row:hover{border-color:var(--accent)}
 .placeholder{padding:40px 30px;color:var(--muted);text-align:center;line-height:1.6}
+/* Falkor mascot — individual pose PNGs uploaded to /asset/fk-* */
+.fk{display:inline-block;background-repeat:no-repeat;background-size:contain;background-position:center;background-color:transparent;border-radius:12px}
+.fk-think     {background-image:url(/asset/fk-think)}
+.fk-thumbsup  {background-image:url(/asset/fk-thumbsup)}
+.fk-wave      {background-image:url(/asset/fk-wave)}
+.fk-hi        {background-image:url(/asset/fk-hi)}
+.fk-cheer     {background-image:url(/asset/fk-cheer)}
+.fk-run       {background-image:url(/asset/fk-run)}
+.fk-smile     {background-image:url(/asset/fk-smile)}
+.fk-point     {background-image:url(/asset/fk-point)}
+.fk-confused  {background-image:url(/asset/fk-confused)}
+.fk-pray      {background-image:url(/asset/fk-pray)}
+.fk-laugh     {background-image:url(/asset/fk-laugh)}
+.fk-wait      {background-image:url(/asset/fk-wait)}
+.fk-xl{width:160px;height:160px}
+.fk-lg{width:96px;height:96px}
+.fk-md{width:48px;height:48px}
+.fk-sm{width:32px;height:32px}
+.fk-xs{width:24px;height:24px}
 </style></head>
 <body><div id="app"></div>
 <script>
@@ -116,7 +135,7 @@ function render(){
 
 function renderLogin(app){
  const wrap=el("div",{class:"login-wrap"}),card=el("div",{class:"login-card"});
- card.appendChild(el("div",{html:"\uD83D\uDC09",style:"text-align:center;font-size:48px;margin-bottom:8px"}));
+ card.appendChild(el("div",{html:'<div class="fk fk-wave fk-xl"></div>',style:"text-align:center;margin-bottom:10px;display:flex;justify-content:center"}));
  card.appendChild(el("h1",{class:"login-title"},"Asgard"));
  card.appendChild(el("div",{class:"login-sub"},"Project Hub"));
  const inp=el("input",{type:"password",inputmode:"numeric",placeholder:"PIN",autofocus:"true"});
@@ -144,7 +163,7 @@ function renderShell(){const l=el("div",{class:"layout"});l.appendChild(renderSi
 function renderSidebar(){
  const sb=el("div",{class:"sidebar"});
  const brand=el("div",{class:"brand"});
- brand.appendChild(el("div",{class:"brand-name"},"\uD83D\uDC09 Asgard"));
+ const bnRow=el("div",{class:"brand-name",style:"display:flex;align-items:center;gap:8px"});bnRow.appendChild(el("div",{class:"fk fk-smile fk-sm"}));bnRow.appendChild(el("span",{},"Asgard"));brand.appendChild(bnRow);
  brand.appendChild(el("div",{class:"brand-sub"},"Project hub \u00b7 luckdragon.io"));
  sb.appendChild(brand);
  const navItem=(id,icon,label)=>{const it=el("div",{class:"nav-item"+(STATE.view===id?" active":"")});it.appendChild(el("span",{style:"width:18px;text-align:center"},icon));it.appendChild(el("span",{},label));it.addEventListener("click",()=>{STATE.view=id;render()});return it};
@@ -550,7 +569,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.2.0',mode:'asgard-hub-recent-tools'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.5.0',mode:'asgard-hub-agent-toolset'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -570,6 +589,96 @@ export default {
       } catch(e) {
         return Response.json({ error:'D1 query failed', detail: String(e).substring(0,300) }, { status:500, headers:{...CORS,...NOCACHE} });
       }
+    }
+    if(url.pathname==='/upload'&&request.method==='GET'){
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>Upload mascot</title>
+<style>body{background:#0a0e14;color:#e6edf6;font-family:system-ui;padding:40px;max-width:600px;margin:auto}
+h1{color:#ff6b35}
+.drop{border:2px dashed #444;border-radius:12px;padding:60px;text-align:center;cursor:pointer;margin:20px 0}
+.drop:hover{border-color:#ff6b35}
+.row{display:flex;gap:10px;align-items:center;margin:8px 0;padding:10px;background:#11161f;border-radius:8px}
+.row input{flex:1;background:#161c27;color:#e6edf6;border:1px solid #222;border-radius:6px;padding:8px}
+.row button{background:linear-gradient(135deg,#ff6b35,#ffa94d);color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer}
+.thumb{width:80px;height:80px;object-fit:cover;border-radius:6px;background:#222}
+.log{background:#11161f;border-radius:8px;padding:12px;margin-top:20px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;color:#8b95a7}
+</style></head><body>
+<h1>Upload Falkor mascots</h1>
+<p>Drop the 3 PNGs here. Each will be saved with the key falkor1, falkor2, falkor3 (or use the file's name).</p>
+<div class="drop" id="drop">Drag &amp; drop PNG/JPG files here, or click to pick</div>
+<input type="file" id="fp" accept="image/*" multiple style="display:none">
+<div id="rows"></div>
+<button id="up" style="background:linear-gradient(135deg,#ff6b35,#ffa94d);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:15px;cursor:pointer;margin-top:10px;display:none">Upload all</button>
+<div class="log" id="log"></div>
+<script>
+const drop=document.getElementById('drop'),fp=document.getElementById('fp'),rows=document.getElementById('rows'),logEl=document.getElementById('log'),upBtn=document.getElementById('up');
+const queue=[];
+const log=m=>{logEl.textContent+=m+String.fromCharCode(10);logEl.scrollTop=logEl.scrollHeight};
+drop.onclick=()=>fp.click();
+drop.ondragover=e=>{e.preventDefault();drop.style.borderColor='#ff6b35'};
+drop.ondragleave=()=>drop.style.borderColor='#444';
+drop.ondrop=e=>{e.preventDefault();drop.style.borderColor='#444';add(e.dataTransfer.files)};
+fp.onchange=()=>add(fp.files);
+function add(files){
+ for(const f of files){
+  if(!f.type.startsWith('image/')){log('skip non-image: '+f.name);continue}
+  const slug=(f.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-')).replace(/^-+|-+$/g,'')||('asset'+Date.now());
+  const item={file:f,slug,size:f.size};queue.push(item);
+  const reader=new FileReader();
+  reader.onload=()=>{
+   const row=document.createElement('div');row.className='row';
+   const img=document.createElement('img');img.className='thumb';img.src=reader.result;row.appendChild(img);
+   const info=document.createElement('div');info.style.flex='1';info.innerHTML='<div style="font-weight:600">'+f.name+'</div><div style="font-size:11px;color:#888">'+(f.size/1024).toFixed(1)+' KB</div>';row.appendChild(info);
+   const inp=document.createElement('input');inp.value=slug;inp.oninput=()=>{item.slug=inp.value};row.appendChild(inp);
+   rows.appendChild(row);
+   item.dataUrl=reader.result;
+   upBtn.style.display='block';
+  };
+  reader.readAsDataURL(f);
+ }
+}
+upBtn.onclick=async()=>{
+ upBtn.disabled=true;upBtn.textContent='Uploading...';
+ for(const it of queue){
+  if(!it.dataUrl){log('not ready: '+it.file.name);continue}
+  log('uploading '+it.slug+' ('+(it.size/1024).toFixed(1)+' KB)...');
+  const base64=it.dataUrl.split(',')[1];
+  const ct=it.dataUrl.split(';')[0].split(':')[1];
+  const r=await fetch('/upload',{method:'POST',headers:{'Content-Type':'application/json','X-Pin':localStorage.getItem('asgard.pin')||'2967'},body:JSON.stringify({slug:it.slug,base64,content_type:ct})});
+  const d=await r.json();
+  if(d.ok){log(' \u2713 '+it.slug+' -> /asset/'+it.slug+' ('+d.bytes+' bytes)')}
+  else{log(' \u2717 '+it.slug+': '+(d.error||'failed'))}
+ }
+ upBtn.disabled=false;upBtn.textContent='Upload all';
+ log('done. View: /asset/<slug>');
+};
+</script></body></html>`;
+      return new Response(html, { headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS} });
+    }
+    if(url.pathname==='/upload'&&request.method==='POST'){
+      try{
+        const pin = request.headers.get('X-Pin') || '';
+        if (!pin) return Response.json({error:'PIN required'},{status:401,headers:{...CORS,...NOCACHE}});
+        const body = await request.json();
+        const slug = (body.slug||'').replace(/[^a-zA-Z0-9._-]/g,'').substring(0,80);
+        const ct = body.content_type || 'application/octet-stream';
+        const base64 = body.base64 || '';
+        if (!slug || !base64) return Response.json({error:'slug + base64 required'},{status:400,headers:{...CORS,...NOCACHE}});
+        // store base64 + content_type in KV
+        await env.ASSETS.put('asset:'+slug, base64, { metadata: { content_type: ct } });
+        const bin = atob(base64);
+        return Response.json({ok:true, slug, bytes: bin.length, content_type: ct},{headers:{...CORS,...NOCACHE}});
+      }catch(e){
+        return Response.json({error:'upload failed', detail: String(e).substring(0,300)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+    if(url.pathname.startsWith('/asset/')){
+      const slug = url.pathname.replace('/asset/','').replace(/[^a-zA-Z0-9._-]/g,'').substring(0,80);
+      if (!slug) return new Response('Not found',{status:404,headers:CORS});
+      const obj = await env.ASSETS.getWithMetadata('asset:'+slug);
+      if (!obj || !obj.value) return new Response('Not found',{status:404,headers:CORS});
+      const ct = obj.metadata?.content_type || 'application/octet-stream';
+      const bin = Uint8Array.from(atob(obj.value), c => c.charCodeAt(0));
+      return new Response(bin, {headers:{'Content-Type':ct,'Cache-Control':'public, max-age=31536000, immutable',...CORS}});
     }
     if(url.pathname==='/api/chat'&&request.method==='POST'){
       // Server-side proxy to dodge browser CORS issues with asgard-ai
@@ -625,12 +734,28 @@ export default {
               progress_pct:{type:'number'},
               notes:{type:'string'},
             }, required:[] } },
+          { name:'web_fetch', description:"Fetch a URL over HTTP. Returns response status, headers, and body (truncated to 30KB). Use for reading docs, JSON APIs, etc.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'}, method:{type:'string',description:'GET/POST/etc, default GET'}, body:{type:'string'}, headers:{type:'object'} }, required:['url'] } },
+          { name:'web_search', description:"Search the web via DuckDuckGo. Returns top 5 results with title + snippet + URL.",
+            input_schema:{ type:'object', properties:{ query:{type:'string'} }, required:['query'] } },
+          { name:'run_d1_query', description:"Run a SQL query against the Asgard D1 products database. Tables: products (50 projects), spend_log, deployments, audit_log, conversations, messages, etc. Use SELECT for reads, UPDATE for changes (be careful). Use ? params to avoid SQL injection.",
+            input_schema:{ type:'object', properties:{ sql:{type:'string'}, params:{type:'array', items:{}} }, required:['sql'] } },
+          { name:'vault_get', description:"Fetch a secret value from asgard-vault by key name. Use for tokens/credentials. Available keys: ANTHROPIC_API_KEY, GITHUB_TOKEN, CF_API_TOKEN, RESEND_API_KEY, STRIPE_SECRET_KEY, SUPABASE_*, etc.",
+            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
+          { name:'cf_deploy_worker', description:"Re-deploy a Cloudflare worker from the latest source in LuckDragonAsgard/asgard-workers GitHub repo. Use after editing a worker file via write_file. Existing bindings are preserved.",
+            input_schema:{ type:'object', properties:{ name:{type:'string',description:'Worker name e.g. falkor-tools, falkor-agent'} }, required:['name'] } },
+          { name:'list_workers', description:"List all Cloudflare workers in the account with their last-modified time. Use to see the fleet.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
 
         async function execTool(name, input) {
-          if (!owner || !repo) return { error:'No GitHub repo bound to this project — cannot run tool calls.' };
+          const needRepo = ['list_files','read_file','write_file','cf_deploy_worker'].includes(name);
+          if (needRepo && !owner && name !== 'cf_deploy_worker') {
+            // cf_deploy_worker pulls from a fixed repo, others need project repo
+            return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
+          }
           if (name === 'list_files') {
             const p = (input.path||'').replace(/^\//,'');
             const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
@@ -667,6 +792,88 @@ export default {
             const d = await r.json();
             if (!d.success) return { error:'D1 update failed', detail: JSON.stringify(d.errors||[]).substring(0,300) };
             return { ok:true, updated_fields: Object.keys(input), changes: d.result?.[0]?.meta?.changes };
+          }
+          if (name === 'web_fetch') {
+            try {
+              const r = await fetch(input.url, { method: input.method||'GET', headers: input.headers||{}, body: input.body });
+              const text = await r.text();
+              return { status: r.status, headers: Object.fromEntries(r.headers.entries()), body: text.length>30000 ? text.substring(0,30000)+'...[truncated]' : text };
+            } catch(e) { return { error: 'fetch failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'web_search') {
+            try {
+              const u = 'https://html.duckduckgo.com/html/?q='+encodeURIComponent(input.query||'');
+              const r = await fetch(u, { headers: { 'User-Agent':'Mozilla/5.0' } });
+              const html = await r.text();
+              // crude extraction of result-link blocks
+              const results = [];
+              const re = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>(.*?)<\/a>/g;
+              let m;
+              while((m = re.exec(html)) && results.length < 5) {
+                const strip = s => s.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#x27;/g,"'");
+                let url = m[1]; const um = url.match(/uddg=([^&]+)/); if(um) url = decodeURIComponent(um[1]);
+                results.push({ title: strip(m[2]).trim(), url, snippet: strip(m[3]).trim() });
+              }
+              return { query: input.query, results };
+            } catch(e) { return { error: 'search failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'run_d1_query') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql: input.sql, params: input.params||[] }),
+              });
+              const d = await r.json();
+              if (!d.success) return { error: 'D1 error', detail: JSON.stringify(d.errors||[]).substring(0,400) };
+              const rows = d.result?.[0]?.results || [];
+              const meta = d.result?.[0]?.meta || {};
+              return { rows: rows.length>50 ? rows.slice(0,50) : rows, total: rows.length, meta };
+            } catch(e) { return { error: 'query failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'vault_get') {
+            try {
+              const r = await fetch(env.VAULT_URL+'/secret/'+encodeURIComponent(input.key||''), { headers: { 'X-Pin': env.VAULT_PIN } });
+              if (!r.ok) return { error: 'vault HTTP '+r.status };
+              const text = await r.text();
+              if (text.startsWith('{') && text.includes('"error"')) return { error: text.substring(0,200) };
+              return { key: input.key, value: text };
+            } catch(e) { return { error: 'vault fetch failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'cf_deploy_worker') {
+            try {
+              const wname = (input.name||'').replace(/[^a-zA-Z0-9-]/g,'');
+              if (!wname) return { error: 'worker name required' };
+              // Pull source from GitHub
+              const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
+              if (!ghr.ok) return { error: 'worker source not found in repo: '+wname+'.js (HTTP '+ghr.status+')' };
+              const ghd = await ghr.json();
+              const code = atob(ghd.content.replace(/\n/g,''));
+              // Deploy via CF API multipart
+              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace','d1_database'] };
+              const boundary = '----b42deploy'+Date.now();
+              const body = new TextEncoder().encode(
+                '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
+                '--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n'+
+                code+'\r\n--'+boundary+'--\r\n'
+              );
+              const dr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname, {
+                method:'PUT',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'multipart/form-data; boundary='+boundary },
+                body,
+              });
+              const dd = await dr.json();
+              if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
+              return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha };
+            } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'list_workers') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts', { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
+              const d = await r.json();
+              if (!d.success) return { error: 'list failed' };
+              return { workers: d.result.map(w => ({ name: w.id, modified: w.modified_on })) };
+            } catch(e) { return { error: 'list failed: '+String(e).substring(0,200) }; }
           }
           if (name === 'write_file') {
             const p = (input.path||'').replace(/^\//,'');
