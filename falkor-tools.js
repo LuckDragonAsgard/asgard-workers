@@ -2894,6 +2894,56 @@ upBtn.onclick=async()=>{
       }
     }
 
+    if(url.pathname==='/api/falkor/stats'){
+      // Self-introspection stats
+      try {
+        // Count projects
+        const pR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM products', params:[]}),
+        });
+        const pD = await pR.json();
+        const projects = pD.result?.[0]?.results?.[0]?.cnt || 0;
+
+        // Count memories
+        const mR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM falkor_memory', params:[]}),
+        });
+        const mD = await mR.json();
+        const memories = mD.result?.[0]?.results?.[0]?.cnt || 0;
+
+        // Count chat turns
+        const cR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM conversations', params:[]}),
+        });
+        const cD = await cR.json();
+        const chat_turns = cD.result?.[0]?.results?.[0]?.cnt || 0;
+
+        // Count improvements in KV
+        const iList = await env.ASSETS.list({prefix:'falkor:improvement:log:'});
+        const improvements = (iList?.keys || []).length;
+
+        // Count cron runs in last 7d
+        const cronList = await env.ASSETS.list({prefix:'cron:'});
+        const now = Date.now();
+        const sevenDaysMs = 7*86400*1000;
+        let cron_runs_7d = 0;
+        for (const k of (cronList?.keys || [])) {
+          const v = await env.ASSETS.get(k.name);
+          if (v) try { const o = JSON.parse(v); if (o.at && (now - o.at) < sevenDaysMs) cron_runs_7d++; } catch(e){}
+        }
+
+        return Response.json({ok:true, worker:'falkor-tools', projects, memories, chat_turns, improvements, cron_runs_7d, workers_in_fleet:21, uptime_age_days:0}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
     if(url.pathname==='/api/falkor/improvements'){
       // Show recent autonomous improvements
       try {
