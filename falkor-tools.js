@@ -975,6 +975,9 @@ const _initActive=_loadActive();
 const _initCtx=_loadCtx();
 window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",threads:_initThreads,activeThread:_initActive,threadList:[],chatContext:_initCtx};
 // chat property as a live alias to the active thread array
+Object.defineProperty(window.STATE,"chat",{get(){return this.threads[this.activeThread]||[]},set(v){this.threads[this.activeThread]=v}});
+// Load chat for active thread
+setTimeout(()=>loadChat(),100);
 Object.defineProperty(window.STATE,"chat",{
   get:function(){
     if(!this.threads||typeof this.threads!=="object")this.threads={};
@@ -1242,12 +1245,10 @@ function renderHome(m){
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
   STATE.chat.push({role:"user",content:text});
-  STATE.chat.push({role:"assistant",content:"⟳",pending:true,spinning:true});
+  STATE.chat.push({role:"assistant",content:"...",pending:true,spinning:true});
   inp.value="";refreshChat();
+  saveChat();
   sendBtn.disabled=true;
-  inp.disabled=true;
-  inp.style.opacity="0.6";
-  inp.style.cursor="wait";
   try{
    const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
@@ -1284,7 +1285,10 @@ function renderHome(m){
    if(live&&live.streaming){live.streaming=false;live.spinning=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
    else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
   }
-  sendBtn.disabled=false;refreshChat();inp.focus();
+  sendBtn.disabled=false;
+  refreshChat();
+  saveChat();
+  inp.focus();
  });
  chatBox.appendChild(form);
  wrap.appendChild(chatBox);
@@ -1691,6 +1695,13 @@ function renderChatPane(){
  p.appendChild(form);return p;
 }
 
+function saveChat(){
+ localStorage.setItem("falkor.chat."+STATE.activeThread,JSON.stringify(STATE.chat));
+}
+function loadChat(){
+ const stored=localStorage.getItem("falkor.chat."+STATE.activeThread);
+ if(stored)try{STATE.chat=JSON.parse(stored)}catch(e){}
+}
 function refreshChat(){
  const msgs=$("#chat-msgs");if(!msgs)return;
  msgs.innerHTML="";
@@ -1707,9 +1718,12 @@ function refreshChat(){
     if(m.pending) mascotClass="fk-think";
     else if(m.resultMood==="success") mascotClass="fk-celebrate";
     else if(m.resultMood==="error") mascotClass="fk-confused";
-    wrap.appendChild(el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"+(m.pending?";animation:fk-pulse 1.2s ease-in-out infinite":"")}));
+    const mascot=el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"});
+    if(m.pending)mascot.style.animation="fk-spin 0.8s linear infinite";
+    wrap.appendChild(mascot);
     const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
-    bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    const msgText=m.pending?"... thinking":m.content;
+    bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%;opacity:"+(m.pending?"0.7":"1")},msgText));
     if(m.images&&m.images.length){
      m.images.forEach(im=>{
       const ic=el("div",{style:"background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;align-self:flex-start"});
@@ -1725,7 +1739,7 @@ function refreshChat(){
     msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
    }
   }
- msgs.scrollTop=msgs.scrollHeight;
+ setTimeout(()=>{if(msgs)msgs.scrollTop=msgs.scrollHeight},0);
 }
 
 function renderChatMain(m){
