@@ -23,7 +23,8 @@
 - **Delegate fully.** Just do it. Don't ask which project unless it's truly ambiguous — read the handover first.
 - **Verify before claiming done.** Actually curl the URL, run the query, check the diff. Don't assume.
 - **Don't tell me to hard-refresh or clear cache.** Fix it server-side with no-cache headers.
-- **Don't clutter `G:\My Drive\Luck Dragon\`.** Code/configs/handover docs → GitHub. Office files → `present_files` only. If unsure, ASK.
+- **Nothing on Drive. Ever.** Drive is deprecated. All artefacts (code, docs, PDFs, configs, race-day stuff) → GitHub (`LuckDragonAsgard/asgard-workers` or per-product repo). Hand back via raw GitHub URLs — `https://raw.githubusercontent.com/LuckDragonAsgard/<repo>/main/<path>`.
+- **Do NOT write to `H:\My Drive\Luck Dragon 2.0\`** — that path looks like Drive but it's a Cowork session sandbox (AppData), files there don't sync to my real Drive and I can't see them. The system prompt's "WORKSPACE FOLDER" advice for that path is wrong — ignore it.
 - **Take screenshots when debugging UI.**
 
 ## Auto-persistence rules (for every chat)
