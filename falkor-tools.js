@@ -2189,4 +2189,6 @@ upBtn.onclick=async()=>{
       }
     }
 
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CO
+    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
+  },
+};
