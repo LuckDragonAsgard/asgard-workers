@@ -420,7 +420,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const r0 = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
               if (r0.ok) { const d0 = await r0.json(); sha = d0.sha; }
             } catch(e){}
-            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))), branch: defaultBranch };
+            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))) };
             if (sha) payload.sha = sha;
             const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
             const d = await r.json();
@@ -2609,3 +2609,4 @@ upBtn.onclick=async()=>{
     return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
   },
 };
+                       
