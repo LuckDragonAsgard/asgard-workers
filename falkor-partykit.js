@@ -73,13 +73,13 @@ export default {
 
     if (req.method === 'POST' && action === 'create') {
       const body = await req.json();
-      const room = env.TRIVIA_ROOM.get(code);
+      const room = env.TRIVIA_ROOM.get(env.TRIVIA_ROOM.idFromName(code));
       const data = { code, theme: body.theme || 'general', host: body.host || '', players: [], current_question: null, scores: {}, state: 'lobby' };
       await room.state.storage.put('room', data);
       return Response.json({ ok: true, code });
     }
 
-    const room = env.TRIVIA_ROOM.get(code);
+    const room = env.TRIVIA_ROOM.get(env.TRIVIA_ROOM.idFromName(code));
 
     if (action === 'state') {
       return room.fetch(new Request(url.href + '?code=' + code, req));
