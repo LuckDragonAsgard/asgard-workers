@@ -2276,6 +2276,32 @@ upBtn.onclick=async()=>{
       }
     }
 
+    if(url.pathname==='/api/kbt/generate-quiz' && method==='POST'){
+      try {
+        const body = await req.json();
+        const theme = body.theme || 'General Knowledge';
+        const rounds = body.rounds || 6;
+        const qpr = body.questions_per_round || 8;
+        const aReq = await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',
+          headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+          body: JSON.stringify({
+            model:'claude-haiku-4-5-20251001',
+            max_tokens: 4096,
+            system:'You are a trivia question writer for Kow Brainer Trivia. Generate engaging pub-quiz questions, answers, and fun_facts in JSON.',
+            messages:[{role:'user',content:`Generate a quiz pack in JSON format:\n{\n  "pack": {\n    "theme": "${theme}",\n    "rounds": [\n      {\n        "title": "Round 1",\n        "questions": [\n          {"q": "question", "a": "answer", "fun_fact": "fun fact"}\n        ]\n      }\n    ]\n  }\n}\nGenerate exactly ${rounds} rounds with ${qpr} questions each.`}]
+          })
+        });
+        const aData = await aReq.json();
+        const content = aData.content?.[0]?.text || '{}';
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        const pack = jsonMatch ? JSON.parse(jsonMatch[0]) : {pack:{theme,rounds:[]}};
+        return Response.json(pack, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
     if(url.pathname==='/api/briefing'){
       try {
         // Synthesize a daily summary from D1 data + tools
