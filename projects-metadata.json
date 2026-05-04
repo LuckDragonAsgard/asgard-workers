@@ -1,0 +1,76 @@
+{
+  "projects": {
+    "falkor": {
+      "name": "Falkor (this hub)",
+      "status": "LIVE",
+      "description": "The Asgard project hub itself - FlexWorkers, AI agents, Supabase portal, browser tools, Source:Asgard.",
+      "categories": ["CORE"],
+      "tags": ["CloudflareWorkers", "D1", "AI", "Agents"],
+      "repo": "asgard-workers"
+    },
+    "sportportal": {
+      "name": "Sport Portal Ecosystem",
+      "status": "LIVE",
+      "description": "3 public products (SSP, Carnival Timing, SportCarnival) + school/district portals. Enter student data once, automate across sports.",
+      "categories": ["EDUCATION", "SPORTS"],
+      "tags": ["CloudflareWorkers", "D1", "Firebase", "Stripe"],
+      "repos": ["schoolsportportal", "sportcarnival-hub", "district-sport", "sport-carnival", "wps-athletics-2026"]
+    },
+    "kbt": {
+      "name": "KBT Trivia Tools",
+      "status": "LIVE",
+      "description": "Asset pipeline, Google Slides placeholder system, 6 tool files, accent colors, canvas patterns.",
+      "categories": ["EDUCATION"],
+      "tags": ["GoogleSheets", "GoogleSlides", "Asset Pipeline"],
+      "repos": []
+    },
+    "bomberboat": {
+      "name": "Bomber Boat",
+      "status": "LIVE",
+      "description": "Western Bulldogs fan boat to Marvel/MCG. CF Pages + CF Worker.",
+      "categories": ["FUN"],
+      "tags": ["CloudflarePages", "CloudflareWorkers", "Stripe"],
+      "repo": "bomber-boat"
+    },
+    "superleague": {
+      "name": "Superleague Yeah v4",
+      "status": "LIVE",
+      "description": "AFL fantasy draft app. v4.28 live.",
+      "categories": ["SPORTS"],
+      "tags": ["CloudflareWorkers", "D1"],
+      "repo": "superleague-yeah-v4"
+    },
+    "wps-maths": {
+      "name": "WPS Y2 Maths Intervention",
+      "status": "LIVE",
+      "description": "7-week term pack, 14 hands-on lessons (Multi/Div/Add/Sub/Time). Vic Curric 2.0 + VTLM 2.0.",
+      "categories": ["EDUCATION"],
+      "tags": ["Curriculum", "Lesson Plans"],
+      "repos": []
+    },
+    "facemorph": {
+      "name": "Face Morph Tool",
+      "status": "ACTIVE",
+      "description": "50/50 alpha blend design, toggle system, photo alignment pipeline.",
+      "categories": ["TOOLS"],
+      "tags": ["ImageProcessing", "React"],
+      "repos": []
+    },
+    "carnival-timing": {
+      "name": "Carnival Timing",
+      "status": "LIVE",
+      "description": "Race-day timing app. Race Control / Starter / Lane Timer / Video Finish / Spectator. v8.5.2.",
+      "categories": ["SPORTS"],
+      "tags": ["CloudflareWorkers", "WebSocket", "D1", "Stripe"],
+      "repos": ["district-sport", "sport-carnival"]
+    },
+    "familyfinance": {
+      "name": "Family Finance IP Calculators",
+      "status": "LIVE",
+      "description": "3 Cloudflare workers for Footscray-Williamstown property cascade modeling (Paddy/Kelly/Monica).",
+      "categories": ["FINANCE"],
+      "tags": ["CloudflareWorkers", "FinancialModeling"],
+      "repos": []
+    }
+  }
+}
