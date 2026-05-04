@@ -1197,7 +1197,7 @@ function renderHome(m){
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
-  STATE.chat.push({role:"user",content:text});if(STATE.pendingImages)STATE.pendingImages=[];const upBtn=document.querySelector(".chat-upload");if(upBtn){upBtn.textContent="\ud83d\udcce";upBtn.style.color="var(--muted)";}
+  STATE.chat.push({role:"user",content:text});
   STATE.chat.push({role:"assistant",content:"…",pending:true});
   inp.value="";refreshChat();
   sendBtn.disabled=true;
@@ -1552,7 +1552,7 @@ function renderChatPane(){
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
-  STATE.chat.push({role:"user",content:text});if(STATE.pendingImages)STATE.pendingImages=[];const upBtn=document.querySelector(".chat-upload");if(upBtn){upBtn.textContent="\ud83d\udcce";upBtn.style.color="var(--muted)";}
+  STATE.chat.push({role:"user",content:text});
   // Add a "thinking" placeholder while AI works
   STATE.chat.push({role:"assistant",content:"…",pending:true});
   inp.value="";refreshChat();
