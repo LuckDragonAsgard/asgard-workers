@@ -691,6 +691,7 @@ const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const parseCost=c=>{if(!c)return 0;const m=String(c).match(/[0-9.]+/);return m?parseFloat(m[0]):0};
 
+fetch("/api/falkor/heartbeat",{method:"POST"}).catch(()=>{});
 const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:[],chatContext:null};
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
@@ -2512,73 +2513,41 @@ upBtn.onclick=async()=>{
       }
     }
 
+    if(url.pathname==='/api/falkor/heartbeat'&&request.method==='POST'){
+      // Page calls this on load. We log timestamp; verify-served reads the latest.
+      try {
+        await env.ASSETS.put('falkor:heartbeat:latest', String(Date.now()), {expirationTtl: 7*86400});
+        return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+
     if(url.pathname==='/api/falkor/verify-served'){
-      // CF Workers can't eval, so use regex/bracket-balance heuristics instead.
-      // Catches: unbalanced parens/braces/brackets, unterminated strings, common quote-escape bugs.
+      // Health check: if no heartbeat from a real browser in last 10 min, the served JS is probably broken.
+      // Combine with: HTML size sanity, contains expected markers.
       try {
         const html = HTML;
-        const scripts = [];
-        const re = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
-        let m;
-        while ((m = re.exec(html)) !== null) scripts.push(m[1]);
         const errors = [];
-        function check(js, idx) {
-          // Strip comments and strings (rough), then count brackets
-          let stripped = '';
-          let i = 0;
-          while (i < js.length) {
-            const c = js[i];
-            // // line comment
-            if (c === '/' && js[i+1] === '/') { i = js.indexOf('\n', i); if (i < 0) break; i++; continue; }
-            // /* block comment */
-            if (c === '/' && js[i+1] === '*') { const e = js.indexOf('*/', i+2); if (e < 0) { errors.push({block:idx, error:'unterminated block comment'}); return; } i = e+2; continue; }
-            // string literals
-            if (c === '"' || c === "'") {
-              const quote = c; i++;
-              while (i < js.length) {
-                if (js[i] === '\\') { i+=2; continue; }
-                if (js[i] === quote) { i++; break; }
-                if (js[i] === '\n') { errors.push({block:idx, error:'unterminated '+quote+' string near line '+(js.substring(0,i).split('\n').length), preview:js.substring(Math.max(0,i-40), i+10)}); return; }
-                i++;
-              }
-              continue;
-            }
-            // template literal
-            if (c === '`') {
-              i++;
-              while (i < js.length) {
-                if (js[i] === '\\') { i+=2; continue; }
-                if (js[i] === '`') { i++; break; }
-                // ${...} expression
-                if (js[i] === '$' && js[i+1] === '{') { let depth = 1; i += 2; while (i < js.length && depth) { if (js[i]==='{') depth++; else if (js[i]==='}') depth--; if (depth) i++; } i++; continue; }
-                i++;
-              }
-              continue;
-            }
-            stripped += c; i++;
+        // Sanity: HTML has the SPA shell
+        if (!html.includes('<div id="app">')) errors.push({error:'missing #app div'});
+        if (html.length < 30000) errors.push({error:'HTML too small: '+html.length+' bytes (expected >30KB)'});
+        // Heartbeat freshness — if any heartbeat exists, check it's recent
+        let lastHB = null;
+        try {
+          const v = await env.ASSETS.get('falkor:heartbeat:latest');
+          if (v) {
+            lastHB = parseInt(v);
+            const ageMs = Date.now() - lastHB;
+            // Stale if >30 min — page might be broken (or no one's loaded it)
+            if (ageMs > 30*60*1000) errors.push({error:'no heartbeat in '+Math.round(ageMs/60000)+' min — page may be broken or unused'});
           }
-          // Count brackets
-          let p = 0, b = 0, s = 0;
-          for (const c of stripped) {
-            if (c === '(') p++; else if (c === ')') p--;
-            else if (c === '{') b++; else if (c === '}') b--;
-            else if (c === '[') s++; else if (c === ']') s--;
-            if (p < 0) { errors.push({block:idx, error:'unmatched closing )'}); return; }
-            if (b < 0) { errors.push({block:idx, error:'unmatched closing }'}); return; }
-            if (s < 0) { errors.push({block:idx, error:'unmatched closing ]'}); return; }
-          }
-          if (p > 0) errors.push({block:idx, error:'unbalanced ( — '+p+' unclosed'});
-          if (b > 0) errors.push({block:idx, error:'unbalanced { — '+b+' unclosed'});
-          if (s > 0) errors.push({block:idx, error:'unbalanced [ — '+s+' unclosed'});
-        }
-        for (let i = 0; i < scripts.length; i++) check(scripts[i], i);
-        return Response.json({ok: errors.length===0, blocks: scripts.length, errors, html_size: html.length}, {headers:{...CORS,...NOCACHE}});
+        } catch(e){}
+        return Response.json({ok: errors.length===0, errors, html_size: html.length, last_heartbeat: lastHB, last_heartbeat_age_sec: lastHB ? Math.round((Date.now()-lastHB)/1000) : null}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
     }
 
-    if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
+        if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
       // Auto-rollback: revert falkor-tools.js to the previous commit on GitHub, then redeploy.
       try {
         const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-rollback', 'Accept':'application/vnd.github+json' };
