@@ -58,6 +58,8 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{ name:{type:'string',description:'Worker name e.g. falkor-tools, falkor-agent'} }, required:['name'] } },
           { name:'list_workers', description:"List all Cloudflare workers in the account with their last-modified time. Use to see the fleet.",
             input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'browser_run_sequence', description:"Run a sequence of browser actions in ONE bridge call (much faster than separate calls). Pass actions:[{action,input,delay_ms?},...]. Available actions: navigate, screenshot, click, type, press_key, extract, get_html, eval, scroll. Stops on first error. Returns array of {action,...result}.",
+            input_schema:{ type:'object', properties:{ actions:{type:'array', items:{type:'object', properties:{ action:{type:'string'}, input:{type:'object'}, delay_ms:{type:'integer'} }, required:['action'] }} }, required:['actions'] } },
           { name:'browser_navigate', description:"Navigate the user's Chrome browser to a URL (active tab). Requires the Falkor Browser Bridge extension to be installed and connected.",
             input_schema:{ type:'object', properties:{ url:{type:'string'}, tabId:{type:'number'} }, required:['url'] } },
           { name:'browser_screenshot', description:"Capture a screenshot of the user's current browser viewport as PNG. Returns base64.",
