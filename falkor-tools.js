@@ -2187,14 +2187,20 @@ function renderSystem(m){
  const wrap=el("div",{style:"padding:20px;display:grid;gap:10px"});
  wrap.appendChild(el("div",{style:"color:var(--muted);font-size:12px"},"Cloudflare worker fleet (live):"));
  const list=el("div",{style:"display:grid;gap:6px"});wrap.appendChild(list);m.appendChild(wrap);
- const workers=["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget","falkor-tools"];
- workers.forEach(w=>{
-  const row=el("div",{style:"display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px"});
-  row.appendChild(el("span",{style:"flex:1"},w));
-  const ver=el("span",{style:"color:var(--muted);font-size:11px;font-family:ui-monospace,monospace"},"\u2026");
-  const dot=el("span",{style:"width:8px;height:8px;border-radius:50%;background:var(--muted)"});
-  row.appendChild(ver);row.appendChild(dot);list.appendChild(row);
-  fetch("https://"+w+".luckdragon.io/health").then(r=>r.json()).then(d=>{ver.textContent=d.version||d.status||"ok";dot.style.background="var(--green)"}).catch(()=>{ver.textContent="down";dot.style.background="var(--red)"});
+ // Single same-origin call — no CORS pain
+ fetch("/api/fleet/health",{headers:{"X-Pin":STATE.agentPin||"2967"}}).then(r=>r.json()).then(d=>{
+   list.innerHTML="";
+   (d.workers||[]).forEach(w=>{
+     const row=el("div",{style:"display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px"});
+     row.appendChild(el("span",{style:"flex:1"},w.name));
+     const ver=el("span",{style:"color:var(--muted);font-size:11px;font-family:ui-monospace,monospace"},w.status==="ok"?(w.version||"ok"):"down");
+     const dot=el("span",{style:"width:8px;height:8px;border-radius:50%;background:"+(w.status==="ok"?"var(--green)":"var(--red)")});
+     row.appendChild(ver);row.appendChild(dot);list.appendChild(row);
+   });
+   const hdr=el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},(d.healthy||0)+" / "+(d.total||0)+" workers healthy");
+   list.appendChild(hdr);
+ }).catch(e=>{
+   list.innerHTML="<div style='color:var(--red);font-size:12px'>fleet check failed: "+e+"</div>";
  });
  return m;
 }
@@ -3251,6 +3257,22 @@ upBtn.onclick=async()=>{
       const v = await env.ASSETS.get('test:retry_counter') || '0';
       await env.ASSETS.delete('test:retry_counter');
       return Response.json({hits: parseInt(v)}, {headers:{...CORS,...NOCACHE}});
+    }
+    if(url.pathname==='/api/fleet/health'&&request.method==='GET'){
+      try {
+        const workers = ["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget","falkor-tools"];
+        const results = await Promise.all(workers.map(async w=>{
+          try {
+            const r = await fetch('https://'+w+'.luckdragon.io/health', { signal: AbortSignal.timeout(4000) });
+            if (!r.ok) return { name:w, status:'down', http:r.status };
+            const d = await r.json();
+            return { name:w, status:'ok', version: d.version || d.status || 'ok', detail: d.db || d.worker };
+          } catch(e) {
+            return { name:w, status:'down', error: String(e).substring(0,60) };
+          }
+        }));
+        return Response.json({ok:true, workers: results, healthy: results.filter(r=>r.status==='ok').length, total: results.length}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/chat/threads'&&request.method==='GET'){
       try {
