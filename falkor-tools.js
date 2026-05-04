@@ -356,7 +356,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                     const preD = await preR.json();
                     const preSrc = decodeURIComponent(escape(atob(preD.content.replace(/\n/g,''))));
                     // Find the served HTML constant and the inline <script>
-                    const htmlMatch = preSrc.match(/const HTML_TEMPLATE = `([\s\S]*?)`;/) || preSrc.match(/const html = `([\s\S]*?)`;\s*return new Response\(html/) || preSrc.match(/return new Response\(`([\s\S]*?)`,/);
+                    const htmlMatch = preSrc.match(/const HTML\s*=\s*`([\s\S]*?)`;/) || preSrc.match(/const HTML_TEMPLATE\s*=\s*`([\s\S]*?)`;/);
                     if (htmlMatch) {
                       const html = htmlMatch[1];
                       const scriptM = html.match(/<script>([\s\S]*?)<\/script>/);
