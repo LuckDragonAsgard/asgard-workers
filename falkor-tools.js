@@ -3068,6 +3068,25 @@ upBtn.onclick=async()=>{
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
+    if(url.pathname==='/api/_test/fake522'&&request.method==='GET'){
+      // Test endpoint — always returns CF 522 body so verify_endpoint retry can be exercised
+      return new Response('error code: 522', {status:522, headers:{'Content-Type':'text/plain',...CORS,...NOCACHE}});
+    }
+    if(url.pathname==='/api/_test/retry-count'&&request.method==='GET'){
+      // Increments KV counter on each hit — used to prove how many retries actually happened
+      try {
+        const k = 'test:retry_counter';
+        const cur = parseInt(await env.ASSETS.get(k) || '0');
+        const next = cur + 1;
+        await env.ASSETS.put(k, String(next), {expirationTtl: 60});
+        return new Response('error code: 522', {status:522, headers:{'Content-Type':'text/plain','X-Hit-Count':String(next),...CORS,...NOCACHE}});
+      } catch(e){ return new Response('err', {status:500}); }
+    }
+    if(url.pathname==='/api/_test/retry-count-read'&&request.method==='GET'){
+      const v = await env.ASSETS.get('test:retry_counter') || '0';
+      await env.ASSETS.delete('test:retry_counter');
+      return Response.json({hits: parseInt(v)}, {headers:{...CORS,...NOCACHE}});
+    }
     if(url.pathname==='/api/chat/reset'&&request.method==='POST'){
       try {
         const body = await request.json().catch(()=>({}));
