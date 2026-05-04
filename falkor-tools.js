@@ -832,9 +832,9 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .tile-foot{display:flex;gap:4px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
 .tile-foot span{background:var(--panel2);padding:2px 6px;border-radius:4px}
 .tile-foot .cost{background:rgba(255,107,53,.15);color:var(--accent);font-weight:600}
-.chat-pane{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;min-width:0}
+.chat-pane{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;min-width:0;height:100vh;min-height:0;overflow:hidden}
 .chat-head{padding:14px;border-bottom:1px solid var(--border);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
-.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:0}
 .msg{padding:10px 12px;border-radius:10px;max-width:90%;font-size:13px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
 .msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .msg.assistant{align-self:flex-start;background:var(--panel2);border:1px solid var(--border)}
