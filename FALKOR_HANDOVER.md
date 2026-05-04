@@ -1,3 +1,20 @@
+# Falkor / Asgard — Session Handover
+
+> ⛔ **ZERO-TOLERANCE PERSISTENCE RULE — READ FIRST** ⛔
+>
+> **NEVER write to ephemeral/temp paths.** Other Claude chats have repeatedly saved files to AppData, /tmp, /sessions, Local Settings — paths Paddy cannot access later. This is THE most important rule.
+>
+> **All persistence goes to ONE of these locations ONLY:**
+> 1. GitHub `LuckDragonAsgard/asgard-workers` — for code/configs (use Falkor's write_file/edit_file/multi_edit tools)
+> 2. Cloudflare D1 — for structured data (run_d1_query)
+> 3. CF KV (env.ASSETS) — for session state, audit logs
+> 4. CF Vectorize via falkor-brain — for semantic memory
+> 5. User Drive `G:\My Drive\Luck Dragon\` — ONLY when Paddy explicitly asks for an Office file (docx/pptx/xlsx/pdf)
+>
+> **NEVER ALLOWED:** AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path. Lost forever next chat.
+
+---
+
 # Falkor — Session Handover (2026-05-04, evening)
 
 ## Who you are talking to
