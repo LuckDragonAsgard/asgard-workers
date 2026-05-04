@@ -1266,9 +1266,21 @@ function renderChatPane(){
  head.appendChild(closeBtn);
  if(STATE.chatContext){
   head.appendChild(el("span",{style:"margin-left:8px;font-size:11px;color:var(--accent);background:rgba(255,107,53,0.1);padding:3px 8px;border-radius:99px"},"\u2192 "+(STATE.chatContext.name||"project")));
-  const clr=el("button",{style:"margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px"},"clear");
+  const clr=el("button",{style:"margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px",title:"Exit project (keep history)"},"exit");
   clr.addEventListener("click",()=>{STATE.chatContext=null;STATE.chat.push({role:"system",content:"\u2014 general chat \u2014"});render()});
   head.appendChild(clr);
+  const rst=el("button",{style:"margin-left:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px",title:"Wipe chat history from server"},"\ud83d\uddd1 reset");
+  rst.addEventListener("click",async()=>{
+    if(!confirm("Wipe Falkor's memory of this chat thread? (Saved memories are kept.)"))return;
+    const projId=STATE.chatContext?.id||null;
+    try{
+      const r=await fetch("/api/chat/reset",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({project_id:projId})});
+      const d=await r.json();
+      STATE.chat=[{role:"system",content:"\u2014 chat reset ("+d.deleted+" turns wiped) \u2014"}];
+      render();
+    }catch(e){alert("Reset failed: "+e);}
+  });
+  head.appendChild(rst);
  }
  p.appendChild(head);
  const msgs=el("div",{class:"chat-msgs",id:"chat-msgs"});
@@ -3055,6 +3067,28 @@ upBtn.onclick=async()=>{
     }
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
+    }
+    if(url.pathname==='/api/chat/reset'&&request.method==='POST'){
+      try {
+        const body = await request.json().catch(()=>({}));
+        const projectId = body.project_id || null;
+        let sql, params;
+        if (projectId) {
+          sql = 'DELETE FROM falkor_chat_history WHERE user_id=? AND project_id=?';
+          params = ['paddy', projectId];
+        } else {
+          sql = 'DELETE FROM falkor_chat_history WHERE user_id=?';
+          params = ['paddy'];
+        }
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql, params}),
+        });
+        const d = await r.json();
+        const changes = d.result?.[0]?.meta?.changes || 0;
+        return Response.json({ok:true, deleted: changes, scope: projectId ? 'project '+projectId : 'all'}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/agent-chat-stream'&&request.method==='POST'){
       const body = await request.json();
