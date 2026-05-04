@@ -569,7 +569,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.5.0',mode:'asgard-hub-agent-toolset'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.6.0',mode:'asgard-hub-browser-bridge'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -589,6 +589,44 @@ export default {
       } catch(e) {
         return Response.json({ error:'D1 query failed', detail: String(e).substring(0,300) }, { status:500, headers:{...CORS,...NOCACHE} });
       }
+    }
+    if(url.pathname==='/browser/ping'){
+      const pin = request.headers.get('X-Pin') || '';
+      // simple auth: any of agent pin, dashboard pin, or paddy pin via vault verify
+      if (!pin) return new Response('Unauthorized',{status:401,headers:CORS});
+      // check via falkor-push verify (same as login)
+      try {
+        const r = await fetch('https://falkor-push.luckdragon.io/user/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'paddy',pin})});
+        const d = await r.json();
+        if (d && d.success) return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
+      } catch(e){}
+      // fallback: agent pin
+      if (pin === env.AGENT_PIN) return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
+      return new Response('Unauthorized',{status:401,headers:CORS});
+    }
+    if(url.pathname==='/browser/poll'){
+      const pin = request.headers.get('X-Pin') || '';
+      if (!pin || (pin !== env.AGENT_PIN && pin !== '2967')) {
+        // verify against push
+        let ok=false;
+        try { const r=await fetch('https://falkor-push.luckdragon.io/user/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'paddy',pin})}); const d=await r.json(); ok=!!(d&&d.success);}catch(e){}
+        if(!ok) return new Response('Unauthorized',{status:401,headers:CORS});
+      }
+      // pop next pending command from KV
+      const queue = await env.ASSETS.get('browser:queue', { type:'json' }) || [];
+      if (queue.length === 0) return new Response('',{status:204,headers:{...CORS,...NOCACHE}});
+      const cmd = queue.shift();
+      await env.ASSETS.put('browser:queue', JSON.stringify(queue));
+      return Response.json(cmd, {headers:{...CORS,...NOCACHE}});
+    }
+    if(url.pathname==='/browser/result'&&request.method==='POST'){
+      const pin = request.headers.get('X-Pin') || '';
+      if (!pin) return new Response('Unauthorized',{status:401,headers:CORS});
+      const body = await request.json();
+      if (!body.id) return Response.json({error:'id required'},{status:400,headers:CORS});
+      // store result keyed by command id, expires 5 min
+      await env.ASSETS.put('browser:result:'+body.id, JSON.stringify(body.output||{}), { expirationTtl: 300 });
+      return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
     }
     if(url.pathname==='/upload'&&request.method==='GET'){
       const html = `<!doctype html><html><head><meta charset="utf-8"><title>Upload mascot</title>
@@ -746,6 +784,30 @@ upBtn.onclick=async()=>{
             input_schema:{ type:'object', properties:{ name:{type:'string',description:'Worker name e.g. falkor-tools, falkor-agent'} }, required:['name'] } },
           { name:'list_workers', description:"List all Cloudflare workers in the account with their last-modified time. Use to see the fleet.",
             input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'browser_navigate', description:"Navigate the user's Chrome browser to a URL (active tab). Requires the Falkor Browser Bridge extension to be installed and connected.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'}, tabId:{type:'number'} }, required:['url'] } },
+          { name:'browser_screenshot', description:"Capture a screenshot of the user's current browser viewport as PNG. Returns base64.",
+            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
+          { name:'browser_click', description:"Click an element in the user's browser. Provide either CSS selector or x,y coordinates.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, x:{type:'number'}, y:{type:'number'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_type', description:"Type text into an input/textarea in the user's browser. Provide selector to target element.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, text:{type:'string'}, tabId:{type:'number'} }, required:['text'] } },
+          { name:'browser_press_key', description:"Press a key in the user's browser (Enter, Tab, Escape, etc.).",
+            input_schema:{ type:'object', properties:{ key:{type:'string'}, tabId:{type:'number'} }, required:['key'] } },
+          { name:'browser_extract', description:"Extract text from the user's browser. Without selector returns full page text. With selector returns matching element details.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_get_html', description:"Get the HTML of the user's browser page or a specific element.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_eval', description:"Run arbitrary JavaScript in the user's browser page context. Returns the value of the last expression.",
+            input_schema:{ type:'object', properties:{ code:{type:'string'}, tabId:{type:'number'} }, required:['code'] } },
+          { name:'browser_tabs', description:"List all open tabs in the user's browser.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'browser_new_tab', description:"Open a new tab in the user's browser.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'} }, required:[] } },
+          { name:'browser_close_tab', description:"Close a tab in the user's browser by tabId.",
+            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
+          { name:'browser_scroll', description:"Scroll the user's browser page by x,y pixels. Set absolute=true to scroll to position instead of by delta.",
+            input_schema:{ type:'object', properties:{ x:{type:'number'}, y:{type:'number'}, absolute:{type:'boolean'} }, required:[] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
@@ -866,6 +928,29 @@ upBtn.onclick=async()=>{
               if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
               return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha };
             } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
+          }
+          // Helper to dispatch browser commands via Chrome extension bridge
+          async function browserDispatch(action, input) {
+            const cmdId = 'b_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+            // append to queue
+            const queue = await env.ASSETS.get('browser:queue', { type:'json' }) || [];
+            queue.push({ id: cmdId, action, input });
+            await env.ASSETS.put('browser:queue', JSON.stringify(queue));
+            // poll for result up to 25s
+            const deadline = Date.now() + 25000;
+            while (Date.now() < deadline) {
+              await new Promise(r => setTimeout(r, 700));
+              const res = await env.ASSETS.get('browser:result:'+cmdId);
+              if (res) {
+                await env.ASSETS.delete('browser:result:'+cmdId);
+                try { return JSON.parse(res); } catch(e) { return { error:'bad result' }; }
+              }
+            }
+            return { error: 'browser timeout — is the Falkor Bridge extension installed and connected?' };
+          }
+          if (name && name.startsWith('browser_')) {
+            const action = name.replace('browser_','');
+            return await browserDispatch(action, input);
           }
           if (name === 'list_workers') {
             try {
