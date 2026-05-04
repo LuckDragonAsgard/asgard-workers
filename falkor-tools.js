@@ -3891,8 +3891,24 @@ upBtn.onclick=async()=>{
 
         // Persist this turn to chat history
         try {
-          const projId = project?.id || null;
-          const projName = project?.name || null;
+          let projId = project?.id || null;
+          let projName = project?.name || null;
+          // Normalize: if id is set but name is missing (or vice versa), don't half-save — set both or neither
+          if (projId && !projName) {
+            // Try to resolve name from a known projects table — fallback to 'Project '+id
+            try {
+              const lookup = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/3708c025-cf0d-442a-a57b-67f2a304932f/query', {
+                method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({sql:'SELECT project_name FROM project_hub WHERE id=?', params:[projId]})
+              });
+              const lj = await lookup.json();
+              projName = lj.result?.[0]?.results?.[0]?.project_name || ('Project '+projId);
+            } catch(e) { projName = 'Project '+projId; }
+          }
+          if (projName && !projId) {
+            // Name without id is a half-save — drop both rather than create an orphan
+            projName = null;
+          }
           const toolsUsed = toolResults.map(t=>t.tool).join(',');
           await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
             method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
