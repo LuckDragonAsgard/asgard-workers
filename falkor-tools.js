@@ -3260,17 +3260,28 @@ upBtn.onclick=async()=>{
     }
     if(url.pathname==='/api/fleet/health'&&request.method==='GET'){
       try {
-        const workers = ["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget","falkor-tools"];
-        const results = await Promise.all(workers.map(async w=>{
-          try {
-            const r = await fetch('https://'+w+'.luckdragon.io/health', { signal: AbortSignal.timeout(4000) });
-            if (!r.ok) return { name:w, status:'down', http:r.status };
-            const d = await r.json();
-            return { name:w, status:'ok', version: d.version || d.status || 'ok', detail: d.db || d.worker };
-          } catch(e) {
-            return { name:w, status:'down', error: String(e).substring(0,60) };
+        const workers = ["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget"];
+        // Self (falkor-tools) is reported separately as we can't fetch our own URL (CF returns 530)
+        async function probe(w) {
+          for (let attempt=0; attempt<3; attempt++) {
+            try {
+              const r = await fetch('https://'+w+'.luckdragon.io/health', { signal: AbortSignal.timeout(5000) });
+              if (r.status === 522 || r.status === 530) {
+                if (attempt < 2) { await new Promise(rs=>setTimeout(rs, 500*(attempt+1))); continue; }
+                return { name:w, status:'down', http:r.status };
+              }
+              if (!r.ok) return { name:w, status:'down', http:r.status };
+              const d = await r.json();
+              return { name:w, status:'ok', version: d.version || d.status || 'ok' };
+            } catch(e) {
+              if (attempt < 2) { await new Promise(rs=>setTimeout(rs, 500*(attempt+1))); continue; }
+              return { name:w, status:'down', error: String(e).substring(0,60) };
+            }
           }
-        }));
+        }
+        const results = await Promise.all(workers.map(probe));
+        // Self-status: we know we're alive because we're serving this response
+        results.push({ name:'falkor-tools', status:'ok', version:'self' });
         return Response.json({ok:true, workers: results, healthy: results.filter(r=>r.status==='ok').length, total: results.length}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
