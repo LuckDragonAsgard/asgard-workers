@@ -2029,7 +2029,7 @@ var CarnivalRoom = class {
         "https://carnival-results.pgallivan.workers.dev/api/results/" + encodeURIComponent(carnivalCode),
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "User-Agent": "carnival-timing-ws/1.0" },
           body: JSON.stringify({
             meta: { school: meta.school || "", sport: meta.sport || "", name: meta.name || "" },
             results: { [resultKey]: resultData }
