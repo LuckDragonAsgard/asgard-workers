@@ -10,6 +10,12 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{ path:{type:'string'}, old_string:{type:'string', description:'exact text to replace — include enough context to be unique'}, new_string:{type:'string'}, replace_all:{type:'boolean', description:'replace every occurrence (default false)'}, message:{type:'string', description:'commit message'} }, required:['path','old_string','new_string'] } },
           { name:'verify_endpoint', description:"Verify a Falkor endpoint returns valid JSON (not HTML fallthrough or 522 error). Use AFTER cf_deploy_worker. If response is HTML or contains \"error code: 522\", waits 5s and retries up to 3 times. Returns ok:true with the parsed JSON if successful, ok:false with details if failing.",
             input_schema:{ type:'object', properties:{ url:{type:'string',description:'path like /api/foo or full URL'}, method:{type:'string',description:'GET or POST',default:'GET'}, body:{type:'object',description:'JSON body for POST'}, expected_field:{type:'string',description:'optional field name expected in response (e.g. ok, results)'} }, required:['url'] } },
+          { name:'kbt_room_create', description:'Create a live KBT trivia room with Durable Object backing. Returns room state.',
+            input_schema:{ type:'object', properties:{ code:{type:'string'}, theme:{type:'string'}, host:{type:'string'} }, required:['code'] } },
+          { name:'kbt_room_start', description:'Start a KBT trivia game in an existing room.',
+            input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
+          { name:'kbt_room_state', description:'Get current state + scores for a KBT trivia room.',
+            input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
           { name:'drive_search', description:'Search Paddy\'s Google Drive by query string. Returns list of {id, name, mimeType, modifiedTime, webViewLink}. Use for finding existing docs.',
             input_schema:{ type:'object', properties:{ query:{type:'string'}, max_results:{type:'integer'} }, required:['query'] } },
           { name:'drive_upload', description:'Upload a file to Paddy\'s Google Drive. Provide name, mime type (text/plain, text/markdown, application/vnd.google-apps.document, etc), content. Returns {id, webViewLink}.',
@@ -271,23 +277,8 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 bindings.push({ type: 'durable_object_namespace', name: bname, class_name: cls });
               }
               const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings, keep_bindings:['secret_text','kv_namespace','durable_object_namespace','d1','queue','r2_bucket','analytics_engine'] };
-              // Only send migrations on FIRST deploy of a DO class. Check if worker exists first.
               if (requestedDOs.length > 0) {
-                try {
-                  const ex = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname+'/bindings', { headers:{'Authorization':'Bearer '+env.CF_API_TOKEN} });
-                  if (ex.status === 404) {
-                    metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
-                  } else {
-                    const exj = await ex.json();
-                    const existingDOs = (exj.result||[]).filter(b => b.type === 'durable_object_namespace').map(b => b.class_name);
-                    const newDOs = requestedDOs.filter(c => !existingDOs.includes(c));
-                    if (newDOs.length > 0) {
-                      metadata.migrations = { tag: 'v'+(Date.now()), new_sqlite_classes: newDOs };
-                    }
-                  }
-                } catch(e) {
-                  metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
-                }
+                metadata.migrations = { tag: 'v1', new_sqlite_classes: requestedDOs };
               }
               const boundary = '----b42deploy'+Date.now();
               const enc = new TextEncoder();
@@ -598,6 +589,24 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const txt = await r.text();
               try { const j = JSON.parse(txt); return { ok:true, worker: w, reply: j.reply||j.text||txt.substring(0,500) }; } catch(e) { return { ok:r.ok, worker: w, status:r.status, body: txt.substring(0,500) }; }
             } catch(e) { return { error:'delegate: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'kbt_room_create') {
+            try {
+              const r = await fetch('https://falkor-partykit.luckdragon.io/room/create', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:input.code, theme:input.theme||'general', host:input.host||'paddy'})});
+              return await r.json();
+            } catch(e){ return {error:'kbt create: '+String(e).substring(0,200)}; }
+          }
+          if (name === 'kbt_room_start') {
+            try {
+              const r = await fetch('https://falkor-partykit.luckdragon.io/room/'+encodeURIComponent(input.code)+'/start', {method:'POST'});
+              return await r.json();
+            } catch(e){ return {error:'kbt start: '+String(e).substring(0,200)}; }
+          }
+          if (name === 'kbt_room_state') {
+            try {
+              const r = await fetch('https://falkor-partykit.luckdragon.io/room/'+encodeURIComponent(input.code));
+              return await r.json();
+            } catch(e){ return {error:'kbt state: '+String(e).substring(0,200)}; }
           }
           if (name === 'drive_search') {
             try {
