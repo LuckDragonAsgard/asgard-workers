@@ -3491,6 +3491,72 @@ upBtn.onclick=async()=>{
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
+    if(url.pathname==='/api/falkor/costs'&&request.method==='GET'){
+      try {
+        const providers = [];
+        // 1) ElevenLabs subscription (chars used / quota)
+        try {
+          const elKey = await env.ASSETS.get('falkor:el_key_cache') || await (async()=>{
+            const r = await fetch('https://asgard-vault.luckdragon.io/secret/ELEVENLABS_API_KEY', {headers:{'X-Pin': env.VAULT_PIN || '535554'}});
+            const t = await r.text();
+            if (r.ok && t && !t.includes('not found')) { await env.ASSETS.put('falkor:el_key_cache', t.trim(), {expirationTtl: 3600}); return t.trim(); }
+            return null;
+          })();
+          if (elKey) {
+            const r = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers:{'xi-api-key':elKey}, signal: AbortSignal.timeout(8000) });
+            if (r.ok) {
+              const d = await r.json();
+              providers.push({ name:'ElevenLabs', tier: d.tier||'?', used: d.character_count||0, quota: d.character_limit||0, unit:'chars', resets: d.next_character_count_reset_unix || null, dashboard:'https://elevenlabs.io/app/subscription' });
+            } else providers.push({ name:'ElevenLabs', error:'http '+r.status, dashboard:'https://elevenlabs.io/app/subscription' });
+          } else providers.push({ name:'ElevenLabs', error:'no key', dashboard:'https://elevenlabs.io/app/subscription' });
+        } catch(e){ providers.push({ name:'ElevenLabs', error: String(e).substring(0,80), dashboard:'https://elevenlabs.io/app/subscription' }); }
+
+        // 2) Anthropic — regular API key can't query usage. Show dashboard link.
+        providers.push({ name:'Anthropic Claude', note:'usage API requires Admin key (regular key only)', dashboard:'https://console.anthropic.com/usage' });
+
+        // 3) OpenAI — same. Show dashboard link.
+        providers.push({ name:'OpenAI', note:'billing API requires session token (not API key)', dashboard:'https://platform.openai.com/usage' });
+
+        // 4) Gemini — Google Cloud Billing requires GCP project setup.
+        providers.push({ name:'Google Gemini', note:'free tier (15 RPM); upgrade via aistudio.google.com', dashboard:'https://aistudio.google.com/apikey' });
+
+        // 5) Groq — currently free tier
+        providers.push({ name:'Groq', note:'free tier (rate-limited)', dashboard:'https://console.groq.com/settings/usage' });
+
+        // 6) Cloudflare Workers — query analytics via account API
+        try {
+          const today = new Date().toISOString().substring(0,10);
+          const start = new Date(Date.now() - 30*86400000).toISOString();
+          const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/analytics_engine/sql', {
+            method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'text/plain'},
+            body: 'SELECT count() as requests FROM AccessRequests WHERE timestamp >= toDateTime(\''+start+'\') FORMAT JSON',
+            signal: AbortSignal.timeout(8000)
+          });
+          // CF analytics requires worker analytics token, may not work — fallback
+        } catch(e){}
+
+        // List workers count
+        try {
+          const wr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts', { headers:{'Authorization':'Bearer '+env.CF_API_TOKEN}, signal: AbortSignal.timeout(8000) });
+          const wd = await wr.json();
+          const workerCount = (wd.result||[]).length;
+          providers.push({ name:'Cloudflare Workers', workers: workerCount, note:'Free tier 100k req/day, $5/mo for 10M (Workers Paid)', dashboard:'https://dash.cloudflare.com/'+env.CF_ACCOUNT_ID+'/workers/overview' });
+        } catch(e){
+          providers.push({ name:'Cloudflare Workers', error:'cf api error', dashboard:'https://dash.cloudflare.com/'+env.CF_ACCOUNT_ID+'/workers/overview' });
+        }
+
+        // 7) Asgard-AI internal usage tracker (if it has one)
+        try {
+          const r = await fetch('https://asgard-ai.luckdragon.io/usage', { signal: AbortSignal.timeout(5000) });
+          if (r.ok) {
+            const d = await r.json();
+            providers.push({ name:'asgard-ai router', usage: d, note:'17-tier waterfall — see /usage' });
+          }
+        } catch(e){}
+
+        return Response.json({ok:true, providers, generated_at: new Date().toISOString(), note:'Most providers require admin-tier keys for direct usage queries — click dashboard links to see real spend.'}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
     if(url.pathname==='/api/falkor/error-log'&&request.method==='POST'){
       try {
         const b = await request.json();
