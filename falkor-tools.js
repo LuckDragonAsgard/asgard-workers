@@ -1160,8 +1160,8 @@ window.attachFile = async function(f, badge) {
   if (f.size > 10*1024*1024) { alert("File too large (10MB max): "+f.name); return; }
   const isImage = (f.type||"").startsWith("image/");
   const isTextual = !isImage && (
-    /^text\//.test(f.type||"") ||
-    /\.(txt|md|csv|json|js|css|html|xml|yaml|yml|log|py|ts|jsx|tsx|sql|sh|env|conf|ini)$/i.test(f.name)
+    (f.type||"").indexOf("text/")===0 ||
+    (function(n){const exts=["txt","md","csv","json","js","css","html","xml","yaml","yml","log","py","ts","jsx","tsx","sql","sh","env","conf","ini"];const ext=(n||"").split(".").pop().toLowerCase();return exts.indexOf(ext)>=0;})(f.name)
   );
   if (!STATE.pendingFiles) STATE.pendingFiles = [];
   if (!STATE.pendingImages) STATE.pendingImages = [];
