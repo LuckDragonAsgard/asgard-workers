@@ -1334,19 +1334,13 @@ function renderHome(m){
  micBtn.addEventListener("mouseup",stop);micBtn.addEventListener("mouseleave",stop);
  micBtn.addEventListener("touchstart",e=>{e.preventDefault();micBtn.dispatchEvent(new Event("mousedown"))});micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
  const sendBtn=el("button",{class:"primary",type:"submit",style:"background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600"},"Send");
- const upload=el("button",{type:"button",style:"background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;color:var(--muted);width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:14px",title:"Attach image"},"\ud83d\udcce");
- const fileInp=el("input",{type:"file",accept:"image/*",style:"display:none"});
+ const upload=el("button",{type:"button",style:"background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;color:var(--muted);width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:14px",title:"Attach image, file, or paste from clipboard"},"\ud83d\udcce");
+ const fileInp=el("input",{type:"file",accept:"*/*",style:"display:none"});
  upload.appendChild(fileInp);
  upload.addEventListener("click",e=>{if(e.target!==fileInp)fileInp.click();});
  fileInp.addEventListener("change",async()=>{
    const f=fileInp.files[0]; if(!f)return;
-   if(f.size>5*1024*1024){alert("Image too large (5MB max)");fileInp.value="";return;}
-   const b64=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
-   if(!STATE.pendingImages)STATE.pendingImages=[];
-   STATE.pendingImages.push({src:b64,name:f.name,type:f.type});
-   upload.textContent="\ud83d\udcce "+STATE.pendingImages.length;
-   upload.style.color="var(--accent)";
-   upload.style.borderColor="var(--accent)";
+   await window.attachFile(f, upload);
    fileInp.value="";
  });
  form.appendChild(upload);
@@ -1364,7 +1358,7 @@ function renderHome(m){
   sendBtn.textContent="Processing ⟳";
   sendBtn.style.opacity="0.6";
   try{
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
    const live=STATE.chat[STATE.chat.length-1];
    if(live&&live.pending){live.pending=false;live.streaming=true;live.spinning=false;live.content=""}
@@ -1708,19 +1702,13 @@ function renderChatPane(){
  micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
 
  const btn=el("button",{class:"primary",type:"submit"},"\u2192");
- const upload2=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer",title:"Attach image"},"\ud83d\udcce");
- const fileInp2=el("input",{type:"file",accept:"image/*",style:"display:none"});
+ const upload2=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer",title:"Attach image, file, or paste from clipboard"},"\ud83d\udcce");
+ const fileInp2=el("input",{type:"file",accept:"*/*",style:"display:none"});
  upload2.appendChild(fileInp2);
  upload2.addEventListener("click",e=>{if(e.target!==fileInp2)fileInp2.click();});
  fileInp2.addEventListener("change",async()=>{
    const f=fileInp2.files[0]; if(!f)return;
-   if(f.size>5*1024*1024){alert("Image too large (5MB max)");fileInp2.value="";return;}
-   const b64=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
-   if(!STATE.pendingImages)STATE.pendingImages=[];
-   STATE.pendingImages.push({src:b64,name:f.name,type:f.type});
-   upload2.textContent="\ud83d\udcce "+STATE.pendingImages.length;
-   upload2.style.color="var(--accent)";
-   upload2.style.borderColor="var(--accent)";
+   await window.attachFile(f, upload2);
    fileInp2.value="";
  });
  form.appendChild(upload2);
@@ -1736,7 +1724,7 @@ function renderChatPane(){
   btn.disabled=true;
   try{
    // Streaming: route through agent-chat-stream — tokens arrive word-by-word
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
    // Convert pending placeholder into live streaming bubble
    const live = STATE.chat[STATE.chat.length-1];
@@ -3950,6 +3938,7 @@ upBtn.onclick=async()=>{
       const project = body.project || null;
       const history = Array.isArray(body.history) ? body.history : [];
       const userImages = Array.isArray(body.images) ? body.images : [];
+            const userFiles = Array.isArray(body.files) ? body.files : [];
       const enc = new TextEncoder();
       const stream = new ReadableStream({
         async start(controller) {
@@ -3989,13 +3978,19 @@ upBtn.onclick=async()=>{
               system += String.fromCharCode(10) + ctx.join(String.fromCharCode(10));
             }
             const tools = AGENT_TOOLS;  // shared with non-streaming
+            // Build content blocks: images + (file text appended) + user message
+            let augmentedMsg = userMsg;
+            for (const f of userFiles) {
+              if (f.text) augmentedMsg += '\n\n[Attached file: '+f.name+']\n```\n'+f.text.substring(0,50000)+'\n```';
+              else if (f.base64) augmentedMsg += '\n\n[Attached binary file: '+f.name+' ('+f.type+', '+Math.round((f.base64.length*0.75)/1024)+'KB) — content not inlined since it\'s binary]';
+            }
             const userContent = userImages.length ? [
               ...userImages.map(im => ({
                 type: 'image',
                 source: { type: 'base64', media_type: (im.src||'').match(/^data:([^;]+);/)?.[1] || 'image/png', data: (im.src||'').split(',')[1] || '' }
               })),
-              { type: 'text', text: userMsg }
-            ] : userMsg;
+              { type: 'text', text: augmentedMsg }
+            ] : augmentedMsg;
             const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
             const toolResults = [];
             let iterations = 0;
@@ -4140,6 +4135,7 @@ upBtn.onclick=async()=>{
         const userMsg = body.message || '';
         const project = body.project || null;
         const userImages = Array.isArray(body.images) ? body.images : [];
+            const userFiles = Array.isArray(body.files) ? body.files : [];
         const history = Array.isArray(body.history) ? body.history : [];
 
         // Parse owner/repo from project.github URL
@@ -4195,13 +4191,19 @@ upBtn.onclick=async()=>{
           priorTurns = rows.reverse().map(r => ({ role: r.role, content: r.content }));
         } catch(e){}
 
-        const userContent = userImages.length ? [
+        // Build content blocks: images + (file text appended) + user message
+            let augmentedMsg = userMsg;
+            for (const f of userFiles) {
+              if (f.text) augmentedMsg += '\n\n[Attached file: '+f.name+']\n```\n'+f.text.substring(0,50000)+'\n```';
+              else if (f.base64) augmentedMsg += '\n\n[Attached binary file: '+f.name+' ('+f.type+', '+Math.round((f.base64.length*0.75)/1024)+'KB) — content not inlined since it\'s binary]';
+            }
+            const userContent = userImages.length ? [
               ...userImages.map(im => ({
                 type: 'image',
                 source: { type: 'base64', media_type: (im.src||'').match(/^data:([^;]+);/)?.[1] || 'image/png', data: (im.src||'').split(',')[1] || '' }
               })),
-              { type: 'text', text: userMsg }
-            ] : userMsg;
+              { type: 'text', text: augmentedMsg }
+            ] : augmentedMsg;
             const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
         const toolResults = [];
         let iterations = 0;
