@@ -1628,7 +1628,7 @@ function renderSport(m){
   // Chat ID config
   const cfgCard=el("div",{class:"fcard"});
   cfgCard.appendChild(el("div",{class:"fcard-label"},"CONFIGURE TELEGRAM CHAT IDs"));
-  cfgCard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},"Save target \u2192 chat_id mappings (e.g. \\\"family\\\" \u2192 \\\"-1001234\\\"). Find your chat_id by messaging the bot then visiting api.telegram.org/bot<TOKEN>/getUpdates."));
+  cfgCard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},"Save target \u2192 chat_id mappings (e.g. \"family\" \u2192 \"-1001234\"). Find your chat_id by messaging the bot then visiting api.telegram.org/bot<TOKEN>/getUpdates."));
   const cfgRow=el("div",{style:"display:grid;grid-template-columns:120px 1fr auto;gap:8px;margin-top:8px"});
   const cfgT=el("input",{type:"text",placeholder:"target",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
   const cfgC=el("input",{type:"text",placeholder:"chat_id (e.g. -1001234)",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
@@ -1892,6 +1892,27 @@ export default {
       else if (cron === '0 */6 * * *' || cron === '15 */6 * * *') {
         const r = await fetch('https://falkor.luckdragon.io/api/falkor/self-improve', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
         await env.ASSETS.put('cron:self_improve:'+now.toISOString(), JSON.stringify({status:r.status, at:Date.now()}), {expirationTtl:7*86400});
+        // After any self-improvement, verify the served HTML still parses cleanly
+        try {
+          const vr = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served');
+          const vd = await vr.json();
+          if (!vd.ok && vd.errors && vd.errors.length > 0) {
+            // Browser-side JS broke! Auto-rollback to previous commit.
+            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:vd.errors, at:Date.now()}), {expirationTtl:30*86400});
+            await fetch('https://falkor.luckdragon.io/api/falkor/auto-rollback', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
+          }
+        } catch(e){}
+      }
+      // Every 5 minutes — verify served JS parses (catches black-screen bugs that pass worker syntax check)
+      else if (cron === '*/5 * * * *') {
+        try {
+          const vr = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served');
+          const vd = await vr.json();
+          if (!vd.ok && vd.errors && vd.errors.length > 0) {
+            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:vd.errors, at:Date.now()}), {expirationTtl:30*86400});
+            await fetch('https://falkor.luckdragon.io/api/falkor/auto-rollback', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
+          }
+        } catch(e){}
       }
     } catch(e) {
       try { await env.ASSETS.put('cron:err:'+now.toISOString(), String(e).substring(0,500), {expirationTtl: 7*86400}); } catch(ee){}
@@ -2486,6 +2507,85 @@ upBtn.onclick=async()=>{
         await env.ASSETS.put(logKey, JSON.stringify(logEntry), {expirationTtl: 30*86400});
 
         return Response.json({ok:true, summary: finalText, tools_used: toolResults.length, health_after: healthOK, quota_used: qcount+1}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,400)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/falkor/verify-served'){
+      // Fetch the live served HTML, extract inline <script>, try to parse it.
+      // Returns ok/error so cron can detect black-screen-class bugs that pass worker syntax check.
+      try {
+        const r = await fetch('https://falkor.luckdragon.io/?vsbypass='+Date.now(), {headers:{'Cache-Control':'no-cache'}});
+        const html = await r.text();
+        // Extract all <script>...</script> blocks (exclude src= ones)
+        const scripts = [];
+        const re = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
+        let m;
+        while ((m = re.exec(html)) !== null) scripts.push(m[1]);
+        // Try to parse each via new Function (catches SyntaxError without executing)
+        const errors = [];
+        for (let i = 0; i < scripts.length; i++) {
+          try { new Function(scripts[i]); }
+          catch (e) {
+            errors.push({ block: i, error: String(e).substring(0,200), preview: scripts[i].substring(0,80) });
+          }
+        }
+        return Response.json({ok: errors.length===0, blocks: scripts.length, errors, html_size: html.length}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
+      // Auto-rollback: revert falkor-tools.js to the previous commit on GitHub, then redeploy.
+      try {
+        const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-rollback', 'Accept':'application/vnd.github+json' };
+        // Get last 2 commits for falkor-tools.js
+        const cR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/commits?path=falkor-tools.js&per_page=2', {headers: ghHeaders});
+        const commits = await cR.json();
+        if (!Array.isArray(commits) || commits.length < 2) return Response.json({error:'cannot find previous commit'},{status:400,headers:{...CORS,...NOCACHE}});
+        const prevSha = commits[1].sha;
+        // Get prev file content
+        const fR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js?ref='+prevSha, {headers: ghHeaders});
+        const fD = await fR.json();
+        let content = '';
+        if (fD.content) content = atob(fD.content.replace(/\n/g,''));
+        else if (fD.size && fD.sha) {
+          const br = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/git/blobs/'+fD.sha, {headers: ghHeaders});
+          if (br.ok) { const bd = await br.json(); content = atob(bd.content.replace(/\n/g,'')); }
+        }
+        if (!content) return Response.json({error:'no prev content'},{status:500,headers:{...CORS,...NOCACHE}});
+        // Get current sha for HEAD file
+        const headR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js', {headers: ghHeaders});
+        const headD = await headR.json();
+        // Commit revert
+        const wR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js', {
+          method:'PUT',
+          headers: { ...ghHeaders, 'Content-Type':'application/json' },
+          body: JSON.stringify({ message:'auto-rollback to '+prevSha.substring(0,7)+' (browser-side syntax error detected)', content: btoa(content), sha: headD.sha }),
+        });
+        const wD = await wR.json();
+        if (!wR.ok) return Response.json({error:'rollback commit failed', detail: wD.message},{status:500,headers:{...CORS,...NOCACHE}});
+        // Trigger redeploy via cf_deploy_worker pattern — fetch source from new HEAD and PUT
+        const newHead = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js', {headers: ghHeaders});
+        const newHeadD = await newHead.json();
+        const newCode = atob(newHeadD.content.replace(/\n/g,''));
+        const boundary = '----rollback'+Date.now();
+        const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','d1','durable_object_namespace'] };
+        const part1 = '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n';
+        const part2 = '--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n';
+        const enc = new TextEncoder();
+        const body = new Blob([enc.encode(part1+part2), enc.encode(newCode), enc.encode('\r\n--'+boundary+'--\r\n')]);
+        const dR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/falkor-tools', {
+          method:'PUT',
+          headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'multipart/form-data; boundary='+boundary },
+          body,
+        });
+        const dD = await dR.json();
+        // Log
+        await env.ASSETS.put('cron:rollback:'+new Date().toISOString(), JSON.stringify({to: prevSha.substring(0,10), at: Date.now(), deploy_ok: dD.success}), {expirationTtl: 30*86400});
+        return Response.json({ok: dD.success, rolled_back_to: prevSha.substring(0,10), commit: wD.commit?.sha?.substring(0,7), deploy: dD.result?.deployment_id}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,400)},{status:500,headers:{...CORS,...NOCACHE}});
       }
