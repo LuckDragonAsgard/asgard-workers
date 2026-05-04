@@ -1237,6 +1237,29 @@ function SportPanel({ pin, initialTab, onLiveCount }) {
   );
 }
 
+// ─── Utility: formatRelativeTime ────────────────────────────────────────────────
+function formatRelativeTime(dateString) {
+  if (!dateString) return 'unknown';
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    if (diffMs < 0) return 'just now';
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffWeeks < 4) return `${diffWeeks}w ago`;
+    if (diffMonths < 12) return `${diffMonths}mo ago`;
+    return `${Math.floor(diffDays / 365)}y ago`;
+  } catch { return dateString; }
+}
+
 // ─── SitesPanel ───────────────────────────────────────────────────────────────
 function SitesPanel() {
   const [projects, setProjects] = useState([]);
@@ -1284,6 +1307,7 @@ function SitesPanel() {
               {p.github && <a href={p.github} target="_blank" rel="noopener" style={{ fontSize:'12px', padding:'4px 10px', borderRadius:'6px', background:'var(--border)', color:'var(--text)', textDecoration:'none' }}>GitHub</a>}
               {!p.url && !p.github && <span style={{ fontSize:'11px', color:'var(--muted)', fontStyle:'italic' }}>No links yet</span>}
             </div>
+            {p.last_updated && <div style={{ fontSize:'10px', color:'var(--muted)', marginTop:'8px', paddingTop:'8px', borderTop:'1px solid var(--border)', textAlign:'right' }}>Updated: {formatRelativeTime(p.last_updated)}</div>}
           </div>
         ))}
       </div>
