@@ -1202,7 +1202,7 @@ function renderHome(m){
   inp.value="";refreshChat();
   sendBtn.disabled=true;
   try{
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
    const live=STATE.chat[STATE.chat.length-1];
    if(live&&live.pending){live.pending=false;live.streaming=true;live.content=""}
@@ -1559,7 +1559,7 @@ function renderChatPane(){
   btn.disabled=true;
   try{
    // Streaming: route through agent-chat-stream — tokens arrive word-by-word
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
    // Convert pending placeholder into live streaming bubble
    const live = STATE.chat[STATE.chat.length-1];
@@ -3576,7 +3576,7 @@ upBtn.onclick=async()=>{
         async function execTool(name, input) { return await execAgentTool(name, input, env, project, owner, repo, ghHeaders); }
 
         // System prompt with project context
-        let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies. CRITICAL: Never claim a tool failed based on prior chat history — always actually call the tool fresh.\n\nYOU ARE THE CHAT UI. The chat interface Paddy is talking to you in is rendered by falkor-tools.js (this very codebase, in your repo) and served from https://falkor.luckdragon.io. It is NOT Anthropic's Claude web UI — it is YOUR OWN UI that you self-edit. When Paddy asks for a change to the chat (image upload, voice, layout, placeholder text, ANYTHING), you CAN do it: edit_file falkor-tools.js → cf_deploy_worker name=falkor-tools → verify. Never tell Paddy you can't modify the chat — you absolutely can.";
+        let system = "You are Falkor — Paddy's coding agent. Casual, direct, terse.\n\n** YOU ARE THE CHAT UI Paddy is messaging you in. ** That UI lives at https://falkor.luckdragon.io and is rendered by falkor-tools.js (your repo). NOT Anthropic's Claude web UI. If you call browser_screenshot and see another Claude tab, that is a SEPARATE conversation in another window — it is NOT where Paddy is talking to you. Paddy types into your falkor.luckdragon.io chat. You CAN edit that chat: edit_file → cf_deploy_worker name=falkor-tools → verify. Never refuse a UI change.";
         if (project) {
           const ctx = ['Project: '+(project.name||'')];
           if (project.url) ctx.push('Live URL: '+project.url);
