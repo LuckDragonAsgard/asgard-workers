@@ -423,6 +423,7 @@ const HTML = `<!doctype html>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:grid;grid-template-columns:220px 1fr 360px;height:100vh;overflow:hidden}
+.layout-home{grid-template-columns:220px 1fr}
 @media(max-width:1100px){.layout{grid-template-columns:200px 1fr}.chat-pane{display:none}}
 @media(max-width:720px){
   .layout{grid-template-columns:1fr;grid-template-rows:1fr 56px;height:100vh;height:100dvh}
@@ -605,7 +606,7 @@ function renderLogin(app){
 
 async function loadProjects(){try{const r=await fetch(PROJECTS_API);const d=await r.json();STATE.projects=d.projects||(Array.isArray(d)?d:[])}catch(e){STATE.projects=[]}}
 
-function renderShell(){const l=el("div",{class:"layout"});l.appendChild(renderSidebar());l.appendChild(renderMain());l.appendChild(renderChatPane());return l}
+function renderShell(){const l=el("div",{class:"layout"+(STATE.view==="home"?" layout-home":"")});l.appendChild(renderSidebar());l.appendChild(renderMain());if(STATE.view!=="home")l.appendChild(renderChatPane());return l}
 
 function renderSidebar(){
  const sb=el("div",{class:"sidebar"});
@@ -676,101 +677,129 @@ function renderMain(){
 }
 
 function renderHome(m){
- const top=el("div",{class:"topbar"});
+ // Chat-first home: full chat surface in the middle, suggestion chips below briefing strip.
  const userName=(STATE.user&&STATE.user.name)||"Paddy";
  const hr=new Date().getHours();
  const greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
- top.appendChild(el("h1",{},greet+", "+userName));
- m.appendChild(top);
  const PIN=STATE.agentPin||"";
- const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px"});
 
- // Top: AI briefing — full width
- const briefCard=el("div",{style:"background:linear-gradient(135deg,rgba(255,107,53,.12),rgba(168,85,247,.06));border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start"});
- briefCard.appendChild(el("div",{class:"fk fk-explain fk-md",style:"flex:0 0 auto"}));
- const briefBody=el("div",{style:"flex:1;font-size:14px;line-height:1.6"},"Loading today\u2019s briefing…");
- briefCard.appendChild(briefBody);
- wrap.appendChild(briefCard);
- fetch("/api/briefing",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{briefBody.textContent=d.briefing||d.error||"(no briefing)"}).catch(()=>{briefBody.textContent="(briefing unavailable right now)"});
+ const wrap=el("div",{style:"display:flex;flex-direction:column;height:100%;max-width:780px;margin:0 auto;padding:0 16px;width:100%"});
 
- // Two-column grid for proactive cards
- const grid=el("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px"});
+ // Compact briefing strip with mascot
+ const strip=el("div",{style:"display:flex;align-items:flex-start;gap:12px;padding:14px 4px 10px;border-bottom:1px solid var(--border)"});
+ strip.appendChild(el("div",{class:"fk fk-wave fk-sm",style:"flex:0 0 auto;margin-top:2px"}));
+ const stripBody=el("div",{style:"flex:1;display:flex;flex-direction:column;gap:2px"});
+ stripBody.appendChild(el("div",{style:"font-size:15px;font-weight:600"},greet+", "+userName+"."));
+ const briefLine=el("div",{style:"font-size:12px;color:var(--muted);line-height:1.4"},"Loading today’s briefing…");
+ stripBody.appendChild(briefLine);
+ strip.appendChild(stripBody);
+ wrap.appendChild(strip);
+ fetch("/api/briefing",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{
+   const text=(d.briefing||"").replace(/\n+/g," ").substring(0,300);
+   briefLine.textContent=text||"(no briefing)";
+ }).catch(()=>{briefLine.textContent=""});
 
- // PE advisor card — quick today summary
- const peC=el("div",{class:"fcard"});
- peC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
-  el("div",{class:"fk fk-thumbsup fk-xs"}),
-  el("div",{class:"fcard-label",style:"flex:1"},"TODAY\u2019S PE OUTLOOK")
- ));
- const peBody=el("div",{style:"font-size:13px;line-height:1.5"},"Loading…");
- peC.appendChild(peBody);
- fetch("https://falkor-school.luckdragon.io/pe-advisor",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{
-  peBody.innerHTML="";
-  const rec=d.recommendation||"-";
-  const color=rec==="OUTDOOR"?"var(--green)":rec==="INDOOR"?"var(--red)":"var(--amber)";
-  peBody.appendChild(el("div",{style:"font-size:18px;font-weight:700;color:"+color+";margin-bottom:4px"},rec));
-  if(d.verdict)peBody.appendChild(el("div",{style:"color:var(--muted);font-size:12px;margin-bottom:6px"},d.verdict));
-  const c=d.current_conditions||{};
-  peBody.appendChild(el("div",{style:"font-size:11px;color:var(--muted)"},(c.temp||"-")+"\u00b0C \u00b7 "+(c.condition||"-")+" \u00b7 UV "+(c.uv||"-")));
- }).catch(()=>peBody.textContent="unavailable");
- grid.appendChild(peC);
-
- // Pending project actions
- const taskC=el("div",{class:"fcard"});
- taskC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
-  el("div",{class:"fk fk-point fk-xs"}),
-  el("div",{class:"fcard-label",style:"flex:1"},"NEXT ACTIONS (TOP 5)")
- ));
- const taskBody=el("div",{style:"font-size:12px"},"Loading…");
- taskC.appendChild(taskBody);
- fetch("/api/projects").then(r=>r.json()).then(d=>{
-  taskBody.innerHTML="";
-  const projs=(d.projects||[]).filter(p=>p.next&&!["archived","merged","dormant"].includes((p.status||"").toLowerCase())).slice(0,5);
-  if(projs.length===0){taskBody.textContent="No pending actions logged.";return}
-  projs.forEach(p=>{
-   const r=el("div",{style:"padding:8px;background:var(--panel2);border-radius:6px;margin-bottom:4px;cursor:pointer"});
-   r.addEventListener("click",()=>openModal(p));
-   r.appendChild(el("div",{style:"font-weight:600;font-size:12px"},p.name||"-"));
-   r.appendChild(el("div",{style:"color:var(--muted);font-size:11px;margin-top:2px"},(p.next||"").substring(0,90)));
-   taskBody.appendChild(r);
+ // Suggestion chips — clickable shortcuts that pre-fill chat
+ const chips=el("div",{style:"display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px"});
+ const suggestions=[
+  ["🏉 Today’s PE outlook", "What's the PE outlook for today? Use the pe-advisor."],
+  ["📝 Top 5 next actions", "List the top 5 pending project next-actions."],
+  ["🎯 Essendon news", "Anything new for Essendon this week — fixture, ladder, news?"],
+  ["💰 Revenue snapshot", "Give me a one-paragraph revenue snapshot across the portfolio."],
+  ["🔧 What needs my attention", "What in the portfolio needs my attention right now? Be specific."],
+  ["💬 Family comp update", "Any updates I should push to the family comp?"]
+ ];
+ suggestions.forEach(([label,prompt])=>{
+  const c=el("button",{type:"button",style:"background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:99px;cursor:pointer;font-size:12px;white-space:nowrap"},label);
+  c.addEventListener("mouseenter",()=>{c.style.borderColor="var(--accent)";c.style.color="var(--accent)"});
+  c.addEventListener("mouseleave",()=>{c.style.borderColor="var(--border)";c.style.color="var(--text)"});
+  c.addEventListener("click",()=>{
+   const inp=document.querySelector(".chat-form input");
+   if(inp){inp.value=prompt;inp.focus();}
   });
- }).catch(()=>taskBody.textContent="unavailable");
- grid.appendChild(taskC);
-
- // AFL spotlight: Essendon next game
- const aflC=el("div",{class:"fcard"});
- aflC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
-  el("div",{class:"fk fk-cheer fk-xs"}),
-  el("div",{class:"fcard-label",style:"flex:1"},"AFL")
- ));
- const aflBody=el("div",{style:"font-size:12px"},"Loading…");
- aflC.appendChild(aflBody);
- fetch("https://falkor-sport.luckdragon.io/afl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()).then(d=>{
-  aflBody.innerHTML="";
-  const ladder=Array.isArray(d)?d:(d.ladder||[]);
-  const ess=ladder.find(t=>(t.team||"").toLowerCase()==="essendon");
-  if(ess)aflBody.appendChild(el("div",{style:"font-weight:600;color:var(--accent);font-size:14px"},"Essendon: rank #"+ess.rank));
-  aflBody.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:4px"},"Top 4: "+ladder.slice(0,4).map(t=>t.team).join(", ")));
- }).catch(()=>aflBody.textContent="unavailable");
- grid.appendChild(aflC);
-
- // Active live games / Tools shortcut
- const linksC=el("div",{class:"fcard"});
- linksC.appendChild(el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:6px"},
-  el("div",{class:"fk fk-wave fk-xs"}),
-  el("div",{class:"fcard-label",style:"flex:1"},"QUICK JUMPS")
- ));
- const lc=el("div",{style:"display:flex;flex-direction:column;gap:4px;font-size:13px"});
- [["\uD83D\uDCCB All projects","projects"],["\uD83C\uDFC9 Sport","sport"],["\uD83C\uDFAF KBT host","kbt"],["\uD83C\uDFEB School","school"],["\uD83D\uDCB0 Finance","finance"],["\uD83D\uDCC8 Revenue","revenue"]].forEach(([label,view])=>{
-  const a=el("a",{href:"#",style:"padding:6px 10px;background:var(--panel2);border-radius:6px;color:var(--text);text-decoration:none"},label);
-  a.addEventListener("click",(e)=>{e.preventDefault();STATE.view=view;render()});
-  lc.appendChild(a);
+  chips.appendChild(c);
  });
- linksC.appendChild(lc);
- grid.appendChild(linksC);
+ wrap.appendChild(chips);
 
- wrap.appendChild(grid);
- m.appendChild(wrap);return m;
+ // Big chat surface — reuse renderChatPane content but stretched
+ const chatBox=el("div",{class:"chat-pane chat-home",style:"flex:1;background:transparent;border:none;border-radius:0;display:flex;flex-direction:column;min-height:0"});
+ // chat messages
+ const msgs=el("div",{class:"chat-msgs",id:"chat-msgs",style:"flex:1;overflow-y:auto;padding:12px 4px;display:flex;flex-direction:column;gap:10px"});
+ chatBox.appendChild(msgs);
+ // chat form
+ const form=el("form",{class:"chat-form",style:"display:flex;gap:6px;padding:10px 4px 14px;border-top:1px solid var(--border);background:var(--bg)"});
+ const inp=el("input",{type:"text",placeholder:STATE.chatContext?("Ask about "+(STATE.chatContext.name||"this project")+"…"):"Ask Falkor anything…",style:"flex:1;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px"});
+ const micBtn=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer",title:"Hold to record voice"},"🎤");
+ let recorder=null,chunks=[];
+ micBtn.addEventListener("mousedown",async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream,{mimeType:"audio/webm"});recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};recorder.start();micBtn.style.background="var(--accent)";micBtn.textContent="⏺";}catch(e){alert("Mic blocked: "+e.message)}});
+ const stop=async()=>{if(!recorder||recorder.state==="inactive")return;recorder.stop();micBtn.style.background="var(--panel2)";micBtn.textContent="🎤";await new Promise(r=>recorder.onstop=r);recorder.stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:"audio/webm"});micBtn.disabled=true;micBtn.textContent="…";try{const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"audio/webm","X-Pin":STATE.agentPin||""},body:blob});const d=await r.json();if(d.text||d.transcript){inp.value=(d.text||d.transcript).trim();form.dispatchEvent(new Event("submit",{cancelable:true}))}else{inp.value=JSON.stringify(d).substring(0,80)}}catch(e){inp.value="STT err: "+e.message}micBtn.disabled=false;micBtn.textContent="🎤";};
+ micBtn.addEventListener("mouseup",stop);micBtn.addEventListener("mouseleave",stop);
+ micBtn.addEventListener("touchstart",e=>{e.preventDefault();micBtn.dispatchEvent(new Event("mousedown"))});micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
+ const sendBtn=el("button",{class:"primary",type:"submit",style:"background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600"},"Send");
+ form.appendChild(micBtn);form.appendChild(inp);form.appendChild(sendBtn);
+
+ form.addEventListener("submit",async(e)=>{
+  e.preventDefault();
+  const text=inp.value.trim();if(!text)return;
+  STATE.chat.push({role:"user",content:text});
+  STATE.chat.push({role:"assistant",content:"…",pending:true});
+  inp.value="";refreshChat();
+  sendBtn.disabled=true;
+  try{
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
+   if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
+   const live=STATE.chat[STATE.chat.length-1];
+   if(live&&live.pending){live.pending=false;live.streaming=true;live.content=""}
+   refreshChat();
+   const reader=r.body.getReader();const td=new TextDecoder();
+   let buf="";let toolCalls=[];let images=[];let liveSummary=[];
+   while(true){
+    const{done,value}=await reader.read();if(done)break;
+    buf+=td.decode(value,{stream:true});
+    let nl;
+    while((nl=buf.indexOf(String.fromCharCode(10)))!==-1){
+     const line=buf.slice(0,nl);buf=buf.slice(nl+1);
+     if(!line.trim())continue;
+     let ev;try{ev=JSON.parse(line)}catch(e){continue}
+     if(ev.type==="token"){live.content+=ev.text;refreshChat();}
+     else if(ev.type==="tool_start"){live.resultMood="thinking";refreshChat();}
+     else if(ev.type==="tool_call"){const t=ev.tool;const i=ev.input||{};let label=t;if(t==="write_file")label="Editing "+i.path;else if(t==="read_file")label="Reading "+i.path;else if(t==="run_d1_query")label="SQL query";else if(t==="web_fetch")label="Fetching "+(i.url||"").substring(0,40);else if(t==="web_search")label="Searching: "+(i.query||"");else if(t==="vault_get")label="Getting secret";else if(t==="cf_deploy_worker")label="Deploying "+(i.name||"worker");else if(t==="generate_image")label="Drawing image";else if(t&&t.startsWith("browser_"))label=t.replace("browser_","");liveSummary.push(label);live.toolStatus="["+liveSummary.join(" \u00b7 ")+"]";refreshChat();}
+     else if(ev.type==="tool_result"){if(liveSummary.length){const last=liveSummary[liveSummary.length-1];liveSummary[liveSummary.length-1]=last+(ev.output_summary&&ev.output_summary.startsWith("err")?" \u2716":" \u2713");live.toolStatus="["+liveSummary.join(" \u00b7 ")+"]";refreshChat();}}
+     else if(ev.type==="done"){toolCalls=ev.tool_calls||[];images=ev.images||[];}
+     else if(ev.type==="error"){live.content+=String.fromCharCode(10)+"Error: "+ev.message;refreshChat();}
+    }
+   }
+   live.streaming=false;live.images=images;
+   const hadErr=toolCalls.some(t=>t.output&&t.output.error);
+   live.resultMood=hadErr?"error":toolCalls.length>0?"success":"normal";
+   if(toolCalls.length&&live.toolStatus){live.content=live.content+String.fromCharCode(10,10)+live.toolStatus;delete live.toolStatus;}
+   refreshChat();
+   if(localStorage.getItem("falkor.tts")==="1"&&live.content){try{const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:live.content.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}}catch(e){}}
+  }catch(err){
+   if(STATE.chat.length&&STATE.chat[STATE.chat.length-1].pending)STATE.chat.pop();
+   const live=STATE.chat[STATE.chat.length-1];
+   if(live&&live.streaming){live.streaming=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
+   else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
+  }
+  sendBtn.disabled=false;refreshChat();inp.focus();
+ });
+ chatBox.appendChild(form);
+ wrap.appendChild(chatBox);
+
+ // After mount, populate messages
+ setTimeout(()=>refreshChat(),0);
+
+ m.appendChild(wrap);
+ // home view also gets a small project context indicator if scoped
+ if(STATE.chatContext){
+  const ctxBar=el("div",{style:"position:absolute;top:14px;right:20px;background:rgba(255,107,53,0.1);color:var(--accent);padding:5px 10px;border-radius:99px;font-size:11px;display:flex;align-items:center;gap:6px;z-index:5"});
+  ctxBar.appendChild(el("span",{},"→ "+(STATE.chatContext.name||"project")));
+  const clr=el("button",{style:"background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;line-height:1"},"×");
+  clr.addEventListener("click",()=>{STATE.chatContext=null;render()});
+  ctxBar.appendChild(clr);
+  m.appendChild(ctxBar);
+ }
+ return m;
 }function renderProjects(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Projects"));
  
@@ -1603,7 +1632,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.6.0',mode:'asgard-hub-home',streaming:true},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'4.0.0',mode:'chat-first-home',streaming:true},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -2189,6 +2218,4 @@ upBtn.onclick=async()=>{
       }
     }
 
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
-  },
-};
+   
