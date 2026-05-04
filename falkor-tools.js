@@ -2895,50 +2895,50 @@ upBtn.onclick=async()=>{
     }
 
     if(url.pathname==='/api/falkor/stats'){
-      // Self-introspection stats
       try {
-        // Count projects
-        const pR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-          method:'POST',
-          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
-          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM products', params:[]}),
-        });
-        const pD = await pR.json();
-        const projects = pD.result?.[0]?.results?.[0]?.cnt || 0;
-
-        // Count memories
-        const mR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-          method:'POST',
-          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
-          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM falkor_memory', params:[]}),
-        });
-        const mD = await mR.json();
-        const memories = mD.result?.[0]?.results?.[0]?.cnt || 0;
-
-        // Count chat turns
-        const cR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-          method:'POST',
-          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
-          body: JSON.stringify({sql:'SELECT COUNT(*) as cnt FROM conversations', params:[]}),
-        });
-        const cD = await cR.json();
-        const chat_turns = cD.result?.[0]?.results?.[0]?.cnt || 0;
-
-        // Count improvements in KV
+        const q = (sql) => fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql}),
+        }).then(r=>r.json()).then(d=>d.result?.[0]?.results?.[0]?.cnt||0);
+        const [projects, memories, chat_turns, family_tips_count] = await Promise.all([
+          q('SELECT COUNT(*) as cnt FROM products'),
+          q('SELECT COUNT(*) as cnt FROM falkor_memory'),
+          q('SELECT COUNT(*) as cnt FROM falkor_chat_history'),
+          q('SELECT COUNT(*) as cnt FROM family_tips'),
+        ]);
         const iList = await env.ASSETS.list({prefix:'falkor:improvement:log:'});
         const improvements = (iList?.keys || []).length;
-
-        // Count cron runs in last 7d
         const cronList = await env.ASSETS.list({prefix:'cron:'});
         const now = Date.now();
         const sevenDaysMs = 7*86400*1000;
         let cron_runs_7d = 0;
         for (const k of (cronList?.keys || [])) {
-          const v = await env.ASSETS.get(k.name);
-          if (v) try { const o = JSON.parse(v); if (o.at && (now - o.at) < sevenDaysMs) cron_runs_7d++; } catch(e){}
+          const m = k.name.match(/cron:[^:]+:(\d{4}-\d{2}-\d{2})/);
+          if (m) {
+            const d = new Date(m[1]);
+            if (!isNaN(d) && (now - d.getTime()) < sevenDaysMs) cron_runs_7d++;
+            continue;
+          }
+          try {
+            const v = await env.ASSETS.get(k.name);
+            if (!v) continue;
+            const o = JSON.parse(v);
+            const t = o.at || o.sent || o.ran || 0;
+            if (t && (now - t) < sevenDaysMs) cron_runs_7d++;
+          } catch(e) {}
         }
-
-        return Response.json({ok:true, worker:'falkor-tools', projects, memories, chat_turns, improvements, cron_runs_7d, workers_in_fleet:21, uptime_age_days:0}, {headers:{...CORS,...NOCACHE}});
+        let oldest = null;
+        for (const k of (iList?.keys || []).slice(0,5)) {
+          const m = k.name.match(/falkor:improvement:log:(\d+)/);
+          if (m) { const t = parseInt(m[1]); if (!oldest || t < oldest) oldest = t; }
+        }
+        const uptime_age_days = oldest ? Math.floor((now - oldest) / 86400000) : 0;
+        return Response.json({
+          ok:true, worker:'falkor-tools', version:'4.1.0',
+          projects, memories, chat_turns, family_tips: family_tips_count,
+          improvements, cron_runs_7d, workers_in_fleet:21, uptime_age_days,
+          generated_at: new Date().toISOString(),
+        }, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
