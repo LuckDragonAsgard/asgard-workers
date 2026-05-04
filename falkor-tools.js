@@ -1888,6 +1888,11 @@ export default {
       else if (cron === '0 17 * * *') {
         await env.ASSETS.put('cron:memory_consolidate:'+now.toISOString().substring(0,10), JSON.stringify({ran:Date.now()}), {expirationTtl: 7*86400});
       }
+      // every 6h — autonomous self-improvement loop
+      else if (cron === '0 */6 * * *' || cron === '15 */6 * * *') {
+        const r = await fetch('https://falkor.luckdragon.io/api/falkor/self-improve', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
+        await env.ASSETS.put('cron:self_improve:'+now.toISOString(), JSON.stringify({status:r.status, at:Date.now()}), {expirationTtl:7*86400});
+      }
     } catch(e) {
       try { await env.ASSETS.put('cron:err:'+now.toISOString(), String(e).substring(0,500), {expirationTtl: 7*86400}); } catch(ee){}
     }
@@ -2389,6 +2394,132 @@ upBtn.onclick=async()=>{
         return Response.json({ok:true, leaderboard: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
+    if(url.pathname==='/api/falkor/self-improve'&&request.method==='POST'){
+      // Autonomous self-improvement loop. Triggered by cron every 6h or manually.
+      try {
+        // Kill switch
+        const enabled = await env.ASSETS.get('falkor:autonomous:enabled');
+        if (enabled === 'false') return Response.json({ok:false, skipped:'kill switch off'},{headers:{...CORS,...NOCACHE}});
+
+        // Daily quota: max 3 improvements/day
+        const today = new Date().toISOString().substring(0,10);
+        const qkey = 'falkor:improvements:'+today;
+        const qcount = parseInt(await env.ASSETS.get(qkey)||'0');
+        if (qcount >= 3) return Response.json({ok:false, skipped:'daily quota reached', count:qcount},{headers:{...CORS,...NOCACHE}});
+
+        // Gather context: recent cron errors + last 5 commits + fleet health
+        const ctx = [];
+        try {
+          const errList = await env.ASSETS.list({prefix:'cron:err:'});
+          for (const k of (errList?.keys||[]).slice(0,5)) {
+            const v = await env.ASSETS.get(k.name);
+            if (v) ctx.push('CRON ERROR ('+k.name+'): '+v.substring(0,200));
+          }
+        } catch(e){}
+        try {
+          const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/commits?path=falkor-tools.js&per_page=5',{headers:{'Authorization':'token '+env.GITHUB_TOKEN,'User-Agent':'falkor'}});
+          const commits = await ghr.json();
+          if (Array.isArray(commits)) ctx.push('RECENT COMMITS: '+commits.map(c=>c.sha.substring(0,7)+' - '+c.commit.message.substring(0,80)).join(' | '));
+        } catch(e){}
+        try {
+          const fh = await fetch('https://falkor-code.luckdragon.io/workers',{headers:{'X-Pin':env.AGENT_PIN}});
+          const fhd = await fh.json();
+          if (fhd.broken > 0) ctx.push('FLEET: '+fhd.broken+' broken workers detected');
+        } catch(e){}
+
+        // Run agent loop with self-improvement prompt
+        const project = { name:'Falkor', github:'https://github.com/LuckDragonAsgard/asgard-workers' };
+        const messages = [{role:'user', content:
+          'You are running the Falkor autonomous self-improvement loop. Pick ONE small concrete improvement to ship NOW.\n\n' +
+          'CONTEXT:\n' + ctx.join('\n') + '\n\n' +
+          'RULES:\n' +
+          '- Make ONE surgical change via edit_file or multi_edit\n' +
+          '- Run cf_deploy_worker name=falkor-tools to deploy it\n' +
+          '- Verify with web_fetch /health that it still responds\n' +
+          '- If anything was broken in the context above, FIX THAT FIRST\n' +
+          '- Otherwise, pick a small UX or polish improvement (better error messages, more useful tool descriptions, etc)\n' +
+          '- DO NOT add new endpoints or large new features — keep it small and safe\n' +
+          '- DO NOT touch other workers — only falkor-tools.js\n' +
+          '- If you cannot identify a safe improvement, respond "SKIP" and do nothing\n\n' +
+          'Just pick something and ship it. Be terse.' }];
+
+        // Call Anthropic with full tool set (reusing AGENT_TOOLS from module scope)
+        let owner='LuckDragonAsgard', repo='asgard-workers';
+        const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-self-improve', 'Accept':'application/vnd.github+json' };
+        const toolResults = [];
+        let iter = 0;
+        const maxIter = 8;
+        while (iter < maxIter) {
+          iter++;
+          const aReq = await fetch('https://api.anthropic.com/v1/messages',{
+            method:'POST',
+            headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+            body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:2048, system:'You are Falkor running an autonomous self-improvement loop. Be terse. Pick ONE small thing to ship.', tools: AGENT_TOOLS, messages}),
+          });
+          if (!aReq.ok) break;
+          const a = await aReq.json();
+          messages.push({role:'assistant', content: a.content});
+          if (a.stop_reason === 'tool_use') {
+            const results = [];
+            for (const tu of a.content.filter(c=>c.type==='tool_use')) {
+              let out;
+              try { out = await execAgentTool(tu.name, tu.input, env, project, owner, repo, ghHeaders); }
+              catch(e){ out = { error: String(e).substring(0,200) }; }
+              toolResults.push({tool:tu.name, input:tu.input, output:out});
+              results.push({type:'tool_result', tool_use_id:tu.id, content: JSON.stringify(out).substring(0,30000)});
+            }
+            messages.push({role:'user', content: results});
+            continue;
+          }
+          break;
+        }
+        const finalText = (messages[messages.length-1]?.content || []).filter(c=>c.type==='text').map(c=>c.text).join('') || '(no text)';
+
+        // Verify /health still works
+        let healthOK = false;
+        try { const hr = await fetch('https://falkor.luckdragon.io/health'); const hd = await hr.json(); healthOK = hd.ok === true; } catch(e){}
+
+        // Bump quota and log
+        await env.ASSETS.put(qkey, String(qcount+1), {expirationTtl: 36*3600});
+        const logEntry = { at: new Date().toISOString(), summary: finalText.substring(0,500), tools: toolResults.map(t=>({tool:t.tool, ok: !t.output?.error})), health_ok: healthOK };
+        const logKey = 'falkor:improvement:log:'+Date.now();
+        await env.ASSETS.put(logKey, JSON.stringify(logEntry), {expirationTtl: 30*86400});
+
+        return Response.json({ok:true, summary: finalText, tools_used: toolResults.length, health_after: healthOK, quota_used: qcount+1}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,400)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/falkor/improvements'){
+      // Show recent autonomous improvements
+      try {
+        const list = await env.ASSETS.list({prefix:'falkor:improvement:log:'});
+        const out = [];
+        for (const k of (list?.keys||[]).slice(-30)) {
+          const v = await env.ASSETS.get(k.name);
+          if (v) try { out.push(JSON.parse(v)); } catch(e){}
+        }
+        out.sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+        return Response.json({ok:true, count:out.length, log:out.slice(0,30)}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+
+    if(url.pathname==='/api/falkor/autonomous'&&request.method==='POST'){
+      // Toggle kill switch: body {enabled: true|false}
+      try {
+        const body = await request.json();
+        await env.ASSETS.put('falkor:autonomous:enabled', body.enabled === false ? 'false' : 'true');
+        return Response.json({ok:true, enabled: body.enabled !== false}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/falkor/autonomous'){
+      try {
+        const v = await env.ASSETS.get('falkor:autonomous:enabled');
+        return Response.json({enabled: v !== 'false', value: v||'(unset, defaults to enabled)'}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+
     if(url.pathname==='/api/push/vapid'){
       try {
         const r = await fetch('https://falkor-push.luckdragon.io/vapid-public-key',{ headers:{'X-Pin':env.AGENT_PIN}});
