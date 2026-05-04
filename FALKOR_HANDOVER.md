@@ -1,7 +1,6 @@
 # Falkor / Asgard — Session Handover
 
-> ⛔ **ZERO-TOLERANCE PERSISTENCE RULE — READ FIRST** ⛔
->
+> **ZERO-TOLERANCE PERSISTENCE RULE — READ FIRST** >
 > **NEVER write to ephemeral/temp paths.** Other Claude chats have repeatedly saved files to AppData, /tmp, /sessions, Local Settings — paths Paddy cannot access later. This is THE most important rule.
 >
 > **All persistence goes to ONE of these locations ONLY:**
@@ -22,7 +21,7 @@ Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer T
 
 ---
 
-## ⛔ FILE-LOCATION RULE (READ FIRST)
+## FILE-LOCATION RULE (READ FIRST)
 - DEFAULT: do **not** save things to `G:\My Drive\Luck Dragon\` — Paddy has flagged repeatedly not to clutter Drive.
 - Code / configs / handover docs → GitHub (this repo).
 - Office files he asks for → return via `present_files` only.
@@ -30,7 +29,7 @@ Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer T
 
 ---
 
-## 🏁 SPORT PORTAL — FULL HANDOVER (2026-05-04)
+## SPORT PORTAL — FULL HANDOVER (2026-05-04)
 
 The Sport Portal ecosystem = **3 public products** + **Paddy's own school/district/division portals** + **race-day district pages** that all share a single roster. Pitch: **enter student data once, automate across all sports**.
 
@@ -38,22 +37,22 @@ The Sport Portal ecosystem = **3 public products** + **Paddy's own school/distri
 
 | Product | URL | Status | Worker(s) | What it does |
 |---|---|---|---|---|
-| **School Sport Portal (SSP)** | https://schoolsportportal.com.au | ✅ 200 | `ssp-portal`, `ssp-contact`, `email-logger`, `inbox-api` | Commercial SaaS landing page. $1/student/year. Stripe live. |
-| **Carnival Timing (CT)** | https://carnivaltiming.com | ✅ 200 | `carnival-timing-html`, `carnival-timing-ws`, `ct-access`, `carnival-results` | Race-day timing app. Race Control / Starter / Lane Timer / Video Finish / Spectator. v8.5.2. |
-| **SportCarnival** | https://sportcarnival.com.au | ✅ 200 | `sportcarnival-hub` v3.0.0 | Public commercial demo at `/`. Real WPS/Williamstown district data at `/wd26` (noindex). |
+| **School Sport Portal (SSP)** | https://schoolsportportal.com.au | 200 | `ssp-portal`, `ssp-contact`, `email-logger`, `inbox-api` | Commercial SaaS landing page. $1/student/year. Stripe live. |
+| **Carnival Timing (CT)** | https://carnivaltiming.com | 200 | `carnival-timing-html`, `carnival-timing-ws`, `ct-access`, `carnival-results` | Race-day timing app. Race Control / Starter / Lane Timer / Video Finish / Spectator. v8.5.2. |
+| **SportCarnival** | https://sportcarnival.com.au | 200 | `sportcarnival-hub` v3.0.0 | Public commercial demo at `/`. Real WPS/Williamstown district data at `/wd26` (noindex). |
 
 ### Auxiliary domains / sub-products
 
 | URL | Purpose | Status |
 |---|---|---|
-| https://schoolsportportal.com.au/help | SSP getting-started | ✅ |
-| https://schoolsportportal.com.au/sitemap.xml | SSP sitemap | ✅ |
-| https://carnivaltiming.com/help | CT getting-started | ✅ |
-| https://carnivaltiming.com/sitemap.xml | CT sitemap | ✅ |
-| https://sportcarnival.com.au/sitemap.xml | SC sitemap (lists `/`, `/privacy`, `/terms`) | ✅ |
-| https://falkor-ct-ai.luckdragon.io | CT AI backend (summarise / flag-times / suggest-heats / commentary) | ✅ v1.0.0 |
-| https://ct-access.luckdragon.io | CT paywall worker (validate / create / stripe-webhook / admin/codes) | ✅ Live (PIN-gated) |
-| https://carnival-results.pgallivan.workers.dev | D1 API for published results | ✅ |
+| https://schoolsportportal.com.au/help | SSP getting-started | |
+| https://schoolsportportal.com.au/sitemap.xml | SSP sitemap | |
+| https://carnivaltiming.com/help | CT getting-started | |
+| https://carnivaltiming.com/sitemap.xml | CT sitemap | |
+| https://sportcarnival.com.au/sitemap.xml | SC sitemap (lists `/`, `/privacy`, `/terms`) | |
+| https://falkor-ct-ai.luckdragon.io | CT AI backend (summarise / flag-times / suggest-heats / commentary) | v1.0.0 |
+| https://ct-access.luckdragon.io | CT paywall worker (validate / create / stripe-webhook / admin/codes) | Live (PIN-gated) |
+| https://carnival-results.pgallivan.workers.dev | D1 API for published results | |
 
 ### Paddy's own school / district / division portals (on SSP)
 
@@ -62,10 +61,10 @@ Live at the `ssp-portal` worker — these are the real WPS / Williamstown / Hobs
 | Level | URL | Title |
 |---|---|---|
 | **School** | https://schoolsportportal.com.au/williamstownprimary | Williamstown Primary School — School Sport Portal |
-|  | https://schoolsportportal.com.au/williamstownps (alias) | same |
+| | https://schoolsportportal.com.au/williamstownps (alias) | same |
 | **District** | https://schoolsportportal.com.au/williamstowndistrict | Williamstown District Sport |
 | **Division** | https://schoolsportportal.com.au/hobsonsbay | Hobsons Bay Division — School Sport Portal |
-|  | https://schoolsportportal.com.au/hobsonsbaydivision (alias) | same |
+| | https://schoolsportportal.com.au/hobsonsbaydivision (alias) | same |
 
 Public product demo ladder (also `ssp-portal`):
 
@@ -80,10 +79,10 @@ Public product demo ladder (also `ssp-portal`):
 
 | URL | What it is | Status |
 |---|---|---|
-| https://sportcarnival.com.au/ | Public commercial demo — Demo Valley District XC 2026, 8 fictional schools, simulated live results | ✅ Live |
-| https://sportcarnival.com.au/wd26 | Real Williamstown District XC 2026 — 192 runners, 8 schools, 6 races, WS auto-connects to WD26 | ✅ `x-robots-tag: noindex` |
-| https://sportcarnival.com.au/williamstown | Alias for /wd26 | ✅ |
-| https://sportcarnival.com.au/williamstownps/crosscountry | WPS-only XC sub-page | ⚠️ Files in repo, worker doesn't route. Add handler if needed. |
+| https://sportcarnival.com.au/ | Public commercial demo — Demo Valley District XC 2026, 8 fictional schools, simulated live results | Live |
+| https://sportcarnival.com.au/wd26 | Real Williamstown District XC 2026 — 192 runners, 8 schools, 6 races, WS auto-connects to WD26 | `x-robots-tag: noindex` |
+| https://sportcarnival.com.au/williamstown | Alias for /wd26 | |
+| https://sportcarnival.com.au/williamstownps/crosscountry | WPS-only XC sub-page | Files in repo, worker doesn't route. Add handler if needed. |
 | CT carnival code **WD26** | District XC live results auto-connects | Reserved for Thursday |
 
 ### Stripe / payments
@@ -114,7 +113,7 @@ Public product demo ladder (also `ssp-portal`):
 
 ---
 
-## ⏳ Sport Portal — what's NEXT
+## Sport Portal — what's NEXT
 
 ### Immediate (this week)
 1. **Bookmark `sportcarnival.com.au/wd26`** for race day. Aliases: `/williamstown`, `/williamstown-2026`.
@@ -147,7 +146,7 @@ Public product demo ladder (also `ssp-portal`):
 
 ---
 
-## 🏃 WPS / District context (for race day)
+## WPS / District context (for race day)
 
 **District:** Williamstown District / Hobsons Bay Division. **District XC carnival: Thursday 7 May 2026** at McIvor Reserve, Yarraville. **Top 10 → Divisionals, 28 May (Werribee Racecourse)**.
 
@@ -165,7 +164,7 @@ Public product demo ladder (also `ssp-portal`):
 
 ---
 
-## 🚀 Live Falkor fleet — verified 2026-05-04
+## Live Falkor fleet — verified 2026-05-04
 
 | Worker | Domain | Live |
 |---|---|---|
@@ -190,13 +189,13 @@ Public product demo ladder (also `ssp-portal`):
 
 ---
 
-## ⏳ Phase 81 — Local Bridge — TEST PENDING
+## Phase 81 — Local Bridge — TEST PENDING
 
 Code DEPLOYED 2026-05-04 (commit `5e054ea`, deployment_id `f80acecaf6fb4428a1cbda36e09cf7e0` for falkor-agent v2.9.0).
 
 Built:
 - falkor-agent bridge protocol: `bridge_register` / `bridge_command` / `bridge_result` WS handlers, DO storage of bridge results.
-- falkor-ui v9.21.0: 🔌 PC bridge status pill in header.
+- falkor-ui v9.21.0: PC bridge status pill in header.
 - `falkor-bridge.js` (Node script — file/shell/screenshot/disk access, safe-roots only), `launch-bridge.vbs` (silent launcher), `install-bridge-startup.bat` (Windows Startup install).
 
 To test (Paddy runs locally):
@@ -210,7 +209,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ---
 
-## ✅ Recently shipped (2026-05-03 → 2026-05-04)
+## Recently shipped (2026-05-03 → 2026-05-04)
 
 **Firebase → Cloudflare migration COMPLETE (2026-05-04, e2e session, Phase 2 done):**
 - `/williamstowndistrict` rewritten — Firebase Auth + RTDB removed; new D1-backed page with email magic-link login + `/api/scores` + `/api/users` + admin coach provisioning. Page size shrunk 143 KB → 19 KB.
@@ -269,7 +268,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ---
 
-## 🛠 Deploy patterns
+## Deploy patterns
 
 - **Simple workers** (no DO/KV bindings): `POST https://asgard-tools.luckdragon.io/admin/deploy` with `X-Pin: VAULT_PIN`. Add `skip_auto_commit: true`.
 - **Workers with DO/Vectorize/KV bindings** (falkor-agent, falkor-kbt, falkor-brain, ct-access, carnival-timing-ws): use CF API directly with multipart PUT. Pass `keep_bindings: ["secret_text"]` to preserve secrets. For ct-access also pass `kv_namespaces: [{binding:"CT_ACCESS_CODES", id:"ac2ea4434e72490ea76ddb3ab6bca312"}]`.
@@ -281,7 +280,7 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ---
 
-## 🔐 Security (current)
+## Security (current)
 
 - **falkor.luckdragon.io login (Paddy):** `2967` (POST falkor-push `/user/verify`)
 - **AGENT_PIN** (fleet inter-worker `X-Pin`): `JilSS1zLn3Rl7mWrM6fOJc69` (rotated 2026-05-01)
