@@ -120,7 +120,7 @@ Public product demo ladder (also `ssp-portal`):
 1. **Bookmark `sportcarnival.com.au/wd26`** for race day. Aliases: `/williamstown`, `/williamstown-2026`.
 2. **Confirm WD26 carnival code** is created in CT for **Thursday 7 May 2026** (district XC).
 3. **Run the Thursday checklist** (`thursday_checklist.html` saved in Drive 2026-05-03).
-4. **Sport Portal architecture push** — prior chat earlier today created an architecture doc + cost-tracking dashboard locally. **GitHub push pending** — was waiting on a 6-digit verification code from email. Get the code, confirm target repo (likely `sportportal` or `schoolsportportal`), complete push.
+4. ~~**Sport Portal architecture push**~~ — DONE 2026-05-04. Pushed to `asgard-workers/docs/`: [`SPORT_PORTAL_ARCHITECTURE.md`](docs/SPORT_PORTAL_ARCHITECTURE.md) + [`COST_TRACKING_DASHBOARD.md`](docs/COST_TRACKING_DASHBOARD.md). Source markdowns remain in Drive.
 5. (Optional) **Restore `/williamstownps/crosscountry`** sub-page. Files exist in `sportcarnival-hub` repo but worker isn't routing them — add a handler in `_innerFetch`.
 
 ### Short-term (May 2026 audit — outstanding criticals)
