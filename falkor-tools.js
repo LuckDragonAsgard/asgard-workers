@@ -775,7 +775,7 @@ function renderHome(m){
    live.resultMood=hadErr?"error":toolCalls.length>0?"success":"normal";
    if(toolCalls.length&&live.toolStatus){live.content=live.content+String.fromCharCode(10,10)+live.toolStatus;delete live.toolStatus;}
    refreshChat();
-   if(localStorage.getItem("falkor.tts")==="1"&&live.content){try{const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content))})});if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}}catch(e){}}
+   if(localStorage.getItem("falkor.tts")==="1"&&live.content){try{const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content)),provider:localStorage.getItem("falkor.tts.provider")||"openai",voice:(localStorage.getItem("falkor.tts.provider")==="elevenlabs"?(localStorage.getItem("falkor.tts.voice")||""):(localStorage.getItem("falkor.tts.openai_voice")||"alloy"))})});if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}}catch(e){}}
   }catch(err){
    if(STATE.chat.length&&STATE.chat[STATE.chat.length-1].pending)STATE.chat.pop();
    const live=STATE.chat[STATE.chat.length-1];
@@ -1110,7 +1110,7 @@ function renderChatPane(){
    refreshChat();
    if(localStorage.getItem("falkor.tts")==="1" && live.content){
     try{
-     const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content))})});
+     const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content)),provider:localStorage.getItem("falkor.tts.provider")||"openai",voice:(localStorage.getItem("falkor.tts.provider")==="elevenlabs"?(localStorage.getItem("falkor.tts.voice")||""):(localStorage.getItem("falkor.tts.openai_voice")||"alloy"))})});
      if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}
     }catch(e){}
    }
@@ -1259,6 +1259,41 @@ function renderTools(m){
   });
   wrap.appendChild(grid);
  });
+ // Voice settings
+ wrap.appendChild(el("div",{style:"font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:14px"},"Voice"));
+ const vcard=el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px"});
+ vcard.appendChild(el("div",{style:"font-weight:600;font-size:13px;margin-bottom:8px"},"TTS provider"));
+ const provSel=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%;margin-bottom:8px"});
+ [["openai","OpenAI TTS (default, free-ish)"],["elevenlabs","ElevenLabs (paid plan needed — voice clone)"]].forEach(([v,t])=>{const o=el("option",{value:v},t);if(localStorage.getItem("falkor.tts.provider")===v)o.selected=true;provSel.appendChild(o)});
+ provSel.addEventListener("change",()=>{localStorage.setItem("falkor.tts.provider",provSel.value)});
+ vcard.appendChild(provSel);
+ vcard.appendChild(el("div",{style:"font-weight:600;font-size:13px;margin:8px 0 4px"},"Voice ID (ElevenLabs)"));
+ vcard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-bottom:6px"},"Paste an ElevenLabs voice ID. Get one from elevenlabs.io \u2192 Voice Lab \u2192 your cloned voice. Default: 21m00Tcm4TlvDq8ikWAM (Rachel)."));
+ const voiceIn=el("input",{type:"text",placeholder:"21m00Tcm4TlvDq8ikWAM",value:localStorage.getItem("falkor.tts.voice")||"",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%;font-family:ui-monospace,monospace;font-size:12px"});
+ voiceIn.addEventListener("change",()=>{localStorage.setItem("falkor.tts.voice",voiceIn.value.trim())});
+ vcard.appendChild(voiceIn);
+ vcard.appendChild(el("div",{style:"font-weight:600;font-size:13px;margin:8px 0 4px"},"OpenAI voice"));
+ const oaSel=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%"});
+ ["alloy","echo","fable","onyx","nova","shimmer"].forEach(v=>{const o=el("option",{value:v},v);if(localStorage.getItem("falkor.tts.openai_voice")===v)o.selected=true;oaSel.appendChild(o)});
+ oaSel.addEventListener("change",()=>{localStorage.setItem("falkor.tts.openai_voice",oaSel.value)});
+ vcard.appendChild(oaSel);
+ const testBtn=el("button",{class:"primary",style:"margin-top:10px"},"\uD83D\uDD0A Test voice");
+ const testStat=el("span",{style:"font-size:11px;color:var(--muted);margin-left:10px"});
+ vcard.appendChild(testBtn);vcard.appendChild(testStat);
+ testBtn.addEventListener("click",async()=>{
+  testBtn.disabled=true;testStat.textContent="Generating\u2026";
+  const provider=provSel.value;const body={text:"G\u2019day Paddy. Voice test from Falkor.",provider};
+  if(provider==="elevenlabs" && voiceIn.value.trim())body.voice=voiceIn.value.trim();
+  else if(provider==="openai")body.voice=oaSel.value||"alloy";
+  try{
+   const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify(body)});
+   if(r.ok){const blob=await r.blob();new Audio(URL.createObjectURL(blob)).play();testStat.textContent="\u2713 Played";testStat.style.color="var(--green)"}
+   else{const e=await r.text();testStat.textContent="Err: "+e.substring(0,80);testStat.style.color="var(--red)"}
+  }catch(e){testStat.textContent="Err: "+e.message;testStat.style.color="var(--red)"}
+  testBtn.disabled=false;
+ });
+ wrap.appendChild(vcard);
+
  m.appendChild(wrap);return m;
 }
 function renderRevenue(m){
