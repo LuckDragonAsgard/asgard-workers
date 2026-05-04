@@ -1927,9 +1927,10 @@ upBtn.onclick=async()=>{
           return Response.json({ok:true, games, count: games.length}, {headers:{...CORS,...NOCACHE}});
         }
         if (sub === 'ladder') {
-          const r = await fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+'&format=json', {headers});
+          const r = await fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+';source=1&format=json', {headers});
           const d = await r.json();
-          return Response.json({ok:true, ladder: d.ladder||[]}, {headers:{...CORS,...NOCACHE}});
+          const lad = (d.ladder||[]).filter(t=>t.source==='Squiggle' || !t.source).sort((a,b)=>(a.rank||99)-(b.rank||99));
+          return Response.json({ok:true, ladder: lad}, {headers:{...CORS,...NOCACHE}});
         }
         if (sub === 'tips') {
           const rd = url.searchParams.get('round') || '';
@@ -1942,11 +1943,11 @@ upBtn.onclick=async()=>{
           const [recR, upR, ladR] = await Promise.all([
             fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=100&format=json',{headers}),
             fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=0&format=json',{headers}),
-            fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+'&format=json',{headers}),
+            fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+';source=1&format=json',{headers}),
           ]);
           const rec = (await recR.json()).games||[];
           const up  = (await upR.json()).games||[];
-          const lad = (await ladR.json()).ladder||[];
+          const lad = ((await ladR.json()).ladder||[]).filter(t=>t.source==='Squiggle' || !t.source);
           // Today's results = recent games whose date is within last 24h
           const now = Date.now();
           const todays = rec.filter(g => Math.abs(now - new Date(g.date).getTime()) < 36*3600*1000).sort((a,b)=>a.date.localeCompare(b.date));
@@ -1954,7 +1955,7 @@ upBtn.onclick=async()=>{
           const lines = ['<b>AFL Update</b>'];
           if (todays.length) {
             lines.push('','<b>Recent results</b>');
-            todays.forEach(g => lines.push(`${g.hteam} ${g.hscore} d ${g.ateam} ${g.ascore} (${g.venue||''})`));
+            todays.forEach(g => { const hh=Number(g.hscore)||0, aa=Number(g.ascore)||0; const w = hh>aa?[g.hteam,hh,g.ateam,aa]:[g.ateam,aa,g.hteam,hh]; lines.push(`${w[0]} ${w[1]} d ${w[2]} ${w[3]} (${g.venue||''})`); });
           }
           if (next.length) {
             lines.push('','<b>Upcoming</b>');
@@ -1966,9 +1967,9 @@ upBtn.onclick=async()=>{
           }
           if (lad.length) {
             lines.push('','<b>Ladder (top 8)</b>');
-            lad.slice(0,8).forEach(t => lines.push(`${t.rank}. ${t.name} (${t.pts} pts, ${t.percentage}%)`));
-            const ess = lad.find(t=>t.name.toLowerCase().includes('essendon'));
-            if (ess) lines.push('','Essendon: '+ess.rank+'. ('+ess.pts+' pts, '+ess.percentage+'%)');
+            lad.slice().sort((a,b)=>(a.rank||99)-(b.rank||99)).slice(0,8).forEach(t => { const nm = t.team || t.name || '?'; const pts = (parseFloat(t.wins)||0)*4 + (parseFloat(t.draws)||0)*2; lines.push(`${t.rank}. ${nm} (${pts.toFixed(0)} pts, ${t.percentage||''}%)`); });
+            const ess = lad.find(t=>String(t.team||t.name||'').toLowerCase().includes('essendon'));
+            if (ess) { const epts = (parseFloat(ess.wins)||0)*4 + (parseFloat(ess.draws)||0)*2; lines.push('','Essendon: '+ess.rank+'. ('+epts.toFixed(0)+' pts, '+(ess.percentage||'')+'%)'); }
           }
           return Response.json({ok:true, digest: lines.join(String.fromCharCode(10))}, {headers:{...CORS,...NOCACHE}});
         }
