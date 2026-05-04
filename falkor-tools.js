@@ -3319,11 +3319,8 @@ upBtn.onclick=async()=>{
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
-    });
-      }
     }
-
-        if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
+    if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
       // Auto-rollback: revert falkor-tools.js to the previous commit on GitHub, then redeploy.
       try {
         const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-rollback', 'Accept':'application/vnd.github+json' };
