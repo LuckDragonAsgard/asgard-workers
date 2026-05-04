@@ -384,10 +384,12 @@ function renderChatPane(){
  }
  p.appendChild(head);
  const msgs=el("div",{class:"chat-msgs",id:"chat-msgs"});
- if(STATE.chat.length===0)const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
-  empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
-  empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
-  msgs.appendChild(empty);
+ if(STATE.chat.length===0){
+   const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
+   empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
+   empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
+   msgs.appendChild(empty);
+  }
  for(const m of STATE.chat){
    if(m.role==="assistant"){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
@@ -442,10 +444,12 @@ function renderChatPane(){
 function refreshChat(){
  const msgs=$("#chat-msgs");if(!msgs)return;
  msgs.innerHTML="";
- if(STATE.chat.length===0)const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
-  empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
-  empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
-  msgs.appendChild(empty);
+ if(STATE.chat.length===0){
+   const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
+   empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
+   empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
+   msgs.appendChild(empty);
+  }
  for(const m of STATE.chat){
    if(m.role==="assistant"){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
@@ -724,7 +728,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.10.0',mode:'asgard-hub-guided'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.0.0',mode:'asgard-hub-with-memory'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -969,6 +973,14 @@ upBtn.onclick=async()=>{
             input_schema:{ type:'object', properties:{ prefix:{type:'string'} }, required:[] } },
           { name:'cf_kv_get', description:"Get a value from the ASSETS KV namespace by key.",
             input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
+          { name:'save_memory', description:"Save a fact to long-term memory about this user. Use when user says 'remember that X' or whenever you learn something durable about their preferences, work style, or platform.",
+            input_schema:{ type:'object', properties:{ fact:{type:'string'}, category:{type:'string',description:'profile, preferences, platform, project, style, etc.'}, importance:{type:'number',description:'1-10, default 5'} }, required:['fact'] } },
+          { name:'recall_memory', description:"Search remembered facts about the user. Returns matching memories.",
+            input_schema:{ type:'object', properties:{ query:{type:'string',description:'optional keyword filter'}, category:{type:'string',description:'optional category filter'} }, required:[] } },
+          { name:'list_memories', description:"List all stored memories for this user, sorted by importance.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'delete_memory', description:"Delete a stored memory by id. Use when user says 'forget X'.",
+            input_schema:{ type:'object', properties:{ id:{type:'number'} }, required:['id'] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
@@ -1135,6 +1147,53 @@ upBtn.onclick=async()=>{
               return { key: input.key, value: v ? (v.length>5000 ? v.substring(0,5000)+'...[truncated]' : v) : null };
             } catch(e) { return { error: 'kv get failed' }; }
           }
+          if (name === 'save_memory') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)", params:["paddy", input.category||"general", input.fact, "agent", input.importance||5] }),
+              });
+              const d = await r.json();
+              if (!d.success) return { error:'save failed', detail: JSON.stringify(d.errors||[]) };
+              return { ok:true, id: d.result?.[0]?.meta?.last_row_id, fact: input.fact };
+            } catch(e){ return { error:'save failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'recall_memory') {
+            try {
+              let sql = 'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy"';
+              const params = [];
+              if (input.category) { sql += ' AND category = ?'; params.push(input.category); }
+              if (input.query) { sql += ' AND fact LIKE ?'; params.push('%'+input.query+'%'); }
+              sql += ' ORDER BY importance DESC, created_at DESC LIMIT 30';
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql, params }),
+              });
+              const d = await r.json();
+              return { memories: d.result?.[0]?.results || [] };
+            } catch(e){ return { error: 'recall failed' }; }
+          }
+          if (name === 'list_memories') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy" ORDER BY importance DESC, created_at DESC' }),
+              });
+              const d = await r.json();
+              return { memories: d.result?.[0]?.results || [] };
+            } catch(e){ return { error: 'list failed' }; }
+          }
+          if (name === 'delete_memory') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:'DELETE FROM falkor_memory WHERE id = ? AND user_id="paddy"', params:[input.id] }),
+              });
+              const d = await r.json();
+              return { ok: !!d.success, deleted: d.result?.[0]?.meta?.changes };
+            } catch(e){ return { error: 'delete failed' }; }
+          }
           if (name && name.startsWith('browser_')) {
             const action = name.replace('browser_','');
             return await browserDispatch(action, input);
@@ -1180,7 +1239,32 @@ upBtn.onclick=async()=>{
         system += String.fromCharCode(10,10) + "When the user asks for a change, ALWAYS read the relevant files first to understand the current state, then propose the change clearly, then call write_file to commit. Use concise commit messages. If you do not have enough info, list_files first. Be terse - this is a chat, not a report.";
 
         // Anthropic tool-use loop
-        const messages = [...history, { role:'user', content: userMsg }];
+        // Load remembered facts about this user
+        let memBlock = '';
+        try {
+          const mr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+            body: JSON.stringify({ sql:'SELECT category, fact FROM falkor_memory WHERE user_id="paddy" ORDER BY importance DESC LIMIT 30' }),
+          });
+          const md = await mr.json();
+          const mems = md.result?.[0]?.results || [];
+          if (mems.length) memBlock = String.fromCharCode(10,10) + 'WHAT YOU REMEMBER ABOUT PADDY (long-term memory — these are important):'+ String.fromCharCode(10) + mems.map(m => '- ['+m.category+'] '+m.fact).join(String.fromCharCode(10));
+        } catch(e){}
+        system += memBlock;
+
+        // Load last 20 chat-history turns for continuity
+        let priorTurns = [];
+        try {
+          const hr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+            body: JSON.stringify({ sql:'SELECT role, content FROM falkor_chat_history WHERE user_id="paddy" ORDER BY created_at DESC LIMIT 20' }),
+          });
+          const hd = await hr.json();
+          const rows = hd.result?.[0]?.results || [];
+          priorTurns = rows.reverse().map(r => ({ role: r.role, content: r.content }));
+        } catch(e){}
+
+        const messages = [...priorTurns, ...history, { role:'user', content: userMsg }];
         const toolResults = [];
         let iterations = 0;
         const maxIter = 8;
@@ -1223,6 +1307,20 @@ upBtn.onclick=async()=>{
           for (const c of a.content) if (c.type === 'text') finalText += c.text;
           break;
         }
+
+        // Persist this turn to chat history
+        try {
+          const projId = project?.id || null;
+          const projName = project?.name || null;
+          const toolsUsed = toolResults.map(t=>t.tool).join(',');
+          await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+            body: JSON.stringify({
+              sql:"INSERT INTO falkor_chat_history (user_id, role, content, project_id, project_name, tools_used) VALUES (?,?,?,?,?,?), (?,?,?,?,?,?)",
+              params:["paddy","user",userMsg,projId,projName,null, "paddy","assistant", finalText || "(no text)", projId,projName, toolsUsed],
+            }),
+          });
+        } catch(e){}
 
         return Response.json({
           ok:true,
