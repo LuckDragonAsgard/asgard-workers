@@ -6,6 +6,8 @@ const CHAT_API     = '/api/chat';
 const AGENT_TOOLS = [
           { name:'grep_file', description:'Search a file for a regex pattern. Returns matching line numbers with context. Use this to navigate large files instead of paging through chunks. flags=i for case-insensitive.',
             input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer'} }, required:['path','pattern'] } },
+          { name:'edit_file', description:"Make a precise, surgical edit to a file. Provide old_string (exact text to find) and new_string (replacement). The old_string must appear EXACTLY ONCE in the file unless replace_all=true. Best for editing large files (e.g. falkor-tools.js itself) without rewriting everything. Auto-commits.",
+            input_schema:{ type:'object', properties:{ path:{type:'string'}, old_string:{type:'string', description:'exact text to replace — include enough context to be unique'}, new_string:{type:'string'}, replace_all:{type:'boolean', description:'replace every occurrence (default false)'}, message:{type:'string', description:'commit message'} }, required:['path','old_string','new_string'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
           { name:'read_file', description:'Read a file from the project repo. Large files (>180KB) auto-fall to git blobs API. Pass start_line/end_line for chunked reading of huge files.',
@@ -102,7 +104,7 @@ const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
 
 
 async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
-          const needRepo = ['list_files','read_file','grep_file','write_file','cf_deploy_worker'].includes(name);
+          const needRepo = ['list_files','read_file','grep_file','edit_file','write_file','cf_deploy_worker'].includes(name);
           if (needRepo && !owner && name !== 'cf_deploy_worker') {
             // cf_deploy_worker pulls from a fixed repo, others need project repo
             return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
@@ -443,6 +445,37 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               if (!d.success) return { error: 'list failed' };
               return { workers: d.result.map(w => ({ name: w.id, modified: w.modified_on })) };
             } catch(e) { return { error: 'list failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'edit_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            const oldStr = input.old_string || '';
+            const newStr = input.new_string === undefined ? '' : input.new_string;
+            const replaceAll = !!input.replace_all;
+            if (!oldStr) return { error:'old_string required' };
+            // Fetch current source via blobs API for big files
+            let r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'edit fetch HTTP '+r.status };
+            let d = await r.json();
+            let decoded = '';
+            const sha = d.sha;
+            if (d.content) decoded = atob(d.content.replace(/\n/g,''));
+            else if (d.size && d.sha) {
+              const br = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/blobs/"+d.sha, {headers: ghHeaders});
+              if (br.ok) { const bd = await br.json(); if (bd.content) decoded = atob(bd.content.replace(/\n/g,'')); }
+            }
+            if (!decoded) return { error:'no content from GitHub' };
+            // Count occurrences
+            const parts = decoded.split(oldStr);
+            const occurrences = parts.length - 1;
+            if (occurrences === 0) return { error:'old_string NOT FOUND in '+p+' — check exact match incl. whitespace/indent' };
+            if (occurrences > 1 && !replaceAll) return { error:'old_string matches '+occurrences+' times — add more context to be unique, or set replace_all=true' };
+            const patched = replaceAll ? parts.join(newStr) : parts[0]+newStr+parts.slice(1).join(oldStr);
+            // Commit via Contents API (works up to 100MB; we encode as base64)
+            const payload = { message: input.message || 'edit_file via Falkor agent', content: btoa(unescape(encodeURIComponent(patched))), sha };
+            const wr = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            const wd = await wr.json();
+            if (!wr.ok) return { error:'edit_file HTTP '+wr.status, detail: wd.message || JSON.stringify(wd).substring(0,300) };
+            return { ok:true, path:p, occurrences_replaced: replaceAll?occurrences:1, commit: wd.commit?.sha?.substring(0,7), html_url: wd.commit?.html_url, total_bytes_after: patched.length };
           }
           if (name === 'write_file') {
             const p = (input.path||'').replace(/^\//,'');
