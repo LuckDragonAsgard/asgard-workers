@@ -355,6 +355,113 @@ Per project instructions, this file is auto-fetched at chat start. Brief Paddy f
 
 ---
 
+---
+
+## CLUBHOUSE — FULL HANDOVER (2026-05-04)
+
+Clubhouse is a **multi-tenant club management SaaS** built on Cloudflare Pages + D1 + R2. PE/sport clubs sign up, manage rosters, fixtures, stats, and payments. Sessions 1–5 shipped tasks #1–45.
+
+### Infrastructure
+| Resource | ID / Name |
+|---|---|
+| CF Pages project | `clubhouse` (GitHub: LuckDragonAsgard/clubhouse) |
+| D1 database | `b6275cb4-9c0f-4649-ae6a-f1c2e70e940f` (binding: `DB`) |
+| R2 bucket | `clubhouse-media` (binding: `MEDIA`) |
+| Deploy | Push to `main` → CF Pages auto-builds |
+
+### Database tables
+| Table | Purpose |
+|---|---|
+| `clubs` | One row per club (slug, name, features JSON, playhq_org_id, playhq_season_id, playhq_last_sync) |
+| `ch_memberships` | Users ↔ clubs (user_id, club_id, role: admin/committee/coach/player/parent) |
+| `ch_fixtures` | Games (club_id, round, date, home/away, opponent_name ← **NOT** opponent, score, result, sport, playhq_id) |
+| `ch_stats` | Flat key-value stats (fixture_id, user_id, stat_key, stat_value REAL) — UNIQUE(fixture_id, user_id, stat_key) |
+| `ch_ladder` | Season ladder rows (club_id, team_name, p/w/l/d/pts, scraped_at) |
+| `users` | Auth (email, name, avatar_url) |
+| `sessions` | Bearer tokens (token, user_id, expires_at) |
+
+### Auth pattern (critical — must get this right)
+```js
+// Handler MUST destructure request AND env
+export async function onRequestGet({ request, env, params }) {
+  const user = await AUTH(request, env);       // throws 401 if no valid Bearer
+  const clubId = await getClubId(env, params.slug);
+  const mem = await checkMembership(env, clubId, user.id);
+  // mem.role: admin | committee | coach | player | parent
+}
+```
+
+### API endpoints (all under /api/clubs/:slug/)
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `fixtures` | member | List fixtures |
+| POST | `fixtures` | admin/committee | Create fixture |
+| GET | `fixtures/:id/stats` | public | Get all player stats for a game |
+| POST | `fixtures/:id/stats` | admin/committee/coach | Upsert stats (batch) |
+| GET | `stats/:userId` | public | Career stats — totals, avgs, best, last 10 games |
+| GET | `stats/leaderboard?stat=goals&limit=10` | public | Top players by stat |
+| GET/PATCH/POST | `sync/playhq` | admin | PlayHQ GraphQL config + sync |
+| POST | `sync/scrape` | admin | Receive bookmarklet-scraped data (fixtures + ladder) |
+| GET | `members` | member | Roster |
+| POST | `members/import` | admin | CSV bulk import (task #41) |
+| GET | `settings` | member | Club settings + features |
+| PATCH | `settings` | admin | Update settings |
+
+### Stats system
+- **AFL keys:** goals, behinds, kicks, handballs, disposals, marks, tackles, hitouts, frees_for, frees_against, votes
+- **Cricket batting:** runs, balls, fours, sixes, not_out
+- **Cricket bowling:** overs, maidens, wickets, runs_conceded
+- Entry UI: `/club/:slug/stats/entry/:fixtureId` (StatsEntry.jsx — sport selector + scrollable player × stat grid)
+- Player profile shows career stats (PlayerStats.jsx component)
+- Leaderboard at `/club/:slug/stats/leaderboard` (Leaderboard.jsx)
+
+### PlayHQ integration
+- PlayHQ is a **full SPA** — server-side scraping blocked (CloudFront, returns 2290-char shell HTML)
+- Solution: **bookmarklet** — admin drags button from Admin page to bookmarks bar, clicks on PlayHQ page
+- Bookmarklet source: `public/playhq-bookmarklet.js`
+- Scrapes `[class*="GameCard"]` fixture cards + `tbody tr` ladder rows from live DOM
+- Also intercepts fetch to capture GraphQL responses
+- POSTs to `/api/clubs/${slug}/sync/scrape`
+- GraphQL endpoint (discovered): `https://api.playhq.com/graphql`
+
+### Key bugs / gotchas
+- `ch_fixtures` column is `opponent_name` NOT `opponent` — always use `opponent_name`
+- `sport` column on `ch_fixtures` was added via ALTER: `ALTER TABLE ch_fixtures ADD COLUMN sport TEXT DEFAULT 'afl'` — must migrate on any fresh DB
+- CF Pages routes specific filenames before dynamic ones: `stats/leaderboard.js` resolves before `stats/[userId].js`
+- GitHub Contents API: URL-encode `[` as `%5B`, `]` as `%5D` in file paths
+- Error 1101 = CF worker runtime exception — check D1 schema first
+- `wrangler.toml` controls CF Pages production bindings — R2 must be declared or it disappears on deploy
+
+### Frontend routes (React SPA, src/App.jsx)
+```
+/club/:slug/                    → ClubHome
+/club/:slug/fixtures            → Fixtures (has 📊 link on played games)
+/club/:slug/stats/entry/:id     → StatsEntry
+/club/:slug/stats/leaderboard   → Leaderboard
+/club/:slug/members/:userId     → PlayerProfile (shows PlayerStats component)
+/club/:slug/admin               → Admin (bookmarklet UI + feature toggles)
+```
+
+### Feature flags (clubs.features JSON)
+Default features: `{ news: true, events: true, gallery: true, payments: true, stats: true }`
+Toggle in Admin page under "Features" section.
+
+### Session 5 completed (2026-05-04)
+- ✅ Task #41: CSV roster import
+- ✅ Task #42: PlayHQ GraphQL sync endpoint
+- ✅ Task #43: PlayHQ bookmarklet scraper (DOM-based, bypasses SPA blocking)
+- ✅ Task #44: Stats entry system (AFL + Cricket, per-fixture, per-player)
+- ✅ Task #45: Stats display (PlayerProfile component + Leaderboard page)
+- ✅ Handover updated in both asgard-source (Cowork) and asgard-workers (Falkor)
+
+### Next steps for Clubhouse
+- Test bookmarklet on real PlayHQ admin account (need org_id + season_id first)
+- Wire up payments (Stripe) for member registration
+- Notifications: fixture reminders, score updates via Telegram/push
+- Public club profile pages (unauthenticated)
+
+---
+
 ## Family Finance pages — IP cascade calculators (May 2026)
 
 Three Cloudflare workers built to model the Footscray-Williamstown property cascade between Paddy/Jacky, Kelly, and Monica. All three deployed and live as of 2026-05-04.
