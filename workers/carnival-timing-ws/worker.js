@@ -1920,7 +1920,6 @@ var CarnivalRoom = class {
         ws.send(j({ type: "ack", id }));
         this.broadcast(msg.path, processed, newSeq);
         if (msg.path && msg.path.startsWith("results/")) {
-          this.pushToFirebase(next, msg.path.slice(8), processed).catch(() => {});
           this.pushToD1(next, msg.path.slice(8), processed).catch(() => {});
         }
         break;
@@ -1935,7 +1934,6 @@ var CarnivalRoom = class {
         ws.send(j({ type: "ack", id }));
         this.broadcast(msg.path, merged, newSeq);
         if (msg.path && msg.path.startsWith("results/")) {
-          this.pushToFirebase(next, msg.path.slice(8), merged).catch(() => {});
           this.pushToD1(next, msg.path.slice(8), merged).catch(() => {});
         }
         break;
@@ -1983,42 +1981,6 @@ var CarnivalRoom = class {
         break;
       }
     }
-  }
-  // ── Firebase bridge: mirror published results to RTDB ──────────
-  async pushToFirebase(stateData, resultKey, resultData) {
-    const FB_API_KEY = "AIzaSyA-bNl8XqvZ7DQ6YftL9teXbqxYICBlPF8";
-    const FB_DB_URL = "https://willy-district-sport-default-rtdb.asia-southeast1.firebasedatabase.app";
-    const meta = stateData && stateData.meta ? stateData.meta : {};
-    const school = meta.school || "";
-    const sport = meta.sport || "";
-    const name = meta.name || "";
-    const carnivalCode = this.state.id && this.state.id.name ? this.state.id.name : "unknown";
-    const authResp = await fetch(
-      "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + FB_API_KEY,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ returnSecureToken: true })
-      }
-    );
-    if (!authResp.ok) return;
-    const { idToken } = await authResp.json();
-    await fetch(
-      FB_DB_URL + "/carnivalResults/" + carnivalCode + "/meta.json?auth=" + idToken,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ school, sport, name, carnivalCode, updatedAt: Date.now() })
-      }
-    );
-    await fetch(
-      FB_DB_URL + "/carnivalResults/" + carnivalCode + "/results/" + resultKey + ".json?auth=" + idToken,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...resultData, _school: school, _carnivalCode: carnivalCode })
-      }
-    );
   }
   // ── D1 archive: persist published results to carnival-results worker ──
   async pushToD1(stateData, resultKey, resultData) {
