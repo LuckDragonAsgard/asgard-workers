@@ -377,7 +377,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             try {
               const r = await fetch('https://falkor-code.luckdragon.io/workers', { headers:{ 'X-Pin': env.AGENT_PIN } });
               return await r.json();
-            } catch(e){ return { error:'fleet check failed' }; }
+            } catch(e){ return { error:'fleet check failed: '+String(e).substring(0,200) }; }
           }
           if (name === 'vector_remember') {
             try {
