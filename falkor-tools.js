@@ -845,6 +845,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 <script>
 const VERIFY_API="https://falkor-push.luckdragon.io/user/verify",PROJECTS_API="/api/projects",CHAT_API="/api/chat";
 const $=(s,r=document)=>r.querySelector(s);
+const fmtMel=s=>{if(!s)return s;const utc=String(s).replace(' ','T');const iso=/Z$|[+-]\d\d:?\d\d$/.test(utc)?utc:utc+'Z';const d=new Date(iso);if(isNaN(d))return s;try{return new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Melbourne',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',','')+' AEST'}catch(e){return s}};
 const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")n.className=v;else if(k==="onclick")n.addEventListener("click",v);else if(k==="html")n.innerHTML=v;else n.setAttribute(k,v)}for(const k of kids){if(k==null||k===false)continue;if(typeof k==="string"||typeof k==="number")n.appendChild(document.createTextNode(String(k)));else if(k && k.nodeType)n.appendChild(k);else n.appendChild(document.createTextNode(String(k)))}return n};
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const parseCost=c=>{if(!c)return 0;const m=String(c).match(/[0-9.]+/);return m?parseFloat(m[0]):0};
@@ -1247,7 +1248,7 @@ function openModal(p){
   ["Y1 / Y2 / Y3",[p.y1,p.y2,p.y3].filter(Boolean).join(" / ")||null],
   ["Scale",p.scale],
   ["Detail",p.detail],
-  ["Updated",p.last_updated],
+  ["Updated",fmtMel(p.last_updated)],
   ["Next",p.next],
   ["Notes",p.notes]
  ];
@@ -1545,7 +1546,7 @@ function renderRecent(m){
  list.forEach(p=>{
   const row=el("div",{style:"display:grid;grid-template-columns:140px 1fr auto;gap:14px;padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;cursor:pointer;align-items:center"});
   row.addEventListener("click",()=>openModal(p));
-  row.appendChild(el("div",{style:"font-size:11px;color:var(--muted);font-family:ui-monospace,monospace"},p.last_updated||"\u2014"));
+  row.appendChild(el("div",{style:"font-size:11px;color:var(--muted);font-family:ui-monospace,monospace"},fmtMel(p.last_updated)||"\u2014"));
   const mid=el("div");
   mid.appendChild(el("div",{style:"font-weight:600;font-size:14px"},p.name||"\u2014"));
   if(p.next)mid.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:2px"},"Next: "+p.next));
