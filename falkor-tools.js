@@ -1726,6 +1726,43 @@ const NOCACHE={
 };
 
 export default {
+  async scheduled(event, env, ctx) {
+    // CF Cron Trigger handler. event.cron is the matching cron string.
+    const cron = event.cron || '';
+    const now = new Date();
+    try {
+      // 09:00 UTC = 7pm Melbourne AEST — AFL daily digest to family
+      if (cron === '0 9 * * *') {
+        const d = await fetch('https://falkor.luckdragon.io/api/sport/afl/digest').then(r => r.json());
+        if (d.digest) {
+          const r = await fetch('https://falkor-telegram.luckdragon.io/send', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
+            body: JSON.stringify({target:'family', text: d.digest, parse_mode:'HTML'}),
+          });
+          await env.ASSETS.put('cron:afl_digest:'+now.toISOString().substring(0,10), JSON.stringify({status:r.status, sent:Date.now()}), {expirationTtl: 7*86400});
+        }
+      }
+      // 21:00 UTC = 7am Melbourne AEST next-day — daily morning briefing to Paddy
+      else if (cron === '0 21 * * *') {
+        const d = await fetch('https://falkor.luckdragon.io/api/briefing', {headers:{'X-Pin':env.AGENT_PIN}}).then(r => r.json());
+        if (d.briefing) {
+          await fetch('https://falkor-telegram.luckdragon.io/send', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
+            body: JSON.stringify({target:'paddy', text: '🌅 <b>Morning briefing</b>\n\n'+d.briefing, parse_mode:'HTML'}),
+          });
+          await env.ASSETS.put('cron:briefing:'+now.toISOString().substring(0,10), JSON.stringify({sent:Date.now()}), {expirationTtl: 7*86400});
+        }
+      }
+      // 17:00 UTC = 3am Melbourne AEST — memory consolidation (placeholder log)
+      else if (cron === '0 17 * * *') {
+        await env.ASSETS.put('cron:memory_consolidate:'+now.toISOString().substring(0,10), JSON.stringify({ran:Date.now()}), {expirationTtl: 7*86400});
+      }
+    } catch(e) {
+      try { await env.ASSETS.put('cron:err:'+now.toISOString(), String(e).substring(0,500), {expirationTtl: 7*86400}); } catch(ee){}
+    }
+  },
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
