@@ -691,7 +691,6 @@ const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const parseCost=c=>{if(!c)return 0;const m=String(c).match(/[0-9.]+/);return m?parseFloat(m[0]):0};
 
-fetch("/api/falkor/heartbeat",{method:"POST"}).catch(()=>{});
 const STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:[],chatContext:null};
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
@@ -2513,41 +2512,32 @@ upBtn.onclick=async()=>{
       }
     }
 
-    if(url.pathname==='/api/falkor/heartbeat'&&request.method==='POST'){
-      // Page calls this on load. We log timestamp; verify-served reads the latest.
-      try {
-        await env.ASSETS.put('falkor:heartbeat:latest', String(Date.now()), {expirationTtl: 7*86400});
-        return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
-      } catch(e){ return Response.json({error:String(e)},{status:500,headers:{...CORS,...NOCACHE}}); }
-    }
-
     if(url.pathname==='/api/falkor/verify-served'){
-      // Health check: if no heartbeat from a real browser in last 10 min, the served JS is probably broken.
-      // Combine with: HTML size sanity, contains expected markers.
+      // Fetch the live served HTML, extract inline <script>, try to parse it.
+      // Returns ok/error so cron can detect black-screen-class bugs that pass worker syntax check.
       try {
-        const html = HTML;
+        const r = await fetch('https://falkor.luckdragon.io/?vsbypass='+Date.now(), {headers:{'Cache-Control':'no-cache'}});
+        const html = await r.text();
+        // Extract all <script>...</script> blocks (exclude src= ones)
+        const scripts = [];
+        const re = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
+        let m;
+        while ((m = re.exec(html)) !== null) scripts.push(m[1]);
+        // Try to parse each via new Function (catches SyntaxError without executing)
         const errors = [];
-        // Sanity: HTML has the SPA shell
-        if (!html.includes('<div id="app">')) errors.push({error:'missing #app div'});
-        if (html.length < 30000) errors.push({error:'HTML too small: '+html.length+' bytes (expected >30KB)'});
-        // Heartbeat freshness — if any heartbeat exists, check it's recent
-        let lastHB = null;
-        try {
-          const v = await env.ASSETS.get('falkor:heartbeat:latest');
-          if (v) {
-            lastHB = parseInt(v);
-            const ageMs = Date.now() - lastHB;
-            // Stale if >30 min — page might be broken (or no one's loaded it)
-            if (ageMs > 30*60*1000) errors.push({error:'no heartbeat in '+Math.round(ageMs/60000)+' min — page may be broken or unused'});
+        for (let i = 0; i < scripts.length; i++) {
+          try { new Function(scripts[i]); }
+          catch (e) {
+            errors.push({ block: i, error: String(e).substring(0,200), preview: scripts[i].substring(0,80) });
           }
-        } catch(e){}
-        return Response.json({ok: errors.length===0, errors, html_size: html.length, last_heartbeat: lastHB, last_heartbeat_age_sec: lastHB ? Math.round((Date.now()-lastHB)/1000) : null}, {headers:{...CORS,...NOCACHE}});
+        }
+        return Response.json({ok: errors.length===0, blocks: scripts.length, errors, html_size: html.length}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
     }
 
-        if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
+    if(url.pathname==='/api/falkor/auto-rollback'&&request.method==='POST'){
       // Auto-rollback: revert falkor-tools.js to the previous commit on GitHub, then redeploy.
       try {
         const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-rollback', 'Accept':'application/vnd.github+json' };
