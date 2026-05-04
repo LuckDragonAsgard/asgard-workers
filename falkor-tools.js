@@ -252,15 +252,15 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
               if (!ghr.ok) return { error: 'worker source not found in repo: '+wname+'.js (HTTP '+ghr.status+')' };
               const ghd = await ghr.json();
-              const code = atob(ghd.content.replace(/\n/g,''));
-              // Deploy via CF API multipart
-              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace'] };
+              // Decode base64 to UTF-8-safe bytes (avoid the atob → string → re-encode UTF-8 corruption)
+              const codeBytes = Uint8Array.from(atob(ghd.content.replace(/\n/g,'')), c => c.charCodeAt(0));
+              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace',] };
               const boundary = '----b42deploy'+Date.now();
-              const body = new TextEncoder().encode(
-                '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
-                '--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n'+
-                code+'\r\n--'+boundary+'--\r\n'
-              );
+              const enc = new TextEncoder();
+              const head = enc.encode('--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n');
+              const tail = enc.encode('\r\n--'+boundary+'--\r\n');
+              const body = new Uint8Array(head.length + codeBytes.length + tail.length);
+              body.set(head, 0); body.set(codeBytes, head.length); body.set(tail, head.length + codeBytes.length);
               const dr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname, {
                 method:'PUT',
                 headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'multipart/form-data; boundary='+boundary },
@@ -2741,10 +2741,10 @@ upBtn.onclick=async()=>{
         const fR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js?ref='+prevSha, {headers: ghHeaders});
         const fD = await fR.json();
         let content = '';
-        if (fD.content) content = atob(fD.content.replace(/\n/g,''));
+        if (fD.content) content = decodeURIComponent(escape(atob(fD.content.replace(/\n/g,''))));
         else if (fD.size && fD.sha) {
           const br = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/git/blobs/'+fD.sha, {headers: ghHeaders});
-          if (br.ok) { const bd = await br.json(); content = atob(bd.content.replace(/\n/g,'')); }
+          if (br.ok) { const bd = await br.json(); content = decodeURIComponent(escape(atob(bd.content.replace(/\n/g,'')))); }
         }
         if (!content) return Response.json({error:'no prev content'},{status:500,headers:{...CORS,...NOCACHE}});
         // Get current sha for HEAD file
@@ -2754,7 +2754,7 @@ upBtn.onclick=async()=>{
         const wR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js', {
           method:'PUT',
           headers: { ...ghHeaders, 'Content-Type':'application/json' },
-          body: JSON.stringify({ message:'auto-rollback to '+prevSha.substring(0,7)+' (browser-side syntax error detected)', content: btoa(content), sha: headD.sha }),
+          body: JSON.stringify({ message:'auto-rollback to '+prevSha.substring(0,7)+' (browser-side syntax error detected)', content: btoa(unescape(encodeURIComponent(content))), sha: headD.sha }),
         });
         const wD = await wR.json();
         if (!wR.ok) return Response.json({error:'rollback commit failed', detail: wD.message},{status:500,headers:{...CORS,...NOCACHE}});
