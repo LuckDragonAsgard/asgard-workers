@@ -2476,6 +2476,18 @@ upBtn.onclick=async()=>{
           const d = await r.json();
           return Response.json({ok:true, tips: d.tips||[]}, {headers:{...CORS,...NOCACHE}});
         }
+        if (sub === 'match-report') {
+          const gid = url.searchParams.get('game_id');
+          const r = await fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=100&format=json', {headers});
+          const d = await r.json();
+          const games = (d.games||[]).filter(g=>!gid || String(g.id)===String(gid)).sort((a,b)=>b.date.localeCompare(a.date));
+          const g = games[0];
+          if(!g) return Response.json({error:'no game'},{status:404,headers:{...CORS,...NOCACHE}});
+          const aReq = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:600, system:'Punchy AFL match reports for SMS/Telegram. 4-6 sentences max. No filler.', messages:[{role:'user',content:'Match report: '+g.hteam+' '+g.hscore+' vs '+g.ateam+' '+g.ascore+' at '+g.venue+'. Round '+g.round+'. Include the storyline.'}]})});
+          const a = await aReq.json();
+          const report = (a.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+          return Response.json({ok:true, game:{id:g.id,date:g.date,venue:g.venue,hteam:g.hteam,hscore:g.hscore,ateam:g.ateam,ascore:g.ascore,winner:g.winner,round:g.round}, report}, {headers:{...CORS,...NOCACHE}});
+        }
         if (sub === 'digest') {
           // Build a Telegram-friendly summary: today's results + tomorrow's fixtures + ladder top 8
           const [recR, upR, ladR] = await Promise.all([
