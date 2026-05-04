@@ -8,6 +8,8 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer'} }, required:['path','pattern'] } },
           { name:'edit_file', description:"Make a precise, surgical edit to a file. Provide old_string (exact text to find) and new_string (replacement). The old_string must appear EXACTLY ONCE in the file unless replace_all=true. Best for editing large files (e.g. falkor-tools.js itself) without rewriting everything. Auto-commits.",
             input_schema:{ type:'object', properties:{ path:{type:'string'}, old_string:{type:'string', description:'exact text to replace — include enough context to be unique'}, new_string:{type:'string'}, replace_all:{type:'boolean', description:'replace every occurrence (default false)'}, message:{type:'string', description:'commit message'} }, required:['path','old_string','new_string'] } },
+          { name:'verify_endpoint', description:"Verify a Falkor endpoint returns valid JSON (not HTML fallthrough or 522 error). Use AFTER cf_deploy_worker. If response is HTML or contains \"error code: 522\", waits 5s and retries up to 3 times. Returns ok:true with the parsed JSON if successful, ok:false with details if failing.",
+            input_schema:{ type:'object', properties:{ url:{type:'string',description:'path like /api/foo or full URL'}, method:{type:'string',description:'GET or POST',default:'GET'}, body:{type:'object',description:'JSON body for POST'}, expected_field:{type:'string',description:'optional field name expected in response (e.g. ok, results)'} }, required:['url'] } },
           { name:'multi_edit', description:"Apply multiple edits to a file in ONE commit. Each edit is {old_string, new_string, replace_all?}. Edits applied sequentially. If any old_string is not found or not unique (when replace_all=false), the whole batch fails before commit. Use to bundle related changes.",
             input_schema:{ type:'object', properties:{ path:{type:'string'}, edits:{type:'array', items:{type:'object', properties:{old_string:{type:'string'}, new_string:{type:'string'}, replace_all:{type:'boolean'}}, required:['old_string','new_string']}}, message:{type:'string'} }, required:['path','edits'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
@@ -516,6 +518,43 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             const wd = await wr.json();
             if (!wr.ok) return { error:'multi_edit HTTP '+wr.status, detail: wd.message };
             return { ok:true, path:p, edits_applied: results, commit: wd.commit?.sha?.substring(0,7), html_url: wd.commit?.html_url, total_bytes_after: working.length };
+          }
+          if (name === 'verify_endpoint') {
+            const path = input.url || '';
+            const url = path.startsWith('http') ? path : 'https://falkor.luckdragon.io' + path;
+            const method = (input.method||'GET').toUpperCase();
+            const expected = input.expected_field || 'ok';
+            const opts = { method, headers: {'X-Pin': env.AGENT_PIN, 'Cache-Control':'no-cache'} };
+            if (method === 'POST' && input.body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(input.body); }
+            for (let attempt = 0; attempt < 3; attempt++) {
+              if (attempt > 0) await new Promise(r => setTimeout(r, 4000));
+              try {
+                const r = await fetch(url, opts);
+                const text = await r.text();
+                // Detect HTML fallthrough (endpoint not registered)
+                if (text.startsWith('<!doctype') || text.startsWith('<!DOCTYPE')) {
+                  return { ok: false, attempt: attempt+1, error: 'endpoint not registered (got HTML fallthrough — check pathname in route handler)', status: r.status };
+                }
+                // Detect CF 522
+                if (text.includes('error code: 522') || text.includes('error code: 530')) {
+                  if (attempt < 2) continue;
+                  return { ok: false, attempt: attempt+1, error: 'CF infra error: '+text.substring(0,80) };
+                }
+                let json;
+                try { json = JSON.parse(text); } catch(e) { return { ok:false, attempt:attempt+1, error: 'response not JSON', body_preview: text.substring(0,200) }; }
+                // Check for endpoint error
+                if (json.error) return { ok: false, attempt:attempt+1, status: r.status, endpoint_error: json.error, detail: json.detail };
+                // Check expected_field if provided
+                if (expected && json[expected] === undefined) {
+                  return { ok: false, attempt: attempt+1, error: 'response missing expected field "'+expected+'"', body: json };
+                }
+                return { ok: true, status: r.status, attempt: attempt+1, body: json };
+              } catch(e) {
+                if (attempt < 2) continue;
+                return { ok: false, attempt: attempt+1, error: 'fetch failed: '+String(e).substring(0,200) };
+              }
+            }
+            return { ok: false, error: 'all retries exhausted' };
           }
           if (name === 'write_file') {
             const p = (input.path||'').replace(/^\//,'');
@@ -2780,7 +2819,7 @@ upBtn.onclick=async()=>{
               const hd = await hr.json();
               priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
             } catch(e){}
-            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies." + memBlock;
+            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies." + "\n\n=== FALKOR-TOOLS.JS CODEBASE RULES (CRITICAL — READ CAREFULLY) ===\n\nVARIABLES IN scope of fetch handler:\n- request (NOT req)\n- request.method (NOT method)\n- env.CF_ACCOUNT_ID, env.D1_DB_ID, env.CF_API_TOKEN, env.AGENT_PIN, env.ANTHROPIC_API_KEY, env.GITHUB_TOKEN, env.VAULT_PIN, env.VAULT_URL\n- env.ASSETS (KV binding)\n- url = new URL(request.url)\n- DO NOT USE: env.DB, env.ASGARD, env.AI, env.CF, defaultBranch — these don't exist\n\nD1 DATABASE PATTERN (use this exact shape):\n  const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {\n    method:'POST',\n    headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},\n    body: JSON.stringify({sql:'SELECT...', params:[a,b,c]}),\n  });\n  const d = await r.json();\n  const rows = d.result?.[0]?.results || [];\n\nENDPOINT PATTERN (copy this shape):\n  if(url.pathname==='/api/your/path'&&request.method==='POST'){\n    try {\n      const body = await request.json();\n      // ... logic ...\n      return Response.json({ok:true, ...}, {headers:{...CORS,...NOCACHE}});\n    } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }\n  }\n\nWORKFLOW for adding new endpoints:\n1. grep_file path=falkor-tools.js pattern=\"existing similar endpoint\" — find anchor\n2. read_file with start_line/end_line for context (15 lines)\n3. edit_file with full context as old_string (include 5+ surrounding lines for uniqueness)\n4. cf_deploy_worker name=falkor-tools\n5. verify_endpoint url=/api/your/path expected_field=ok — REAL VERIFICATION not just status code\n\nNEVER:\n- Use env.DB.prepare() — D1 client binding doesn't work, USE FETCH PATTERN\n- Use req or method — they're undefined\n- Run cf_deploy_worker without verifying with verify_endpoint after\n- Trust 522 errors — those mean infra issue, retry verify with delay\n- Skip verification — always confirm endpoint returns expected JSON\n\nALWAYS:\n- Use multi_edit to bundle related changes (atomic commit)\n- Include 5+ lines context in edit_file old_string to ensure uniqueness\n- After deploy, sleep 5s, then verify\n- If verify fails, READ the response, FIX the code, redeploy\n- Commit messages: describe WHAT and WHY (not 'edit_file via Falkor agent')\n=== END RULES ===" + memBlock;
             if (project) {
               const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
               if (project.url) ctx.push('Live: '+project.url);
