@@ -3423,6 +3423,8 @@ upBtn.onclick=async()=>{
           if (r.status === 522 || r.status === 530) {
             r = await fetch('https://falkor-web.pgallivan.workers.dev/health', { signal: AbortSignal.timeout(4000) });
           }
+          // 404 = worker alive, just no /health route — count as ok
+          if (r.status === 404) return 'alive (no /health)';
           if (!r.ok) throw new Error('http '+r.status);
           return 'reachable';
         });
