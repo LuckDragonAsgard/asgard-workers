@@ -134,11 +134,11 @@ pat_gallivan@hotmail.com
 ## What "fully off Firebase" actually requires
 
 The remaining Firebase touchpoints (post-Phase 1):
-1. ✅ All sportcarnival.com.au reads — DONE (D1)
-2. ⚠️ carnival-timing-ws still writes to Firebase as failsafe — REMOVE next week after WD26 verified in D1
-3. ⚠️ schoolsportportal /williamstowndistrict — still uses Firebase Auth + RTDB — needs Phase 2 migration (1-2 days post-Thursday)
-4. ⚠️ 3 GCP service-account keys — Paddy revokes in console
-5. ⚠️ Firebase project deletion — Paddy actions after verification
+1. All sportcarnival.com.au reads — DONE (D1)
+2. carnival-timing-ws still writes to Firebase as failsafe — REMOVE next week after WD26 verified in D1
+3. schoolsportportal /williamstowndistrict — still uses Firebase Auth + RTDB — needs Phase 2 migration (1-2 days post-Thursday)
+4. 3 GCP service-account keys — Paddy revokes in console
+5. Firebase project deletion — Paddy actions after verification
 
 Once 2-5 are done, Firebase is fully decommissioned and the project can be deleted from GCP.
 
