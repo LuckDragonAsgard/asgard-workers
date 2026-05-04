@@ -594,11 +594,12 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 if (text.startsWith('<!doctype') || text.startsWith('<!DOCTYPE')) {
                   return { ok: false, attempt: attempt+1, error: 'endpoint not registered (got HTML fallthrough — check pathname in route handler)', status: r.status };
                 }
-                // Detect CF 522
+                // Detect CF 522 / 530 — skip JSON parse and retry (or fail on last attempt)
                 if (text.includes('error code: 522') || text.includes('error code: 530')) {
                   if (attempt < MAX_ATTEMPTS - 1) continue;
-                  return { ok: false, attempt: attempt+1, error: 'CF infra error: '+text.substring(0,80) };
+                  return { ok: false, attempt: attempt+1, error: 'CF infra error after '+MAX_ATTEMPTS+' retries: '+text.substring(0,80) };
                 }
+                // Only parse JSON if we're confident it's JSON
                 let json;
                 try { json = JSON.parse(text); } catch(e) { return { ok:false, attempt:attempt+1, error: 'response not JSON', body_preview: text.substring(0,200) }; }
                 // Check for endpoint error
