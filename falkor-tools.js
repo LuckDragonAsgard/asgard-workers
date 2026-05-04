@@ -6,8 +6,8 @@ const CHAT_API     = '/api/chat';
 const AGENT_TOOLS = [
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
-          { name:'read_file', description:'Read a file from the project repo.',
-            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path to file in repo' } }, required:['path'] } },
+          { name:'read_file', description:'Read a file from the project repo. Large files (>180KB) auto-fall to git blobs API. Pass start_line/end_line for chunked reading of huge files.',
+            input_schema:{ type:'object', properties:{ path:{ type:'string' }, start_line:{type:'integer'}, end_line:{type:'integer'} }, required:['path'] } },
           { name:'write_file', description:'Write/overwrite a file in the project repo and commit. Use after the user confirms a change.',
             input_schema:{ type:'object', properties:{ path:{ type:'string' }, content:{ type:'string' }, message:{ type:'string', description:'Commit message' } }, required:['path','content','message'] } },
           { name:'update_project_metadata', description:"Update this project metadata in the Asgard D1 products table. Use to fix URL, status, dates, costs, revenue projections, descriptions. Auto-stamps last_updated.",
@@ -115,12 +115,29 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
           }
           if (name === 'read_file') {
             const p = (input.path||'').replace(/^\//,'');
-            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            let r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
             if (!r.ok) return { error:'read_file HTTP '+r.status };
-            const d = await r.json();
-            if (!d.content) return { error:'No content (might be a directory)' };
-            const decoded = atob(d.content.replace(/\n/g,''));
-            return { path:p, sha:d.sha, content: decoded.length>40000 ? decoded.substring(0,40000)+String.fromCharCode(10)+"[truncated]" : decoded };
+            let d = await r.json();
+            let decoded = '';
+            let sha = d.sha;
+            if (d.content) {
+              decoded = atob(d.content.replace(/\n/g,''));
+            } else if (d.size && d.sha) {
+              const br = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/blobs/"+d.sha, {headers: ghHeaders});
+              if (br.ok) {
+                const bd = await br.json();
+                if (bd.content) decoded = atob(bd.content.replace(/\n/g,''));
+                else return { error: 'No content from blobs API' };
+              } else return { error: 'blobs HTTP '+br.status };
+            } else return { error: 'No content (might be a directory)' };
+            const sl = parseInt(input.start_line)||0, el2 = parseInt(input.end_line)||0;
+            if (sl>0 || el2>0) {
+              const lines = decoded.split(String.fromCharCode(10));
+              const slice = lines.slice(Math.max(0,sl-1), el2 || lines.length);
+              return { path:p, sha, total_lines: lines.length, start_line: sl||1, end_line: (el2||lines.length), content: slice.join(String.fromCharCode(10)) };
+            }
+            const MAX = 180000;
+            return { path:p, sha, total_bytes: decoded.length, content: decoded.length>MAX ? decoded.substring(0,MAX)+String.fromCharCode(10)+"[truncated at "+MAX+" of "+decoded.length+" bytes — pass start_line/end_line for chunked read]" : decoded };
           }
           if (name === 'update_project_metadata') {
             if (!project || !project.id) return { error:'No project id; cannot update metadata.' };
@@ -2368,7 +2385,8 @@ upBtn.onclick=async()=>{
                 if (b.type === 'tool_use') return { type:'tool_use', id: b.id, name: b.name, input: b.input };
                 if (b.type === 'text') return { type:'text', text: b.text || '' };
                 return b;
-              });
+              }).filter(b => b.type !== 'text' || (b.text && b.text.length > 0));
+              if (cleanContent.length === 0) cleanContent.push({type:'text', text:'(thinking...)'});
               messages.push({ role:'assistant', content: cleanContent });
 
               if (stopReason === 'tool_use') {
