@@ -2513,22 +2513,65 @@ upBtn.onclick=async()=>{
     }
 
     if(url.pathname==='/api/falkor/verify-served'){
-      // Use the in-worker HTML constant directly (avoids CF sub-request loop).
+      // CF Workers can't eval, so use regex/bracket-balance heuristics instead.
+      // Catches: unbalanced parens/braces/brackets, unterminated strings, common quote-escape bugs.
       try {
         const html = HTML;
-        // Extract all <script>...</script> blocks (exclude src= ones)
         const scripts = [];
         const re = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
         let m;
         while ((m = re.exec(html)) !== null) scripts.push(m[1]);
-        // Try to parse each via new Function (catches SyntaxError without executing)
         const errors = [];
-        for (let i = 0; i < scripts.length; i++) {
-          try { new Function(scripts[i]); }
-          catch (e) {
-            errors.push({ block: i, error: String(e).substring(0,200), preview: scripts[i].substring(0,80) });
+        function check(js, idx) {
+          // Strip comments and strings (rough), then count brackets
+          let stripped = '';
+          let i = 0;
+          while (i < js.length) {
+            const c = js[i];
+            // // line comment
+            if (c === '/' && js[i+1] === '/') { i = js.indexOf('\n', i); if (i < 0) break; i++; continue; }
+            // /* block comment */
+            if (c === '/' && js[i+1] === '*') { const e = js.indexOf('*/', i+2); if (e < 0) { errors.push({block:idx, error:'unterminated block comment'}); return; } i = e+2; continue; }
+            // string literals
+            if (c === '"' || c === "'") {
+              const quote = c; i++;
+              while (i < js.length) {
+                if (js[i] === '\\') { i+=2; continue; }
+                if (js[i] === quote) { i++; break; }
+                if (js[i] === '\n') { errors.push({block:idx, error:'unterminated '+quote+' string near line '+(js.substring(0,i).split('\n').length), preview:js.substring(Math.max(0,i-40), i+10)}); return; }
+                i++;
+              }
+              continue;
+            }
+            // template literal
+            if (c === '`') {
+              i++;
+              while (i < js.length) {
+                if (js[i] === '\\') { i+=2; continue; }
+                if (js[i] === '`') { i++; break; }
+                // ${...} expression
+                if (js[i] === '$' && js[i+1] === '{') { let depth = 1; i += 2; while (i < js.length && depth) { if (js[i]==='{') depth++; else if (js[i]==='}') depth--; if (depth) i++; } i++; continue; }
+                i++;
+              }
+              continue;
+            }
+            stripped += c; i++;
           }
+          // Count brackets
+          let p = 0, b = 0, s = 0;
+          for (const c of stripped) {
+            if (c === '(') p++; else if (c === ')') p--;
+            else if (c === '{') b++; else if (c === '}') b--;
+            else if (c === '[') s++; else if (c === ']') s--;
+            if (p < 0) { errors.push({block:idx, error:'unmatched closing )'}); return; }
+            if (b < 0) { errors.push({block:idx, error:'unmatched closing }'}); return; }
+            if (s < 0) { errors.push({block:idx, error:'unmatched closing ]'}); return; }
+          }
+          if (p > 0) errors.push({block:idx, error:'unbalanced ( — '+p+' unclosed'});
+          if (b > 0) errors.push({block:idx, error:'unbalanced { — '+b+' unclosed'});
+          if (s > 0) errors.push({block:idx, error:'unbalanced [ — '+s+' unclosed'});
         }
+        for (let i = 0; i < scripts.length; i++) check(scripts[i], i);
         return Response.json({ok: errors.length===0, blocks: scripts.length, errors, html_size: html.length}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
