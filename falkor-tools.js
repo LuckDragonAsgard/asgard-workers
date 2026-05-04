@@ -572,14 +572,18 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
           }
           if (name === 'drive_upload') {
             try {
-              const r = await fetch('https://asgard-ai.luckdragon.io/drive/upload', {
+              const fname = input.name || 'falkor-upload.txt';
+              const mime  = input.mime || (fname.endsWith('.md') ? 'text/markdown' : fname.endsWith('.html') ? 'text/html' : 'text/plain');
+              const params = new URLSearchParams({ filename: fname, mime });
+              if (input.folder_id) params.set('parent', input.folder_id);
+              const r = await fetch('https://asgard-ai.luckdragon.io/drive/upload?'+params.toString(), {
                 method:'POST',
-                headers:{'X-Pin': env.AGENT_PIN, 'Content-Type':'application/json'},
-                body: JSON.stringify({ name: input.name, mime: input.mime||'text/plain', content: input.content||'', folder_id: input.folder_id }),
+                headers:{'X-Pin': env.AGENT_PIN, 'Content-Type': mime},
+                body: input.content||'',
               });
               const d = await r.json();
               if (!d.ok) return { error:'drive upload failed', detail: d.error||JSON.stringify(d).substring(0,200), needs_oauth: String(d.error||'').includes('token') };
-              return { ok:true, id: d.id, webViewLink: d.webViewLink || d.link };
+              return { ok:true, id: d.id, name: d.name, url: d.url || d.webViewLink };
             } catch(e) { return { error: 'drive upload: '+String(e).substring(0,200) }; }
           }
           if (name === 'drive_list_recent') {
