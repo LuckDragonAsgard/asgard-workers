@@ -634,12 +634,10 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
           }
           if (name === 'drive_list_recent') {
             try {
-              const max = parseInt(input.max_results) || 20;
-              const r = await fetch('https://asgard-ai.luckdragon.io/drive/search?q='+encodeURIComponent('trashed=false')+'&orderBy=modifiedTime+desc&pageSize='+max, { headers:{'X-Pin': env.AGENT_PIN} });
+              const r = await fetch('https://asgard-ai.luckdragon.io/drive/search?q=&recent=1&max='+(parseInt(input.max_results)||20), { headers:{'X-Pin': env.AGENT_PIN} });
               const d = await r.json();
-              if (d.error) return { error: d.error, detail: d.detail||'', needs_oauth: String(d.error||'').includes('token') };
-              const files = d.files || d.results || [];
-              return { ok:true, count: files.length, files: files.slice(0, max).map(f => ({ id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime, link: f.webViewLink })) };
+              if (!d.ok) return { error: d.error || 'drive recent failed', needs_oauth: String(d.error||'').includes('token') };
+              return { ok:true, files: d.files || d.results || [] };
             } catch(e) { return { error: 'drive list: '+String(e).substring(0,200) }; }
           }
           if (name === 'write_file') {
@@ -2016,16 +2014,22 @@ export default {
     const cron = event.cron || '';
     const now = new Date();
     try {
-      // 09:00 UTC = 7pm Melbourne AEST — AFL daily digest to family
+      // 09:00 UTC = 7pm Melbourne AEST — AFL daily digest. Try family, fall back to paddy.
       if (cron === '0 9 * * *') {
         const d = await fetch('https://falkor.luckdragon.io/api/sport/afl/digest').then(r => r.json());
         if (d.digest) {
-          const r = await fetch('https://falkor-telegram.luckdragon.io/send', {
-            method:'POST',
-            headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
-            body: JSON.stringify({target:'family', text: d.digest, parse_mode:'HTML'}),
-          });
-          await env.ASSETS.put('cron:afl_digest:'+now.toISOString().substring(0,10), JSON.stringify({status:r.status, sent:Date.now()}), {expirationTtl: 7*86400});
+          const trySend = async (target) => {
+            const rr = await fetch('https://falkor-telegram.luckdragon.io/send', {
+              method:'POST',
+              headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
+              body: JSON.stringify({target, text: d.digest, parse_mode:'HTML'}),
+            });
+            const txt = await rr.text();
+            return { status: rr.status, target, body: txt };
+          };
+          let r = await trySend('family');
+          if (r.status >= 400 && /no chat_id|not found/i.test(r.body)) r = await trySend('paddy');
+          await env.ASSETS.put('cron:afl_digest:'+now.toISOString().substring(0,10), JSON.stringify({status:r.status, target:r.target, body:r.body.substring(0,120), at:Date.now()}), {expirationTtl: 7*86400});
         }
       }
       // 21:00 UTC = 7am Melbourne AEST next-day — daily morning briefing to Paddy
