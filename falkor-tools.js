@@ -3332,61 +3332,82 @@ upBtn.onclick=async()=>{
             checks.push({name, ok:false, ms:Date.now()-t0, detail: String(e).substring(0,200)});
           }
         }
-        // Check 1: /health responds
-        await run('health', async () => {
-          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/health', { signal: AbortSignal.timeout(8000) });
-          if (!r.ok) throw new Error('http '+r.status);
-          const d = await r.json();
-          if (!d.ok) throw new Error('not ok');
-          return d.version;
+        // 1) ENV: critical secrets present
+        await run('env_secrets', async () => {
+          const need = ['CF_ACCOUNT_ID','D1_DB_ID','CF_API_TOKEN','AGENT_PIN','ANTHROPIC_API_KEY','GITHUB_TOKEN','ASSETS'];
+          const missing = need.filter(k => !env[k]);
+          if (missing.length) throw new Error('missing: '+missing.join(','));
+          return need.length+' secrets present';
         });
-        // Check 2: served HTML still parses
-        await run('served_js_parses', async () => {
-          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/falkor/verify-served', { signal: AbortSignal.timeout(8000) });
-          const d = await r.json();
-          if (!d.ok) throw new Error((d.errors||[]).join('|'));
-          return 'parses';
-        });
-        // Check 3: agent-chat round-trip
-        await run('agent_chat', async () => {
-          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/agent-chat', {
-            method:'POST', headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN || '2967'},
-            body: JSON.stringify({message:'reply with the single word OK', project:null}),
-            signal: AbortSignal.timeout(45000)
-          });
-          if (!r.ok) throw new Error('http '+r.status);
-          const d = await r.json();
-          if (!d.reply) throw new Error('no reply');
-          return d.reply.substring(0,40);
-        });
-        // Check 4: D1 reachable
-        await run('d1', async () => {
+        // 2) D1 reachable + project_hub queryable
+        await run('d1_query', async () => {
           const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
             method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
             body: JSON.stringify({sql:'SELECT COUNT(*) as c FROM project_hub'}),
-            signal: AbortSignal.timeout(8000)
+            signal: AbortSignal.timeout(10000)
           });
           const d = await r.json();
-          if (!d.success) throw new Error('d1 failed');
-          const c = d.result?.[0]?.results?.[0]?.c ?? d.result?.[0]?.results?.[0]?.['COUNT(*)'];
-          return (c||'?') + ' projects';
+          if (!d.success) throw new Error(JSON.stringify(d.errors||[]).substring(0,100));
+          const c = d.result?.[0]?.results?.[0]?.c;
+          return (c||0)+' projects';
         });
-        // Check 5: fleet health (server proxy)
+        // 3) KV reachable
+        await run('kv_rw', async () => {
+          const k = 'smoke:'+Date.now();
+          await env.ASSETS.put(k, 'ok', {expirationTtl: 60});
+          const v = await env.ASSETS.get(k);
+          await env.ASSETS.delete(k);
+          if (v !== 'ok') throw new Error('rw mismatch');
+          return 'rw ok';
+        });
+        // 4) Anthropic API reachable + Haiku replies
+        await run('anthropic', async () => {
+          const r = await fetch('https://api.anthropic.com/v1/messages', {
+            method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01', 'content-type':'application/json'},
+            body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:10, messages:[{role:'user', content:'reply with the single word OK'}]}),
+            signal: AbortSignal.timeout(15000)
+          });
+          if (!r.ok) throw new Error('http '+r.status);
+          const d = await r.json();
+          const txt = d.content?.[0]?.text || '';
+          if (!txt) throw new Error('no text');
+          return txt.substring(0,30);
+        });
+        // 5) GitHub API reachable
+        await run('github', async () => {
+          const r = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/falkor-tools.js?ref=main', {
+            headers:{'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-smoke', 'Accept':'application/vnd.github+json'},
+            signal: AbortSignal.timeout(10000)
+          });
+          if (!r.ok) throw new Error('http '+r.status);
+          const d = await r.json();
+          if (!d.sha) throw new Error('no sha');
+          return d.sha.substring(0,7);
+        });
+        // 6) Sub-worker fleet (via workers.dev — that bypass works for OTHER workers, just not self)
         await run('fleet', async () => {
-          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/fleet/health', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(45000) });
-          const d = await r.json();
-          if (!d.ok) throw new Error('not ok');
-          if (d.healthy < d.total) throw new Error(d.healthy+'/'+d.total+' healthy');
-          return d.healthy+'/'+d.total;
+          const ws = ['falkor-agent','falkor-kbt','falkor-sport','falkor-code','falkor-push','asgard-ai'];
+          const results = await Promise.all(ws.map(async w => {
+            try {
+              const r = await fetch('https://'+w+'.luckdragon.io/health', { signal: AbortSignal.timeout(4000) });
+              if (r.status === 522 || r.status === 530) {
+                const fb = await fetch('https://'+w+'.pgallivan.workers.dev/health', { signal: AbortSignal.timeout(4000) });
+                return fb.ok ? 'ok' : 'down';
+              }
+              return r.ok ? 'ok' : 'down';
+            } catch(e) { return 'down'; }
+          }));
+          const downs = results.filter(r=>r==='down').length;
+          if (downs > 0) throw new Error(downs+'/'+ws.length+' down');
+          return results.length+'/'+results.length+' ok';
         });
-        // Check 6: chat/threads endpoint
-        await run('chat_threads', async () => {
-          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/chat/threads', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(8000) });
-          const d = await r.json();
-          if (!d.ok) throw new Error('not ok');
-          return (d.threads||[]).length+' threads';
+        // 7) Telegram /send reachable (just OPTIONS — don't actually send a test message every hour)
+        await run('telegram', async () => {
+          const r = await fetch('https://falkor-telegram.luckdragon.io/health', { signal: AbortSignal.timeout(5000) });
+          if (!r.ok) throw new Error('http '+r.status);
+          return 'reachable';
         });
-        // Persist results
+        // Persist
         for (const c of checks) {
           await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
             method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
@@ -3400,11 +3421,11 @@ upBtn.onclick=async()=>{
           try {
             await fetch('https://falkor-telegram.luckdragon.io/send', {
               method:'POST', headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
-              body: JSON.stringify({target:'paddy', text: 'Falkor smoke test FAILED at '+runAt+': '+failed.map(f=>f.name+'='+f.detail).join(' | ')})
+              body: JSON.stringify({target:'paddy', text: '\u26a0\ufe0f Falkor smoke test '+failed.length+'/'+checks.length+' FAILED: '+failed.map(f=>f.name+'='+f.detail).join(' | ')})
             });
           } catch(e){}
         }
-        return Response.json({ok:true, run_at:runAt, passed, total:checks.length, checks, failed:failed.length}, {headers:{...CORS,...NOCACHE}});
+        return Response.json({ok:true, run_at:runAt, passed, total:checks.length, failed:failed.length, checks}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/falkor/smoke-history'&&request.method==='GET'){
