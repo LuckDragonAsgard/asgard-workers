@@ -194,16 +194,10 @@ export default {
       if (!token) return new Response(JSON.stringify({error:'no token'}),{status:503,headers:{'Content-Type':'application/json'}});
       const body = await request.json().catch(()=>({}));
       const text = body.text || '';
-      const target = body.target || 'paddy';
       let chatId = body.chat_id;
       if (!chatId) {
-        try { chatId = await env.TG_CHATS?.get(target); } catch(e){}
-      }
-      // Fallback: env.TELEGRAM_CHAT_ID (legacy worker secret) — used for paddy if no KV mapping
-      if (!chatId && (target === 'paddy' || target === 'default') && env.TELEGRAM_CHAT_ID) {
-        chatId = env.TELEGRAM_CHAT_ID;
-        // Also save to KV so it's discoverable
-        try { await env.TG_CHATS?.put(target, chatId); } catch(e){}
+        // Try KV-stored default chat ID for "family" or "paddy"
+        try { chatId = await env.TG_CHATS?.get(body.target || 'paddy'); } catch(e){}
       }
       if (!chatId) return new Response(JSON.stringify({error:'no chat_id'}),{status:400,headers:{'Content-Type':'application/json'}});
       if (!text) return new Response(JSON.stringify({error:'no text'}),{status:400,headers:{'Content-Type':'application/json'}});
