@@ -188,6 +188,46 @@ export default {
       return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
     }
 
+    if (path === '/send' && method === 'POST') {
+      if (request.headers.get('X-Pin') !== env.AGENT_PIN) return new Response('Forbidden', { status: 403 });
+      const token = env.TELEGRAM_BOT_TOKEN;
+      if (!token) return new Response(JSON.stringify({error:'no token'}),{status:503,headers:{'Content-Type':'application/json'}});
+      const body = await request.json().catch(()=>({}));
+      const text = body.text || '';
+      let chatId = body.chat_id;
+      if (!chatId) {
+        // Try KV-stored default chat ID for "family" or "paddy"
+        try { chatId = await env.TG_CHATS?.get(body.target || 'paddy'); } catch(e){}
+      }
+      if (!chatId) return new Response(JSON.stringify({error:'no chat_id'}),{status:400,headers:{'Content-Type':'application/json'}});
+      if (!text) return new Response(JSON.stringify({error:'no text'}),{status:400,headers:{'Content-Type':'application/json'}});
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({chat_id: chatId, text, parse_mode: body.parse_mode || 'HTML', disable_web_page_preview: true})
+      });
+      const d = await r.json();
+      return new Response(JSON.stringify(d), {status: r.status, headers:{'Content-Type':'application/json'}});
+    }
+
+    if (path === '/chats' && method === 'POST') {
+      // Save a target -> chat_id mapping (e.g. "family" -> "-1001234")
+      if (request.headers.get('X-Pin') !== env.AGENT_PIN) return new Response('Forbidden', { status: 403 });
+      const body = await request.json().catch(()=>({}));
+      if (!body.target || !body.chat_id) return new Response('Need target+chat_id', { status: 400 });
+      try { await env.TG_CHATS?.put(body.target, String(body.chat_id)); } catch(e){ return new Response('No KV bound', {status:503}); }
+      return new Response(JSON.stringify({ok:true, target: body.target, chat_id: body.chat_id}), {headers:{'Content-Type':'application/json'}});
+    }
+
+    if (path === '/chats' && method === 'GET') {
+      if (request.headers.get('X-Pin') !== env.AGENT_PIN) return new Response('Forbidden', { status: 403 });
+      try {
+        const list = await env.TG_CHATS?.list();
+        const out = {};
+        for (const k of (list?.keys||[])) out[k.name] = await env.TG_CHATS.get(k.name);
+        return new Response(JSON.stringify(out), {headers:{'Content-Type':'application/json'}});
+      } catch(e) { return new Response('No KV bound', {status:503}); }
+    }
+
     if (path === '/webhook' && method === 'POST') {
       const token = env.TELEGRAM_BOT_TOKEN;
       if (!token) return new Response('Bot token not configured', { status: 503 });
