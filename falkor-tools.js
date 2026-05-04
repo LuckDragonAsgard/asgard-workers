@@ -1725,6 +1725,13 @@ const NOCACHE={
   'Expires': '0',
 };
 
+
+async function sha256(s) {
+  const buf = new TextEncoder().encode(s);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 export default {
   async scheduled(event, env, ctx) {
     // CF Cron Trigger handler. event.cron is the matching cron string.
@@ -1955,6 +1962,132 @@ upBtn.onclick=async()=>{
         return new Response(buf, { status: upstream.status, headers:{ 'Content-Type': upstream.headers.get('content-type')||'audio/mpeg', ...CORS } });
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
+    if(url.pathname==='/api/route'&&request.method==='POST'){
+      // Phase 1: 17-tier waterfall router with KV usage tracker.
+      // Picks the cheapest provider that can handle the query, falling through tiers as quotas exhaust.
+      try {
+        const body = await request.json();
+        const message = body.message || '';
+        const complexity = body.complexity || 'auto';  // 'simple' | 'medium' | 'complex' | 'auto'
+        const today = new Date().toISOString().substring(0,10);
+        const counterKey = (provider) => 'route:'+today+':'+provider;
+        async function getCount(p) { try { return parseInt(await env.ASSETS.get(counterKey(p))||'0'); } catch { return 0; } }
+        async function bumpCount(p) { try { const c = await getCount(p); await env.ASSETS.put(counterKey(p), String(c+1), {expirationTtl: 36*3600}); } catch(e){} }
+
+        // Quotas (free tier limits per day)
+        const QUOTAS = {
+          'cf-cache': Infinity,
+          'cf-workers-ai': 10000,    // 10k neurons/day approximation
+          'groq': 1000,              // 1000 req/day free
+          'gemini-flash-lite': 1000, // 1000 req/day
+          'openrouter-free': 200,    // 200 req/day
+          'mistral-free': 1000,      // ~33k req/month ≈ 1000/day
+          'deepseek': Infinity,      // paid but cheapest
+          'qwen': Infinity,
+          'gemini-flash': Infinity,
+          'haiku': Infinity,
+          'mistral-small': Infinity,
+          'grok-mini': Infinity,
+          'gemini-pro': Infinity,
+          'sonnet': Infinity,
+          'gpt5': Infinity,
+          'grok4': Infinity,
+          'opus': Infinity,
+        };
+
+        // Tier order based on complexity
+        const TIERS = {
+          simple: ['cf-cache','cf-workers-ai','groq','gemini-flash-lite','openrouter-free','mistral-free','deepseek','qwen','gemini-flash','haiku'],
+          medium: ['cf-cache','groq','gemini-flash-lite','openrouter-free','deepseek','gemini-flash','haiku','mistral-small','grok-mini'],
+          complex: ['cf-cache','haiku','sonnet','gemini-pro','gpt5','grok4'],
+        };
+        // Auto-classify (very rough)
+        let cls = complexity;
+        if (cls === 'auto') {
+          const wc = message.split(/\s+/).length;
+          if (wc < 30 && !/code|debug|implement|architect|analyze|complex/i.test(message)) cls = 'simple';
+          else if (/opus|complex|architect|deep|reason carefully/i.test(message)) cls = 'complex';
+          else cls = 'medium';
+        }
+        const tiers = TIERS[cls] || TIERS.medium;
+
+        // Pick first provider with quota left
+        let pick = null;
+        for (const p of tiers) {
+          const used = await getCount(p);
+          if (used < QUOTAS[p]) { pick = p; break; }
+        }
+        if (!pick) pick = 'haiku';
+
+        // Cache lookup
+        if (pick === 'cf-cache') {
+          const cacheKey = 'cache:'+await sha256(message);
+          const cached = await env.ASSETS.get(cacheKey);
+          if (cached) {
+            await bumpCount(pick);
+            return Response.json({ok:true, reply:cached, provider:'cf-cache', tier:cls, cached:true}, {headers:{...CORS,...NOCACHE}});
+          }
+          // Fall to next tier
+          pick = tiers[1] || 'haiku';
+        }
+
+        // Map provider → asgard-ai supported model + provider
+        // Map our tier names to asgard-ai's model aliases (only providers asgard-ai supports today)
+        const PROVIDER_MAP = {
+          'groq':              {alias:'groq-fast'},
+          'gemini-flash-lite': {alias:'gemini-2.5-flash'},
+          'openrouter-free':   {alias:'groq'}, // fallback to groq large
+          'mistral-free':      {alias:'groq'},
+          'deepseek':          {alias:'haiku'},
+          'qwen':              {alias:'groq-fast'},
+          'gemini-flash':      {alias:'gemini-2.5-flash'},
+          'haiku':             {alias:'haiku'},
+          'mistral-small':     {alias:'haiku'},
+          'grok-mini':         {alias:'haiku'},
+          'gemini-pro':        {alias:'gemini-2.5-pro'},
+          'sonnet':            {alias:'sonnet'},
+          'gpt5':              {alias:'gpt-5-mini'},
+          'grok4':             {alias:'sonnet'},
+          'opus':              {alias:'opus'},
+          'cf-workers-ai':     {alias:'groq-fast'}, // until CF AI binding wired
+        };
+        const cfg = PROVIDER_MAP[pick] || PROVIDER_MAP.haiku;
+
+        // Forward to asgard-ai /chat/smart
+        const upstream = await fetch('https://asgard-ai.luckdragon.io/chat/smart',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-Pin':env.AGENT_PIN},
+          body: JSON.stringify({message, model: cfg.alias, max_tokens: body.max_tokens || 1024}),
+        });
+        const data = await upstream.json();
+        const reply = data.reply || data.text || data.error || '';
+
+        // Cache simple replies
+        if (cls === 'simple' && reply && !data.error) {
+          const cacheKey = 'cache:'+await sha256(message);
+          try { await env.ASSETS.put(cacheKey, reply, {expirationTtl: 24*3600}); } catch(e){}
+        }
+
+        await bumpCount(pick);
+        return Response.json({ok: !data.error, reply, provider: pick, tier: cls, alias: cfg.alias, usage: { [pick]: (await getCount(pick)) }}, {headers:{...CORS,...NOCACHE}});
+      } catch(e) {
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/route/usage'){
+      // Show today's per-provider counters
+      try {
+        const today = new Date().toISOString().substring(0,10);
+        const providers = ['cf-cache','cf-workers-ai','groq','gemini-flash-lite','openrouter-free','mistral-free','deepseek','qwen','gemini-flash','haiku','mistral-small','grok-mini','gemini-pro','sonnet','gpt5','grok4','opus'];
+        const out = {};
+        for (const p of providers) { try { out[p] = parseInt(await env.ASSETS.get('route:'+today+':'+p)||'0'); } catch { out[p] = 0; } }
+        return Response.json({ok:true, date:today, counters:out}, {headers:{...CORS,...NOCACHE}});
+      } catch(e) {
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
     if(url.pathname==='/api/briefing'){
       try {
         // Synthesize a daily summary from D1 data + tools
