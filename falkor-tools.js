@@ -1972,6 +1972,24 @@ export default {
         return Response.json({ error:'D1 query failed', detail: String(e).substring(0,300) }, { status:500, headers:{...CORS,...NOCACHE} });
       }
     }
+    if(url.pathname==='/api/projects/search'){
+      try {
+        const q = url.searchParams.get('q') || '';
+        if(!q) return Response.json({ok:false,error:'missing q param'},{status:400,headers:{...CORS,...NOCACHE}});
+        const sql = "SELECT id, project_name, description, status, live_url, income_priority FROM products WHERE project_name LIKE ? OR description LIKE ? OR notes LIKE ? ORDER BY income_priority DESC LIMIT 20";
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+          body: JSON.stringify({ sql, params:['%'+q+'%','%'+q+'%','%'+q+'%'] }),
+        });
+        const d = await r.json();
+        if (!d.success) return Response.json({ok:false,error:d.errors},{status:500,headers:{...CORS,...NOCACHE}});
+        const results = d.result?.[0]?.results || [];
+        return Response.json({ok:true,total:results.length,results},{headers:{...CORS,...NOCACHE}});
+      } catch(e) {
+        return Response.json({ok:false,error:String(e).substring(0,300)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
     if(url.pathname==='/browser/ping'){
       const pin = request.headers.get('X-Pin') || '';
       // simple auth: any of agent pin, dashboard pin, or paddy pin via vault verify
