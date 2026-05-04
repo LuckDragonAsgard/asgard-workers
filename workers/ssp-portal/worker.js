@@ -241,13 +241,13 @@ async function _innerFetch(request, env, ctx) {
     }
 
     if (ghPages.includes(normPath)) {
-      const ghResponse = await fetch(GH_BASE + normPath, { cf: { cacheTtl: 60 } });
+      const ghResponse = await fetch(GH_BASE + normPath + "?_cb=" + Math.floor(Date.now()/30000), { cf: { cacheTtl: 30 } });
       const html = await ghResponse.text();
       return new Response(html, {
         status: 200,
         headers: {
           "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "public, max-age=60",
+          "Cache-Control": "no-cache, must-revalidate",
           "X-Robots-Tag": "index, follow",
           "X-Source": "github-latest"
         }
