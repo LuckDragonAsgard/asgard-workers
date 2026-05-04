@@ -126,10 +126,8 @@ const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
 
 async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
           const needRepo = ['list_files','read_file','grep_file','edit_file','multi_edit','write_file','cf_deploy_worker'].includes(name);
-          if (needRepo && !owner && name !== 'cf_deploy_worker') {
-            // cf_deploy_worker pulls from a fixed repo, others need project repo
-            return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
-          }
+          // Default to asgard-workers when no project repo is bound — most self-edits target this repo
+          if (needRepo && !owner) { owner = 'LuckDragonAsgard'; repo = 'asgard-workers'; }
           if (name === 'list_files') {
             const p = (input.path||'').replace(/^\//,'');
             const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
@@ -326,7 +324,9 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               });
               const dd = await dr.json();
               if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
-              return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha };
+              // Wait for CF edge propagation so subsequent verify_endpoint isn't racing the deploy
+              await new Promise(r => setTimeout(r, 6000));
+              return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha, propagation_wait_ms: 6000 };
             } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
           }
           // Helper to dispatch browser commands via Chrome extension bridge
