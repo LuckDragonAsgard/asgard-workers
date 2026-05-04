@@ -206,6 +206,9 @@ function renderSidebar(){
   if(window.innerWidth<=720){e.stopPropagation();const cp=document.querySelector(".chat-pane");if(cp){cp.classList.toggle("mobile-open");if(cp.classList.contains("mobile-open"))setTimeout(()=>{const i=cp.querySelector("input");if(i)i.focus()},100);return}}
  },true);
  sb.appendChild(chatNav);
+ sb.appendChild(navItem("sport","\uD83C\uDFC9","Sport"));
+ sb.appendChild(navItem("school","\uD83C\uDFEB","School"));
+ sb.appendChild(navItem("kbt","\uD83C\uDFAF","KBT"));
  sb.appendChild(navItem("system","\u2699","System"));
  const foot=el("div",{class:"sidebar-foot"});
  const pill=el("div",{class:"user-pill"});
@@ -225,6 +228,9 @@ function renderMain(){
  if(STATE.view==="revenue")return renderRevenue(m);
  if(STATE.view==="tools")return renderTools(m);
  if(STATE.view==="chat")return renderChatMain(m);
+ if(STATE.view==="sport")return renderSport(m);
+ if(STATE.view==="school")return renderSchool(m);
+ if(STATE.view==="kbt")return renderKBT(m);
  if(STATE.view==="system")return renderSystem(m);
  return m;
 }
@@ -392,9 +398,20 @@ function renderChatPane(){
   }
  for(const m of STATE.chat){
    if(m.role==="assistant"){
-    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
+    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
     wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
-    wrap.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
+    bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    if(m.images&&m.images.length){
+     m.images.forEach(im=>{
+      const ic=el("div",{style:"background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;align-self:flex-start"});
+      const img=el("img",{src:im.src,style:"max-width:300px;max-height:300px;border-radius:6px;display:block"});
+      ic.appendChild(img);
+      if(im.caption)ic.appendChild(el("div",{style:"font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all"},im.caption));
+      bubbleCol.appendChild(ic);
+     });
+    }
+    wrap.appendChild(bubbleCol);
     msgs.appendChild(wrap);
    } else {
     msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
@@ -434,7 +451,18 @@ function renderChatPane(){
     }).join(" \u00b7 ");
     reply=reply+String.fromCharCode(10,10)+"["+summary+"]";
    }
-   STATE.chat.push({role:"assistant",content:reply});
+   // Surface image gen outputs inline
+   const images = (d.tool_calls||[]).flatMap(t => {
+    const o = t.output || {};
+    if(t.tool === "generate_image" && (o.image_url || o.url || o.base64)) {
+     return [{ src: o.image_url || o.url || ("data:image/png;base64,"+o.base64) }];
+    }
+    if(t.tool === "browser_screenshot" && o.base64) {
+     return [{ src: "data:"+(o.content_type||"image/png")+";base64,"+o.base64, caption: o.url || "" }];
+    }
+    return [];
+   });
+   STATE.chat.push({role:"assistant",content:reply,images:images});
   }catch(err){STATE.chat.push({role:"assistant",content:"Error: "+err.message})}
   btn.disabled=false;refreshChat();inp.focus();
  });
@@ -452,9 +480,20 @@ function refreshChat(){
   }
  for(const m of STATE.chat){
    if(m.role==="assistant"){
-    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
+    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
     wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
-    wrap.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
+    bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    if(m.images&&m.images.length){
+     m.images.forEach(im=>{
+      const ic=el("div",{style:"background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;align-self:flex-start"});
+      const img=el("img",{src:im.src,style:"max-width:300px;max-height:300px;border-radius:6px;display:block"});
+      ic.appendChild(img);
+      if(im.caption)ic.appendChild(el("div",{style:"font-size:10px;color:var(--muted);margin-top:4px;word-break:break-all"},im.caption));
+      bubbleCol.appendChild(ic);
+     });
+    }
+    wrap.appendChild(bubbleCol);
     msgs.appendChild(wrap);
    } else {
     msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
@@ -693,6 +732,65 @@ function renderGuide(m){
 
  m.appendChild(wrap);return m;
 }
+function renderSport(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Sport"));m.appendChild(top);
+ const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px;max-width:900px"});
+ const tabs=el("div",{style:"display:flex;gap:6px;flex-wrap:wrap"});
+ const out=el("div",{id:"sport-out",style:"min-height:200px"});
+ const PIN=STATE.agentPin||"";
+ const fmt=(promise,format)=>{out.innerHTML='Loading\u2026';promise.then(d=>{out.innerHTML="";out.appendChild(format(d))}).catch(e=>{out.textContent="Error: "+e.message})};
+ const ladderTable=(rows,cols)=>{const t=el("div",{style:"display:grid;gap:4px"});const hdr=el("div",{style:"display:grid;grid-template-columns:40px 1fr 60px 60px 60px 80px;gap:8px;padding:6px 12px;font-size:11px;color:var(--muted);text-transform:uppercase"});["#","Team","W","L","D","Pts %"].forEach(h=>hdr.appendChild(el("div",{},h)));t.appendChild(hdr);rows.forEach(r=>{const row=el("div",{style:"display:grid;grid-template-columns:40px 1fr 60px 60px 60px 80px;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px"});row.appendChild(el("div",{style:"color:var(--accent);font-weight:600"},String(r.rank||r.position||"")));row.appendChild(el("div",{style:"font-weight:600"},r.team||r.name||""));row.appendChild(el("div",{},String(r.wins||r.W||0)));row.appendChild(el("div",{},String(r.losses||r.L||0)));row.appendChild(el("div",{},String(r.draws||r.D||0)));row.appendChild(el("div",{},String(r.points||r.pts||0)+" \u00b7 "+String(r.percentage||r.pct||"-")));t.appendChild(row)});return t};
+ const tab=(label,loader)=>{const b=el("button",{},label);b.addEventListener("click",async()=>{Array.from(tabs.children).forEach(c=>c.style.background="");b.style.background="var(--panel2)";loader()});return b};
+ tabs.appendChild(tab("\uD83C\uDFC9 AFL Ladder",()=>fmt(fetch("https://falkor-sport.luckdragon.io/afl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>ladderTable(Array.isArray(d)?d:(d.ladder||[])))));
+ tabs.appendChild(tab("\uD83C\uDFC8 NRL Ladder",()=>fmt(fetch("https://falkor-sport.luckdragon.io/nrl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>ladderTable(Array.isArray(d)?d:(d.ladder||[])))));
+ tabs.appendChild(tab("\uD83C\uDFC7 Racing comp",()=>fmt(fetch("https://falkor-sport.luckdragon.io/racing/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>{const x=el("pre",{style:"white-space:pre-wrap;font-size:13px;background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);overflow:auto"});x.textContent=JSON.stringify(d,null,2);return x})));
+ wrap.appendChild(tabs);wrap.appendChild(out);
+ m.appendChild(wrap);
+ // auto-load AFL by default
+ setTimeout(()=>{if(tabs.firstChild)tabs.firstChild.click()},100);
+ return m;
+}
+function renderSchool(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"School (PE / XC)"));m.appendChild(top);
+ const PIN=STATE.agentPin||"";
+ const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px;max-width:900px"});
+ // PE advisor card
+ const pe=el("div",{class:"fcard"});
+ pe.appendChild(el("div",{class:"fcard-label"},"PE OUTDOOR ADVISOR"));
+ const peBody=el("div",{style:"font-size:14px;margin-top:6px",id:"pe-body"},"Loading\u2026");
+ pe.appendChild(peBody);
+ fetch("https://falkor-school.luckdragon.io/pe-advisor",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{peBody.innerHTML="";if(d.error){peBody.textContent="Error: "+d.error;return}const lines=[];if(d.summary)lines.push(d.summary);if(d.recommendation)lines.push(String.fromCharCode(10,10)+d.recommendation);if(!lines.length)lines.push(JSON.stringify(d,null,2));peBody.appendChild(el("pre",{style:"white-space:pre-wrap;font-size:13px;line-height:1.5"},lines.join("")));}).catch(e=>{peBody.textContent="Error: "+e.message});
+ wrap.appendChild(pe);
+ // XC results card
+ const xc=el("div",{class:"fcard"});
+ xc.appendChild(el("div",{class:"fcard-label"},"CROSS COUNTRY RESULTS"));
+ const xcRow=el("div",{style:"display:flex;gap:8px;margin-top:8px;align-items:center"});
+ const xcInput=el("input",{type:"date",style:"flex:0 0 auto"});
+ const xcBtn=el("button",{},"Load");
+ xcRow.appendChild(xcInput);xcRow.appendChild(xcBtn);xc.appendChild(xcRow);
+ const xcBody=el("div",{style:"margin-top:10px;font-size:13px",id:"xc-body"});
+ xcBtn.addEventListener("click",()=>{xcBody.textContent="Loading\u2026";const url="https://falkor-school.luckdragon.io/xc/results"+(xcInput.value?"?date="+xcInput.value:"");fetch(url,{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{xcBody.innerHTML="";const pre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel2);padding:10px;border-radius:6px"});pre.textContent=JSON.stringify(d,null,2);xcBody.appendChild(pre);}).catch(e=>{xcBody.textContent="Error: "+e.message})});
+ xc.appendChild(xcBody);
+ wrap.appendChild(xc);
+ m.appendChild(wrap);return m;
+}
+function renderKBT(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"KBT Trivia"));m.appendChild(top);
+ const PIN=STATE.agentPin||"";
+ const wrap=el("div",{style:"padding:18px 20px;display:grid;gap:14px;max-width:900px"});
+ const card=el("div",{class:"fcard"});
+ card.appendChild(el("div",{class:"fcard-label"},"GAME STATUS LOOKUP"));
+ const row=el("div",{style:"display:flex;gap:8px;margin-top:8px"});
+ const inp=el("input",{type:"text",placeholder:"Game code (e.g. ABC123)",style:"flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+ const btn=el("button",{class:"primary"},"Look up");
+ row.appendChild(inp);row.appendChild(btn);card.appendChild(row);
+ const body=el("div",{style:"margin-top:10px"});
+ btn.addEventListener("click",()=>{body.textContent="Loading\u2026";fetch("https://falkor-kbt.luckdragon.io/game/"+encodeURIComponent(inp.value)+"/status",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{body.innerHTML="";const pre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel2);padding:10px;border-radius:6px"});pre.textContent=JSON.stringify(d,null,2);body.appendChild(pre);}).catch(e=>{body.textContent="Error: "+e.message})});
+ card.appendChild(body);
+ wrap.appendChild(card);
+ wrap.appendChild(el("div",{style:"font-size:12px;color:var(--muted);text-align:center;margin-top:10px"},"More KBT controls (build pack, scoreboard, host panel) live in the falkor-kbt worker. Ask Falkor in chat to drive them."));
+ m.appendChild(wrap);return m;
+}
 function renderSystem(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"System"));m.appendChild(top);
  const wrap=el("div",{style:"padding:20px;display:grid;gap:10px"});
@@ -728,7 +826,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.0.0',mode:'asgard-hub-with-memory'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.1.0',mode:'asgard-hub-jarvis'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -981,6 +1079,26 @@ upBtn.onclick=async()=>{
             input_schema:{ type:'object', properties:{}, required:[] } },
           { name:'delete_memory', description:"Delete a stored memory by id. Use when user says 'forget X'.",
             input_schema:{ type:'object', properties:{ id:{type:'number'} }, required:['id'] } },
+          { name:'self_heal_worker', description:"Trigger Falkor's self-healing routine on a Cloudflare worker (via falkor-code). Restarts unhealthy workers, redeploys from GitHub if missing.",
+            input_schema:{ type:'object', properties:{ name:{type:'string',description:'worker name, omit to heal whole fleet'} }, required:[] } },
+          { name:'fleet_health', description:"Get health + version of every worker in the fleet (via falkor-code /workers).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'vector_remember', description:"Store a fact in the falkor-brain Vectorize index for semantic recall (richer than D1 memory). Use for things you want to look up later by meaning, not just keyword.",
+            input_schema:{ type:'object', properties:{ text:{type:'string'}, source:{type:'string'} }, required:['text'] } },
+          { name:'vector_recall', description:"Semantic search the falkor-brain Vectorize index. Returns top-K most similar facts to a query.",
+            input_schema:{ type:'object', properties:{ query:{type:'string'}, k:{type:'number'} }, required:['query'] } },
+          { name:'afl_ladder', description:"Live AFL ladder via Squiggle API (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'nrl_ladder', description:"Live NRL ladder via nrl.com API (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'racing_comp', description:"Family racing tipping competition leaderboard + today's picks (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'pe_advisor', description:"Get PE outdoor lesson advice for today — temperature, UV, conditions, recommendation (falkor-school /pe-advisor).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'xc_results', description:"Cross-country results for a date (falkor-school /xc/results).",
+            input_schema:{ type:'object', properties:{ date:{type:'string',description:'YYYY-MM-DD'} }, required:[] } },
+          { name:'kbt_game_status', description:"Get status of a live KBT trivia game by code (falkor-kbt).",
+            input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
         ];
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
@@ -1193,6 +1311,81 @@ upBtn.onclick=async()=>{
               const d = await r.json();
               return { ok: !!d.success, deleted: d.result?.[0]?.meta?.changes };
             } catch(e){ return { error: 'delete failed' }; }
+          }
+          const sportPin = env.AGENT_PIN;
+          const ghHeadersForBrain = { 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN };
+          if (name === 'self_heal_worker') {
+            try {
+              const r = await fetch('https://falkor-code.luckdragon.io/self-heal', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify(input.name ? { worker: input.name } : {}),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok:r.ok, body: text.substring(0,400) }; }
+            } catch(e){ return { error:'self-heal failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'fleet_health') {
+            try {
+              const r = await fetch('https://falkor-code.luckdragon.io/workers', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error:'fleet check failed' }; }
+          }
+          if (name === 'vector_remember') {
+            try {
+              const r = await fetch('https://falkor-brain.luckdragon.io/remember', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify({ text: input.text, source: input.source || 'agent' }),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,300) }; }
+            } catch(e){ return { error: String(e).substring(0,200) }; }
+          }
+          if (name === 'vector_recall') {
+            try {
+              const r = await fetch('https://falkor-brain.luckdragon.io/recall', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify({ query: input.query, k: input.k || 5 }),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,500) }; }
+            } catch(e){ return { error: String(e).substring(0,200) }; }
+          }
+          if (name === 'afl_ladder') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/afl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'afl ladder failed' }; }
+          }
+          if (name === 'nrl_ladder') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/nrl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'nrl ladder failed' }; }
+          }
+          if (name === 'racing_comp') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/racing/comp?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'racing comp failed' }; }
+          }
+          if (name === 'pe_advisor') {
+            try {
+              const r = await fetch('https://falkor-school.luckdragon.io/pe-advisor', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'pe advisor failed' }; }
+          }
+          if (name === 'xc_results') {
+            try {
+              const url = 'https://falkor-school.luckdragon.io/xc/results' + (input.date ? '?date='+input.date : '');
+              const r = await fetch(url, { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'xc results failed' }; }
+          }
+          if (name === 'kbt_game_status') {
+            try {
+              const r = await fetch('https://falkor-kbt.luckdragon.io/game/'+encodeURIComponent(input.code||'')+'/status', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'kbt status failed' }; }
           }
           if (name && name.startsWith('browser_')) {
             const action = name.replace('browser_','');
