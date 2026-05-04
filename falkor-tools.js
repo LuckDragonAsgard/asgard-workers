@@ -1531,6 +1531,22 @@ function renderChatPane(){
  micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
 
  const btn=el("button",{class:"primary",type:"submit"},"\u2192");
+ const upload2=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer",title:"Attach image"},"\ud83d\udcce");
+ const fileInp2=el("input",{type:"file",accept:"image/*",style:"display:none"});
+ upload2.appendChild(fileInp2);
+ upload2.addEventListener("click",e=>{if(e.target!==fileInp2)fileInp2.click();});
+ fileInp2.addEventListener("change",async()=>{
+   const f=fileInp2.files[0]; if(!f)return;
+   if(f.size>5*1024*1024){alert("Image too large (5MB max)");fileInp2.value="";return;}
+   const b64=await new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f);});
+   if(!STATE.pendingImages)STATE.pendingImages=[];
+   STATE.pendingImages.push({src:b64,name:f.name,type:f.type});
+   upload2.textContent="\ud83d\udcce "+STATE.pendingImages.length;
+   upload2.style.color="var(--accent)";
+   upload2.style.borderColor="var(--accent)";
+   fileInp2.value="";
+ });
+ form.appendChild(upload2);
  form.appendChild(micBtn);
  form.appendChild(inp);form.appendChild(btn);
  form.addEventListener("submit",async(e)=>{
