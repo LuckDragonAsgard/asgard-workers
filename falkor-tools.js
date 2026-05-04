@@ -2348,7 +2348,7 @@ upBtn.onclick=async()=>{
 
     if(url.pathname==='/api/family/members'&&request.method==='GET'){
       try {
-        const rows = await env.ASGARD.prepare('SELECT member, display_name FROM family_members ORDER BY member').all();
+        const rows = await env.DB.prepare('SELECT member, display_name FROM family_members ORDER BY member').all();
         return Response.json({ok:true, members:rows.results||[]}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
@@ -2358,7 +2358,7 @@ upBtn.onclick=async()=>{
         const body = await request.json();
         const {member, year, round, game_id, tip} = body;
         if (!member||!year||!round||!game_id||!tip) return Response.json({error:'missing fields'},{status:400,headers:{...CORS,...NOCACHE}});
-        await env.ASGARD.prepare('INSERT OR REPLACE INTO family_tips (member, year, round, game_id, tip) VALUES (?,?,?,?,?)').bind(member, year, round, game_id, tip).run();
+        await env.DB.prepare('INSERT OR REPLACE INTO family_tips (member, year, round, game_id, tip) VALUES (?,?,?,?,?)').bind(member, year, round, game_id, tip).run();
         return Response.json({ok:true}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
@@ -2369,14 +2369,14 @@ upBtn.onclick=async()=>{
         let query = 'SELECT member, year, round, game_id, tip, points FROM family_tips';
         if (round) query += ' WHERE round='+parseInt(round);
         query += ' ORDER BY member, round, game_id';
-        const rows = await env.ASGARD.prepare(query).all();
+        const rows = await env.DB.prepare(query).all();
         return Response.json({ok:true, tips:rows.results||[]}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
 
     if(url.pathname==='/api/family/leaderboard'&&request.method==='GET'){
       try {
-        const rows = await env.ASGARD.prepare('SELECT m.member, m.display_name, COALESCE(SUM(t.points),0) as total_points FROM family_members m LEFT JOIN family_tips t ON m.member=t.member GROUP BY m.member ORDER BY total_points DESC, m.member').all();
+        const rows = await env.DB.prepare('SELECT m.member, m.display_name, COALESCE(SUM(t.points),0) as total_points FROM family_members m LEFT JOIN family_tips t ON m.member=t.member GROUP BY m.member ORDER BY total_points DESC, m.member').all();
         return Response.json({ok:true, leaderboard:rows.results||[]}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
