@@ -2276,9 +2276,9 @@ upBtn.onclick=async()=>{
       }
     }
 
-    if(url.pathname==='/api/kbt/generate-quiz' && method==='POST'){
+    if(url.pathname==='/api/kbt/generate-quiz' && request.method==='POST'){
       try {
-        const body = await req.json();
+        const body = await request.json();
         const theme = body.theme || 'General Knowledge';
         const rounds = body.rounds || 6;
         const qpr = body.questions_per_round || 8;
