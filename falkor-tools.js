@@ -2513,11 +2513,9 @@ upBtn.onclick=async()=>{
     }
 
     if(url.pathname==='/api/falkor/verify-served'){
-      // Fetch the live served HTML, extract inline <script>, try to parse it.
-      // Returns ok/error so cron can detect black-screen-class bugs that pass worker syntax check.
+      // Use the in-worker HTML constant directly (avoids CF sub-request loop).
       try {
-        const r = await fetch('https://falkor.luckdragon.io/?vsbypass='+Date.now(), {headers:{'Cache-Control':'no-cache'}});
-        const html = await r.text();
+        const html = HTML;
         // Extract all <script>...</script> blocks (exclude src= ones)
         const scripts = [];
         const re = /<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi;
