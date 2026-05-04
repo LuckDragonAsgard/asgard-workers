@@ -828,7 +828,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .badge.dev,.badge.building{background:rgba(245,158,11,.15);color:var(--amber)}
 .badge.archived,.badge.dormant{background:rgba(139,149,167,.15);color:var(--muted)}
 .badge.idea,.badge.planned{background:rgba(168,85,247,.15);color:var(--purple)}
-.tile-desc{font-size:12px;color:var(--muted);line-height:1.4;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tile-desc{font-size:12px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis}
 .tile-foot{display:flex;gap:4px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
 .tile-foot span{background:var(--panel2);padding:2px 6px;border-radius:4px}
 .tile-foot .cost{background:rgba(255,107,53,.15);color:var(--accent);font-weight:600}
@@ -1308,10 +1308,6 @@ function refreshGrid(){
   if(status)head.appendChild(el("div",{class:"badge "+status},p.status));
   tile.appendChild(head);
   if(p.desc)tile.appendChild(el("div",{class:"tile-desc"},p.desc));
-  const foot=el("div",{class:"tile-foot"});
-  if(p.tech)p.tech.split(",").slice(0,3).forEach(t=>foot.appendChild(el("span",{},t.trim())));
-  if(p.cost)foot.appendChild(el("span",{class:"cost"},"\uD83D\uDCB0 "+p.cost));
-  if(foot.children.length)tile.appendChild(foot);
   grid.appendChild(tile);
  }
 }
