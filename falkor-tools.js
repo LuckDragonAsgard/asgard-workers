@@ -1628,7 +1628,7 @@ function renderSport(m){
   // Chat ID config
   const cfgCard=el("div",{class:"fcard"});
   cfgCard.appendChild(el("div",{class:"fcard-label"},"CONFIGURE TELEGRAM CHAT IDs"));
-  cfgCard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},"Save target \u2192 chat_id mappings (e.g. \"family\" \u2192 \"-1001234\"). Find your chat_id by messaging the bot then visiting api.telegram.org/bot<TOKEN>/getUpdates."));
+  cfgCard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},"Save target \u2192 chat_id mappings (e.g. \\\"family\\\" \u2192 \\\"-1001234\\\"). Find your chat_id by messaging the bot then visiting api.telegram.org/bot<TOKEN>/getUpdates."));
   const cfgRow=el("div",{style:"display:grid;grid-template-columns:120px 1fr auto;gap:8px;margin-top:8px"});
   const cfgT=el("input",{type:"text",placeholder:"target",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
   const cfgC=el("input",{type:"text",placeholder:"chat_id (e.g. -1001234)",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
