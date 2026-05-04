@@ -925,6 +925,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fk-sm{width:32px;height:32px}
 .fk-xs{width:24px;height:24px}
 @keyframes fk-pulse{0%,100%{opacity:.45}50%{opacity:1;transform:scale(1.08)}}
+@keyframes fk-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 </style></head>
 <body><div id="app"></div>
 <script>
