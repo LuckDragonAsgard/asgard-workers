@@ -18,6 +18,7 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{ max_results:{type:'integer',description:'default 20'} } } },
           { name:'multi_edit', description:"Apply multiple edits to a file in ONE commit. Each edit is {old_string, new_string, replace_all?}. Edits applied sequentially. If any old_string is not found or not unique (when replace_all=false), the whole batch fails before commit. Use to bundle related changes.",
             input_schema:{ type:'object', properties:{ path:{type:'string'}, edits:{type:'array', items:{type:'object', properties:{old_string:{type:'string'}, new_string:{type:'string'}, replace_all:{type:'boolean'}}, required:['old_string','new_string']}}, message:{type:'string'} }, required:['path','edits'] } },
+          { name:'delegate', description:'Send a question to a sibling worker and get its reply. workers: school|kbt|sport|code|brain|web. Use for specialist topics: PE/lessons/weather → school; trivia → kbt; AFL/NRL/racing → sport; coding → code; semantic recall → brain; web research → web.', input_schema:{ type:'object', properties:{ worker:{type:'string'}, message:{type:'string'} }, required:['worker','message'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
           { name:'read_file', description:'Read a file from the project repo. Large files (>180KB) auto-fall to git blobs API. Pass start_line/end_line for chunked reading of huge files.',
@@ -561,6 +562,15 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               }
             }
             return { ok: false, error: 'all retries exhausted' };
+          }
+          if (name === 'delegate') {
+            try {
+              const w = String(input.worker||'').replace(/[^a-z]/g,'');
+              if (!['school','kbt','sport','code','brain','web'].includes(w)) return { error:'invalid worker: '+w };
+              const r = await fetch('https://falkor-'+w+'.luckdragon.io/agent-chat', { method:'POST', headers:{'Content-Type':'application/json','X-Pin':env.AGENT_PIN}, body: JSON.stringify({ message: input.message }) });
+              const txt = await r.text();
+              try { const j = JSON.parse(txt); return { ok:true, worker: w, reply: j.reply||j.text||txt.substring(0,500) }; } catch(e) { return { ok:r.ok, worker: w, status:r.status, body: txt.substring(0,500) }; }
+            } catch(e) { return { error:'delegate: '+String(e).substring(0,200) }; }
           }
           if (name === 'drive_search') {
             try {
