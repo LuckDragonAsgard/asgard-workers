@@ -5,7 +5,7 @@ const CHAT_API     = '/api/chat';
 
 const AGENT_TOOLS = [
           { name:'grep_file', description:'Search a file for a regex pattern. Returns matching line numbers with context. Use this to navigate large files instead of paging through chunks. flags=i for case-insensitive.',
-            input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer',description:'lines of context around each match (default 2)'} }, required:['path','pattern'] } },
+            input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer'} }, required:['path','pattern'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
           { name:'read_file', description:'Read a file from the project repo. Large files (>180KB) auto-fall to git blobs API. Pass start_line/end_line for chunked reading of huge files.',
@@ -119,7 +119,6 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             const p = (input.path||'').replace(/^\//,'');
             const pat = input.pattern || '';
             if (!pat) return { error:'pattern required' };
-            // Fetch via blobs API for large files
             let r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
             if (!r.ok) return { error:'grep HTTP '+r.status };
             let d = await r.json();
@@ -453,7 +452,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const r0 = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
               if (r0.ok) { const d0 = await r0.json(); sha = d0.sha; }
             } catch(e){}
-            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))) };
+            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))), branch: defaultBranch };
             if (sha) payload.sha = sha;
             const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
             const d = await r.json();
@@ -2602,4 +2601,43 @@ upBtn.onclick=async()=>{
             const lastD = await lastR.json();
             const transcript = (lastD.result?.[0]?.results || []).reverse().map(r => r.role+': '+r.content.substring(0,500)).join(String.fromCharCode(10));
             const exReq = await fetch('https://api.anthropic.com/v1/messages', {
-              method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY,'an
+              method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+              body: JSON.stringify({
+                model:'claude-haiku-4-5-20251001', max_tokens: 800,
+                system:'Extract 0-3 NEW memorable facts about Paddy or his platform from the transcript. Return JSON array of {category, fact, importance(1-10)}. Skip if nothing new. Do NOT save things you already know (login PINs, the no-Drive rule, no-hard-refresh, his style, his profile). Only NEW concrete facts. Output ONLY valid JSON array, no prose.',
+                messages:[{role:'user',content:'Recent conversation:'+String.fromCharCode(10)+transcript}],
+              }),
+            });
+            const exD = await exReq.json();
+            const exText = (exD.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
+            try {
+              const arr = JSON.parse(exText.replace(/^[^\[]*/,'').replace(/[^\]]*$/,''));
+              if (Array.isArray(arr)) {
+                for (const f of arr) {
+                  if (!f.fact) continue;
+                  await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                    method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                    body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)",
+                      params:["paddy", f.category||"auto-extracted", String(f.fact).substring(0,500), "auto-haiku-every-5-turns", Math.min(10, Math.max(1, f.importance||5))] }),
+                  });
+                }
+              }
+            } catch(e){}
+          }
+        } catch(e){}
+
+        return Response.json({
+          ok:true,
+          reply: finalText || '(no text response)',
+          tool_calls: toolResults,
+          iterations,
+        }, { headers:{...CORS,...NOCACHE} });
+
+      } catch (e) {
+        return Response.json({ error:'Agent failure', detail: String(e).substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
+      }
+    }
+
+    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
+  },
+};
