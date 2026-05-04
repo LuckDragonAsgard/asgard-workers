@@ -1281,6 +1281,7 @@ function renderHome(m){
    if(live&&live.streaming){live.streaming=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
    else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
   }
+  inp.disabled=false;
   sendBtn.disabled=false;refreshChat();inp.focus();
  });
  chatBox.appendChild(form);
