@@ -505,3 +505,44 @@ All three pages now open with cashflow-near-neutral assumptions: refinanced rate
 - Without going interest-only, Monica's diff cannot reach $0/wk within ATO market-rate constraints (cascade is structurally biased against the bottom rung).
 - Banner break-even year shows 30+ for Kelly/Monica because both rent-in and rent-out grow at same 3%/yr rate — gap doesn't close.
 - Real-world Paddy is positively-geared once Osborne is IP (no Osborne loan), so net tax position is small additional liability not refund — labeled clearly on the banner.
+
+
+---
+
+## Paddy & Jacky finance — ACTUALS (2026-05-04)
+
+Real figures captured this session.
+
+### Salaries
+- Paddy: $118,000 (32.5% bracket)
+- Jacky (Jaclyn Rooney): $220,000 (45% bracket)
+- Strategy: claim IP losses against Jacky for max refund
+
+### Current loans
+- North Rd, Newport (current IP): $702,615 @ 6.02% variable, ~$4,221/mo P&I
+- Osborne St, Williamstown (current PPOR, becoming IP): $508,110 @ 5.75%, ~$2,966/mo P&I
+
+### Rents
+- North Rd: $3,433/mo (Compton Green confirmed)
+- Osborne (post-move): $650/wk to Kelly
+
+### Refi plan (broker Matt, 2026-05-04)
+- North Rd: refi to 75% LVR; equity drawn -> Cecil deposit
+- Osborne: refi to 75% LVR; equity drawn -> Cecil deposit
+- Cecil St new purchase: $1.1M, 60% LVR = $660k loan + ~$440k equity deposit
+- ATO purpose test: equity for Cecil (PPOR) is NOT deductible. Split loans.
+- Awaiting broker valuations.
+
+### Plan cashflow (IPs in Jacky)
+- Combined IPs: -$388/wk before tax
+- Tax saving 45%: +$207/wk PAYG
+- Net IP after tax: -$181/wk
+- Cecil St mortgage: $3,747/mo
+
+### Cecil St payoff
+- 30 yrs standard, 15 yrs with IP cashflow redirected
+
+### Live calculator
+- https://paddy-finance.pgallivan.workers.dev
+- IP ownership selector defaults to Jacky
+- Refi-plan banner with ATO purpose-test warning
