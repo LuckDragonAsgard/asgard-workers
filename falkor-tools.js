@@ -1846,6 +1846,108 @@ upBtn.onclick=async()=>{
         return Response.json({ ok:true, briefing: text, items_considered: items.length, generated_at: new Date().toISOString() }, { headers:{...CORS,...NOCACHE} });
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
+    if(url.pathname.startsWith('/api/sport/afl/')){
+      // Squiggle AFL proxy with proper UA + caching
+      const sub = url.pathname.replace('/api/sport/afl/','');
+      const headers = {'User-Agent':'Falkor/1.0 (paddy@luckdragon.io)','Accept':'application/json'};
+      const yr = url.searchParams.get('year') || new Date().getFullYear();
+      try {
+        if (sub === 'recent') {
+          const r = await fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=100&format=json', {headers});
+          const d = await r.json();
+          const games = (d.games||[]).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+          return Response.json({ok:true, games, count: games.length}, {headers:{...CORS,...NOCACHE}});
+        }
+        if (sub === 'upcoming') {
+          const r = await fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=0&format=json', {headers});
+          const d = await r.json();
+          const games = (d.games||[]).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,10);
+          return Response.json({ok:true, games, count: games.length}, {headers:{...CORS,...NOCACHE}});
+        }
+        if (sub === 'ladder') {
+          const r = await fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+'&format=json', {headers});
+          const d = await r.json();
+          return Response.json({ok:true, ladder: d.ladder||[]}, {headers:{...CORS,...NOCACHE}});
+        }
+        if (sub === 'tips') {
+          const rd = url.searchParams.get('round') || '';
+          const r = await fetch('https://api.squiggle.com.au/?q=tips;year='+yr+(rd?';round='+rd:'')+'&format=json', {headers});
+          const d = await r.json();
+          return Response.json({ok:true, tips: d.tips||[]}, {headers:{...CORS,...NOCACHE}});
+        }
+        if (sub === 'digest') {
+          // Build a Telegram-friendly summary: today's results + tomorrow's fixtures + ladder top 8
+          const [recR, upR, ladR] = await Promise.all([
+            fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=100&format=json',{headers}),
+            fetch('https://api.squiggle.com.au/?q=games;year='+yr+';complete=0&format=json',{headers}),
+            fetch('https://api.squiggle.com.au/?q=ladder;year='+yr+'&format=json',{headers}),
+          ]);
+          const rec = (await recR.json()).games||[];
+          const up  = (await upR.json()).games||[];
+          const lad = (await ladR.json()).ladder||[];
+          // Today's results = recent games whose date is within last 24h
+          const now = Date.now();
+          const todays = rec.filter(g => Math.abs(now - new Date(g.date).getTime()) < 36*3600*1000).sort((a,b)=>a.date.localeCompare(b.date));
+          const next  = up.filter(g => new Date(g.date).getTime() - now < 7*86400*1000).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+          const lines = ['<b>AFL Update</b>'];
+          if (todays.length) {
+            lines.push('','<b>Recent results</b>');
+            todays.forEach(g => lines.push(`${g.hteam} ${g.hscore} d ${g.ateam} ${g.ascore} (${g.venue||''})`));
+          }
+          if (next.length) {
+            lines.push('','<b>Upcoming</b>');
+            next.forEach(g => {
+              const d = new Date(g.date);
+              const dayShort = d.toLocaleDateString('en-AU',{weekday:'short',hour:'numeric',minute:'2-digit'});
+              lines.push(`${dayShort}: ${g.hteam} v ${g.ateam} @ ${g.venue||''}`);
+            });
+          }
+          if (lad.length) {
+            lines.push('','<b>Ladder (top 8)</b>');
+            lad.slice(0,8).forEach(t => lines.push(`${t.rank}. ${t.name} (${t.pts} pts, ${t.percentage}%)`));
+            const ess = lad.find(t=>t.name.toLowerCase().includes('essendon'));
+            if (ess) lines.push('','Essendon: '+ess.rank+'. ('+ess.pts+' pts, '+ess.percentage+'%)');
+          }
+          return Response.json({ok:true, digest: lines.join(String.fromCharCode(10))}, {headers:{...CORS,...NOCACHE}});
+        }
+        return Response.json({error:'unknown sub: '+sub},{status:404,headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/sport/push'&&request.method==='POST'){
+      // Sends a Telegram message to family/paddy chat. Body: {target?:'family'|'paddy', text:'...'}
+      try {
+        const body = await request.json();
+        const r = await fetch('https://falkor-telegram.luckdragon.io/send',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-Pin':env.AGENT_PIN},
+          body: JSON.stringify({target: body.target||'paddy', text: body.text||'', parse_mode:'HTML'}),
+        });
+        const d = await r.text();
+        return new Response(d, {status:r.status, headers:{'Content-Type':'application/json',...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/sport/chats'&&(request.method==='POST'||request.method==='GET')){
+      // Proxy to falkor-telegram /chats
+      try {
+        const opts = {method: request.method, headers:{'X-Pin':env.AGENT_PIN}};
+        if (request.method === 'POST') {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = await request.text();
+        }
+        const r = await fetch('https://falkor-telegram.luckdragon.io/chats', opts);
+        const d = await r.text();
+        return new Response(d, {status:r.status, headers:{'Content-Type':'application/json',...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
     if(url.pathname==='/api/push/vapid'){
       try {
         const r = await fetch('https://falkor-push.luckdragon.io/vapid-public-key',{ headers:{'X-Pin':env.AGENT_PIN}});
