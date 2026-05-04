@@ -879,12 +879,26 @@ fetch("/api/falkor/heartbeat",{method:"POST"}).catch(()=>{});
   }, 1500);
 })();
 
-window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:[],chatContext:null};
+window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:(function(){try{return JSON.parse(localStorage.getItem("falkor.chat")||"[]")}catch(e){return[]}})(),chatContext:(function(){try{return JSON.parse(localStorage.getItem("falkor.chatContext")||"null")}catch(e){return null}})()};
+window.persistChat=function(){try{localStorage.setItem("falkor.chat",JSON.stringify(STATE.chat.slice(-50)));localStorage.setItem("falkor.chatContext",JSON.stringify(STATE.chatContext))}catch(e){}};
+window.loadChatHistory=async function(force){
+  if(STATE.chat.length>0 && !force) return;
+  try{
+    const projId=STATE.chatContext?.id||"";
+    const r=await fetch("/api/chat/history"+(projId?("?project_id="+projId):""),{headers:{"X-Pin":STATE.agentPin||""}});
+    const d=await r.json();
+    if(d.ok && d.turns && d.turns.length){
+      STATE.chat = d.turns.map(t=>({role:t.role,content:t.content}));
+      persistChat();
+    }
+  }catch(e){console.warn("loadChatHistory failed",e)}
+};
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
 function clearAuth(){localStorage.removeItem("asgard.user")}
 
+setInterval(()=>{try{if(window.STATE&&Array.isArray(STATE.chat))persistChat()}catch(e){}},2000);
 window.render=render;function render(){
  const app=$("#app");app.innerHTML="";
  if(!STATE.user){renderLogin(app);return}
@@ -3086,6 +3100,27 @@ upBtn.onclick=async()=>{
       const v = await env.ASSETS.get('test:retry_counter') || '0';
       await env.ASSETS.delete('test:retry_counter');
       return Response.json({hits: parseInt(v)}, {headers:{...CORS,...NOCACHE}});
+    }
+    if(url.pathname==='/api/chat/history'&&request.method==='GET'){
+      try {
+        const projectId = url.searchParams.get('project_id');
+        let sql, params;
+        if (projectId) {
+          sql = 'SELECT role, content, created_at FROM falkor_chat_history WHERE user_id=? AND project_id=? ORDER BY created_at DESC LIMIT 30';
+          params = ['paddy', parseInt(projectId)];
+        } else {
+          sql = 'SELECT role, content, project_name, created_at FROM falkor_chat_history WHERE user_id=? ORDER BY created_at DESC LIMIT 30';
+          params = ['paddy'];
+        }
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql, params}),
+        });
+        const d = await r.json();
+        const rows = (d.result?.[0]?.results || []).reverse();
+        return Response.json({ok:true, turns: rows}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/chat/reset'&&request.method==='POST'){
       try {
