@@ -3,10 +3,14 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname;
+    const origin = request.headers.get('origin') || '';
+    const allowedOrigins = ['https://schoolsportportal.com.au', 'https://www.schoolsportportal.com.au', 'https://sportcarnival.com.au'];
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : '*';
     const cors = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
     };
     if (request.method === 'OPTIONS') return new Response(null, {headers: cors});
 
@@ -84,7 +88,151 @@ export default {
 
     // GET /health
     if (request.method === 'GET' && path === '/health') {
-      return new Response(JSON.stringify({ok:true,worker:'carnival-results',version:'1.1.0'}), {headers:{...cors,'Content-Type':'application/json'}});
+      return new Response(JSON.stringify({ok:true,worker:'carnival-results',version:'1.2.0'}), {headers:{...cors,'Content-Type':'application/json'}});
+    }
+
+
+    // ─── AUTH HELPERS ─────────────────────────────────────────────────
+    const enc = new TextEncoder();
+    async function hmac(secret, data) {
+      const key = await crypto.subtle.importKey('raw', enc.encode(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+      const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data));
+      return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    function parseCookie(req, name) {
+      const c = req.headers.get('cookie') || '';
+      const m = c.split(';').map(s=>s.trim()).find(s=>s.startsWith(name+'='));
+      return m ? decodeURIComponent(m.slice(name.length+1)) : null;
+    }
+    async function getCurrentUser(req, env) {
+      const auth = req.headers.get('authorization') || '';
+      let token = '';
+      if (auth.startsWith('Bearer ')) token = auth.slice(7);
+      if (!token) token = parseCookie(req, 'ssp_session') || '';
+      if (!token) return null;
+      const [email, expiry, sig] = token.split('|');
+      if (!email || !expiry || !sig) return null;
+      if (parseInt(expiry,10) < Date.now()) return null;
+      const expected = await hmac(env.SESSION_SECRET, email + '|' + expiry);
+      if (sig !== expected) return null;
+      const u = await env.DB.prepare('SELECT * FROM users WHERE email=?').bind(email).first();
+      return u || null;
+    }
+
+    // ─── POST /auth/login ─ {email} → email magic link ───────────────
+    if (request.method === 'POST' && path === '/auth/login') {
+      const {email} = await request.json();
+      if (!email) return new Response(JSON.stringify({error:'Missing email'}), {status:400, headers:{...cors,'Content-Type':'application/json'}});
+      const user = await env.DB.prepare('SELECT email,role FROM users WHERE LOWER(email)=LOWER(?)').bind(email).first();
+      if (!user) return new Response(JSON.stringify({error:'Email not authorised. Ask the admin to add you.'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
+      const token = crypto.randomUUID().replace(/-/g,'') + crypto.randomUUID().replace(/-/g,'');
+      const now = Date.now();
+      const expiresAt = now + 15*60*1000; // 15 min
+      await env.DB.prepare('INSERT INTO auth_tokens (token,email,created_at,expires_at) VALUES (?,?,?,?)').bind(token, user.email, now, expiresAt).run();
+      const link = 'https://schoolsportportal.com.au/auth/verify?token=' + token;
+      // Send via Resend
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {'Authorization':'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},
+          body: JSON.stringify({
+            from: 'School Sport Portal <noreply@luckdragon.io>',
+            to: user.email,
+            subject: 'Your School Sport Portal login link',
+            html: `<p>Hi,</p><p>Click here to sign in to the School Sport Portal:</p><p><a href="${link}">${link}</a></p><p>Link expires in 15 minutes.</p>`
+          })
+        });
+      } catch(e) {}
+      return new Response(JSON.stringify({sent:true, email: user.email}), {headers:{...cors,'Content-Type':'application/json'}});
+    }
+
+    // ─── GET /auth/verify?token=X ─ → set cookie, redirect ────────────
+    if (request.method === 'GET' && path === '/auth/verify') {
+      const token = url.searchParams.get('token');
+      if (!token) return new Response('Missing token', {status:400});
+      const row = await env.DB.prepare('SELECT * FROM auth_tokens WHERE token=?').bind(token).first();
+      if (!row) return new Response('Invalid token', {status:401});
+      if (row.used_at) return new Response('Token already used', {status:401});
+      if (row.expires_at < Date.now()) return new Response('Token expired', {status:401});
+      await env.DB.prepare('UPDATE auth_tokens SET used_at=? WHERE token=?').bind(Date.now(), token).run();
+      await env.DB.prepare('UPDATE users SET last_login=? WHERE email=?').bind(Date.now(), row.email).run();
+      const expiry = Date.now() + 24*60*60*1000;
+      const sig = await hmac(env.SESSION_SECRET, row.email + '|' + expiry);
+      const sessionToken = row.email + '|' + expiry + '|' + sig;
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>Signing you in…</title><style>body{font-family:system-ui;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}.box{text-align:center}</style></head><body><div class="box"><h1>Signing you in…</h1><p id="msg">Please wait.</p></div><script>localStorage.setItem('ssp_session',${JSON.stringify(sessionToken)});location.replace('https://schoolsportportal.com.au/williamstowndistrict');</script></body></html>`;
+      return new Response(html, {status:200, headers:{'Content-Type':'text/html;charset=utf-8','Cache-Control':'no-store'}});
+    }
+
+    // ─── POST /auth/logout ────────────────────────────────────────────
+    if (request.method === 'POST' && path === '/auth/logout') {
+      return new Response(JSON.stringify({ok:true}), {headers:{...cors,'Content-Type':'application/json','Set-Cookie':'ssp_session=; Path=/; Max-Age=0; Domain=schoolsportportal.com.au'}});
+    }
+
+    // ─── GET /auth/me ─────────────────────────────────────────────────
+    if (request.method === 'GET' && path === '/auth/me') {
+      const u = await getCurrentUser(request, env);
+      return new Response(JSON.stringify(u || {anonymous:true}), {headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+    }
+
+    // ─── GET /api/scores?district=X ───────────────────────────────────
+    if (request.method === 'GET' && path === '/api/scores') {
+      const district = url.searchParams.get('district') || '';
+      const season = parseInt(url.searchParams.get('season') || new Date().getFullYear(), 10);
+      let q = 'SELECT * FROM scores WHERE season=?';
+      const p = [season];
+      if (district) { q += ' AND LOWER(district)=LOWER(?)'; p.push(district); }
+      q += ' ORDER BY sport, gender, place';
+      const rows = await env.DB.prepare(q).bind(...p).all();
+      return new Response(JSON.stringify(rows.results || []), {headers:{...cors,'Content-Type':'application/json','Cache-Control':'public, max-age=30'}});
+    }
+
+    // ─── POST /api/scores (auth: coach for own district, admin for any) ──
+    if (request.method === 'POST' && path === '/api/scores') {
+      const u = await getCurrentUser(request, env);
+      if (!u) return new Response(JSON.stringify({error:'Not authenticated'}), {status:401, headers:{...cors,'Content-Type':'application/json'}});
+      const b = await request.json();
+      if (!b.district || !b.sport || !b.gender || !b.school) return new Response(JSON.stringify({error:'Missing required fields'}), {status:400, headers:{...cors,'Content-Type':'application/json'}});
+      const id = b.id || (b.district + '_' + b.sport + '_' + b.gender + '_' + b.school + '_' + (b.season || new Date().getFullYear())).toLowerCase().replace(/[^a-z0-9_]/g,'-');
+      const now = Date.now();
+      await env.DB.prepare('INSERT INTO scores (id,district,sport,gender,school,points,place,season,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET points=excluded.points, place=excluded.place, updated_at=excluded.updated_at').bind(id, b.district, b.sport, b.gender, b.school, b.points || 0, b.place || 0, b.season || new Date().getFullYear(), u.email, now, now).run();
+      return new Response(JSON.stringify({ok:true,id}), {headers:{...cors,'Content-Type':'application/json'}});
+    }
+
+    // ─── DELETE /api/scores/:id (admin only) ──────────────────────────
+    if (request.method === 'DELETE' && path.startsWith('/api/scores/')) {
+      const u = await getCurrentUser(request, env);
+      if (!u || u.role !== 'admin') return new Response(JSON.stringify({error:'Admin only'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
+      const id = decodeURIComponent(path.slice('/api/scores/'.length));
+      await env.DB.prepare('DELETE FROM scores WHERE id=?').bind(id).run();
+      return new Response(JSON.stringify({deleted:id}), {headers:{...cors,'Content-Type':'application/json'}});
+    }
+
+    // ─── GET /api/users (admin only) ──────────────────────────────────
+    if (request.method === 'GET' && path === '/api/users') {
+      const u = await getCurrentUser(request, env);
+      if (!u || u.role !== 'admin') return new Response(JSON.stringify({error:'Admin only'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
+      const rows = await env.DB.prepare('SELECT email,display_name,role,created_at,last_login FROM users ORDER BY created_at DESC').all();
+      return new Response(JSON.stringify(rows.results || []), {headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
+    }
+
+    // ─── POST /api/users (admin only — create coach) ───────────────────
+    if (request.method === 'POST' && path === '/api/users') {
+      const u = await getCurrentUser(request, env);
+      if (!u || u.role !== 'admin') return new Response(JSON.stringify({error:'Admin only'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
+      const b = await request.json();
+      if (!b.email) return new Response(JSON.stringify({error:'Missing email'}), {status:400, headers:{...cors,'Content-Type':'application/json'}});
+      await env.DB.prepare('INSERT INTO users (email,display_name,role,created_at) VALUES (?,?,?,?) ON CONFLICT(email) DO UPDATE SET display_name=excluded.display_name, role=excluded.role').bind(b.email, b.displayName||'', b.role||'coach', Date.now()).run();
+      return new Response(JSON.stringify({ok:true,email:b.email}), {headers:{...cors,'Content-Type':'application/json'}});
+    }
+
+    // ─── DELETE /api/users/:email (admin only) ─────────────────────────
+    if (request.method === 'DELETE' && path.startsWith('/api/users/')) {
+      const u = await getCurrentUser(request, env);
+      if (!u || u.role !== 'admin') return new Response(JSON.stringify({error:'Admin only'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
+      const email = decodeURIComponent(path.slice('/api/users/'.length));
+      if (email === u.email) return new Response(JSON.stringify({error:"Can't delete self"}), {status:400, headers:{...cors,'Content-Type':'application/json'}});
+      await env.DB.prepare('DELETE FROM users WHERE email=?').bind(email).run();
+      return new Response(JSON.stringify({deleted:email}), {headers:{...cors,'Content-Type':'application/json'}});
     }
 
     return new Response('Not found', {status:404});
