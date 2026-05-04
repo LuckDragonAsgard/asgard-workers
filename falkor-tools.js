@@ -817,8 +817,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 button{cursor:pointer}
 button:hover{background:var(--panel2);border-color:var(--accent)}
 button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-weight:600}
-.grid{padding:14px 16px;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-content:start}
-.tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:0;min-height:130px}
+.grid{padding:10px 12px;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-content:start}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;flex-direction:column;gap:0;min-height:auto}
 .tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(255,107,53,.12)}
 .tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .tile-name{font-size:13px;font-weight:600;line-height:1.3}
