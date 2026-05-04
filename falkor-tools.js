@@ -3559,6 +3559,7 @@ upBtn.onclick=async()=>{
         const body = await request.json();
         const userMsg = body.message || '';
         const project = body.project || null;
+        const userImages = Array.isArray(body.images) ? body.images : [];
         const history = Array.isArray(body.history) ? body.history : [];
 
         // Parse owner/repo from project.github URL
@@ -3614,7 +3615,14 @@ upBtn.onclick=async()=>{
           priorTurns = rows.reverse().map(r => ({ role: r.role, content: r.content }));
         } catch(e){}
 
-        const messages = [...priorTurns, ...history, { role:'user', content: userMsg }];
+        const userContent = userImages.length ? [
+              ...userImages.map(im => ({
+                type: 'image',
+                source: { type: 'base64', media_type: (im.src||'').match(/^data:([^;]+);/)?.[1] || 'image/png', data: (im.src||'').split(',')[1] || '' }
+              })),
+              { type: 'text', text: userMsg }
+            ] : userMsg;
+            const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
         const toolResults = [];
         let iterations = 0;
         const maxIter = 8;
