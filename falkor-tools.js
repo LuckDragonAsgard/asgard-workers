@@ -120,6 +120,10 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{ date:{type:'string',description:'YYYY-MM-DD'} }, required:[] } },
           { name:'kbt_game_status', description:"Get status of a live KBT trivia game by code (falkor-kbt).",
             input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
+          { name:'read_chat_history', description:"Read raw chat history rows for Paddy from D1 falkor_chat_history. Use to verify what was actually said in a previous turn vs guessing — defeats confabulation.",
+            input_schema:{ type:'object', properties:{ limit:{type:'number',description:'rows, default 20'}, project_id:{type:'number',description:'optional filter'} }, required:[] } },
+          { name:'cf_secret_set', description:"Set a Cloudflare Worker secret on a worker. Use for managing API keys / tokens.",
+            input_schema:{ type:'object', properties:{ worker:{type:'string'}, name:{type:'string'}, value:{type:'string'} }, required:['worker','name','value'] } },
         ];
 const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
 
@@ -3048,7 +3052,7 @@ upBtn.onclick=async()=>{
         const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-self-improve', 'Accept':'application/vnd.github+json' };
         const toolResults = [];
         let iter = 0;
-        const maxIter = 15;
+        const maxIter = 30;
         while (iter < maxIter) {
           iter++;
           const aReq = await fetch('https://api.anthropic.com/v1/messages',{
@@ -3407,6 +3411,30 @@ upBtn.onclick=async()=>{
           if (!r.ok) throw new Error('http '+r.status);
           return 'reachable';
         });
+        // 8) Vault reachable
+        await run('vault', async () => {
+          const r = await fetch('https://asgard-vault.luckdragon.io/health', { signal: AbortSignal.timeout(5000) });
+          if (!r.ok) throw new Error('http '+r.status);
+          return 'reachable';
+        });
+        // 9) falkor-web via workers.dev fallback
+        await run('web_proxy', async () => {
+          let r = await fetch('https://falkor-web.luckdragon.io/health', { signal: AbortSignal.timeout(4000) });
+          if (r.status === 522 || r.status === 530) {
+            r = await fetch('https://falkor-web.pgallivan.workers.dev/health', { signal: AbortSignal.timeout(4000) });
+          }
+          if (!r.ok) throw new Error('http '+r.status);
+          return 'reachable';
+        });
+        // 10) Browser bridge alive (just check /browser/poll responds — don't queue commands)
+        await run('bridge', async () => {
+          // Bridge alive only if extension is polling. We check if there's been a poll in last 60s by looking at KV log/queue.
+          const lastPoll = await env.ASSETS.get('browser:last_poll');
+          if (!lastPoll) return 'no recent polls (extension not connected)';  // soft pass
+          const ageS = (Date.now() - parseInt(lastPoll))/1000;
+          if (ageS > 60) throw new Error('last poll '+Math.round(ageS)+'s ago');
+          return 'polling '+Math.round(ageS)+'s ago';
+        });
         // Persist
         for (const c of checks) {
           await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
@@ -3590,7 +3618,7 @@ upBtn.onclick=async()=>{
             const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
             const toolResults = [];
             let iterations = 0;
-            const maxIter = 15;
+            const maxIter = 30;
             let finalText = '';
 
             while (iterations < maxIter) {
@@ -3785,7 +3813,7 @@ upBtn.onclick=async()=>{
             const messages = [...priorTurns, ...history, { role:'user', content: userContent }];
         const toolResults = [];
         let iterations = 0;
-        const maxIter = 8;
+        const maxIter = 30;
         let finalText = '';
 
         while (iterations < maxIter) {
