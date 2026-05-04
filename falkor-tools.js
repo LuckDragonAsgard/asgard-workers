@@ -2547,6 +2547,55 @@ upBtn.onclick=async()=>{
         return Response.json({ok:true, round:parseInt(round), leaderboard: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
+    if(url.pathname==='/api/family/score-round'&&request.method==='POST'){
+      try {
+        const body = await request.json();
+        const {year, round} = body;
+        if(!year || !round) return Response.json({ok:false, error:'year and round required'},{status:400,headers:{...CORS,...NOCACHE}});
+        
+        // Fetch completed games from Squiggle
+        const gRes = await fetch('https://api.squiggle.com.au/?q=games;year='+year+';round='+round+';complete=100&format=json', {headers:{'User-Agent':'Falkor/1.0'}});
+        const games = await gRes.json();
+        
+        // Build winner map: game_id -> winner team name
+        const winners = {};
+        const breakdown = [];
+        for (const g of games) {
+          let winner = null;
+          if (g.hscore > g.ascore) winner = g.hteam;
+          else if (g.ascore > g.hscore) winner = g.ateam;
+          if (winner) {
+            winners[g.id] = winner;
+            breakdown.push({game_id:g.id, winner, tippers_correct:0, tippers_wrong:0});
+          }
+        }
+        
+        // Fetch all tips for this year+round
+        const tRes = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query',{method:'POST',headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql:'SELECT id, game_id, tip FROM family_tips WHERE year=? AND round=?', params:[year, round]})});
+        const tData = await tRes.json();
+        const tips = tData.result?.[0]?.results || [];
+        
+        // Score each tip and build update batch
+        const updates = [];
+        for (const t of tips) {
+          const winnerTeam = winners[t.game_id];
+          const points = (winnerTeam && t.tip === winnerTeam) ? 1 : 0;
+          updates.push({id:t.id, points, tip:t.tip, winner:winnerTeam});
+          // Track breakdown
+          const bd = breakdown.find(b=>b.game_id===t.game_id);
+          if (bd) { if (points===1) bd.tippers_correct++; else bd.tippers_wrong++; }
+        }
+        
+        // Batch update family_tips
+        if (updates.length > 0) {
+          const updateSql = 'UPDATE family_tips SET points=? WHERE id=?';
+          const statements = updates.map(u => ({sql:updateSql, params:[u.points, u.id]}));
+          await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query',{method:'POST',headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({statements})});
+        }
+        
+        return Response.json({ok:true, year, round, games_scored:Object.keys(winners).length, tips_updated:updates.length, breakdown}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
     if(url.pathname==='/api/falkor/self-improve'&&request.method==='POST'){
       // Autonomous self-improvement loop. Triggered by cron every 6h or manually.
       try {
