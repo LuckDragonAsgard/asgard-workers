@@ -1426,6 +1426,67 @@ function renderSport(m){
  tabs.appendChild(tab("\uD83C\uDFC8 NRL Ladder",()=>fmt(fetch("https://falkor-sport.luckdragon.io/nrl/ladder?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>ladderTable(Array.isArray(d)?d:(d.ladder||[])))));
  tabs.appendChild(tab("\uD83C\uDFAF AFL Tipping",()=>fmt(fetch("https://falkor-sport.luckdragon.io/afl/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),tipsView)));
  tabs.appendChild(tab("\uD83C\uDFAF NRL Tipping",()=>fmt(fetch("https://falkor-sport.luckdragon.io/nrl/tipping?pin="+encodeURIComponent(PIN)).then(r=>r.json()),tipsView)));
+ tabs.appendChild(tab("\uD83D\uDCE1 Squiggle Live",async()=>{
+  out.innerHTML="";
+  const card=el("div",{style:"display:grid;gap:14px"});
+  // Digest preview
+  const digestCard=el("div",{class:"fcard"});
+  digestCard.appendChild(el("div",{class:"fcard-label"},"DAILY DIGEST PREVIEW"));
+  const dpre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel);padding:12px;border-radius:6px;border:1px solid var(--border);margin-top:8px;max-height:400px;overflow:auto"},"Loading\u2026");
+  digestCard.appendChild(dpre);
+  card.appendChild(digestCard);
+  fetch("/api/sport/afl/digest").then(r=>r.json()).then(d=>{
+   const txt = (d.digest||"(empty)").split("<b>").join("").split("</b>").join("");
+   dpre.textContent=txt;
+  }).catch(e=>{dpre.textContent="Error: "+e.message});
+
+  // Push controls
+  const pushCard=el("div",{class:"fcard"});
+  pushCard.appendChild(el("div",{class:"fcard-label"},"PUSH TO TELEGRAM"));
+  const ctrls=el("div",{style:"display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap"});
+  const tgtSel=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+  ["paddy","family"].forEach(t=>tgtSel.appendChild(el("option",{value:t},t)));
+  ctrls.appendChild(tgtSel);
+  const sendBtn=el("button",{class:"primary"},"\uD83D\uDCE8 Send digest");
+  ctrls.appendChild(sendBtn);
+  const status=el("div",{style:"font-size:11px;color:var(--muted)"});
+  ctrls.appendChild(status);
+  pushCard.appendChild(ctrls);
+  sendBtn.addEventListener("click",async()=>{
+   sendBtn.disabled=true;status.textContent="Fetching digest\u2026";
+   try{
+    const dr=await fetch("/api/sport/afl/digest");const dd=await dr.json();
+    const text=dd.digest||"";
+    if(!text){status.textContent="No digest";sendBtn.disabled=false;return}
+    status.textContent="Sending to "+tgtSel.value+"\u2026";
+    const r=await fetch("/api/sport/push",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({target:tgtSel.value,text})});
+    const j=await r.json();
+    if(j.ok){status.textContent="\u2713 Sent (msg #"+(j.result?.message_id||"?")+")";status.style.color="var(--green)"}
+    else{status.textContent="Err: "+(j.error||j.description||JSON.stringify(j).substring(0,80));status.style.color="var(--red)"}
+   }catch(e){status.textContent="Err: "+e.message;status.style.color="var(--red)"}
+   sendBtn.disabled=false;
+  });
+  card.appendChild(pushCard);
+
+  // Chat ID config
+  const cfgCard=el("div",{class:"fcard"});
+  cfgCard.appendChild(el("div",{class:"fcard-label"},"CONFIGURE TELEGRAM CHAT IDs"));
+  cfgCard.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:6px"},"Save target \u2192 chat_id mappings (e.g. \"family\" \u2192 \"-1001234\"). Find your chat_id by messaging the bot then visiting api.telegram.org/bot<TOKEN>/getUpdates."));
+  const cfgRow=el("div",{style:"display:grid;grid-template-columns:120px 1fr auto;gap:8px;margin-top:8px"});
+  const cfgT=el("input",{type:"text",placeholder:"target",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+  const cfgC=el("input",{type:"text",placeholder:"chat_id (e.g. -1001234)",style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px"});
+  const cfgBtn=el("button",{class:"primary"},"Save");
+  cfgRow.appendChild(cfgT);cfgRow.appendChild(cfgC);cfgRow.appendChild(cfgBtn);
+  cfgCard.appendChild(cfgRow);
+  const cfgStat=el("div",{style:"font-size:11px;color:var(--muted);margin-top:8px"});
+  cfgCard.appendChild(cfgStat);
+  const refreshList=async()=>{try{const r=await fetch("/api/sport/chats",{headers:{"X-Pin":PIN}});const d=await r.json();const entries=Object.entries(d);if(entries.length===0){cfgStat.textContent="No chats configured yet."}else{cfgStat.textContent="Configured: "+entries.map(([k,v])=>k+"="+v).join(", ")}}catch(e){cfgStat.textContent="(could not fetch)"}};
+  cfgBtn.addEventListener("click",async()=>{cfgBtn.disabled=true;try{const r=await fetch("/api/sport/chats",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({target:cfgT.value.trim(),chat_id:cfgC.value.trim()})});const d=await r.json();if(d.ok){cfgT.value="";cfgC.value="";await refreshList()}else{cfgStat.textContent="Err: "+JSON.stringify(d).substring(0,100)}}catch(e){cfgStat.textContent="Err: "+e.message}cfgBtn.disabled=false;});
+  refreshList();
+  card.appendChild(cfgCard);
+
+  out.appendChild(card);
+ }));
  tabs.appendChild(tab("\uD83C\uDFC7 Racing",()=>fmt(fetch("https://falkor-sport.luckdragon.io/racing/comp?pin="+encodeURIComponent(PIN)).then(r=>r.json()),d=>{const x=el("div");if(d.leaderboard&&Array.isArray(d.leaderboard)){x.appendChild(el("div",{style:"font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px"},"Leaderboard"));d.leaderboard.forEach((p,i)=>{const r=el("div",{style:"display:grid;grid-template-columns:30px 1fr 60px;gap:8px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;font-size:13px"});r.appendChild(el("div",{style:"color:var(--accent);font-weight:600"},(i===0?"\uD83E\uDD47":i===1?"\uD83E\uDD48":i===2?"\uD83E\uDD49":"#"+(i+1))));r.appendChild(el("div",{style:"font-weight:600"},p.player||p.name||""));r.appendChild(el("div",{style:"text-align:right"},String(p.points||p.score||0)));x.appendChild(r)})}else{const pre=el("pre",{style:"white-space:pre-wrap;font-size:11px;background:var(--panel);padding:14px;border-radius:8px;border:1px solid var(--border);overflow:auto"});pre.textContent=JSON.stringify(d,null,2);x.appendChild(pre)}return x})));
  wrap.appendChild(tabs);wrap.appendChild(out);m.appendChild(wrap);
  setTimeout(()=>{if(tabs.firstChild)tabs.firstChild.click()},100);
@@ -2319,3 +2380,8 @@ upBtn.onclick=async()=>{
       } catch (e) {
         return Response.json({ error:'Agent failure', detail: String(e).substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
       }
+    }
+
+    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
+  },
+};
