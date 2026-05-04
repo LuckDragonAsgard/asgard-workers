@@ -241,6 +241,22 @@ export default {
 
       const chatId   = msg.chat.id;
       const userId   = getUserId(msg.from);
+
+      // Auto-register chat_id on first message — group chats as 'family', private as user slug
+      try {
+        const cidStr = String(chatId);
+        const isGroup = msg.chat.type === 'group' || msg.chat.type === 'supergroup';
+        const key = isGroup ? 'family' : userId;
+        const existing = await env.TG_CHATS?.get(key);
+        if (!existing && env.TG_CHATS) {
+          await env.TG_CHATS.put(key, cidStr);
+          const chatName = msg.chat.title || msg.chat.first_name || 'this chat';
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({chat_id: cidStr, text: `\u2705 Registered <b>${chatName}</b> as <code>${key}</code>. Falkor will broadcast here.`, parse_mode:'HTML'})
+          });
+        }
+      } catch(e){}
       const agentPin = env.AGENT_PIN  || '';
       const aiPin    = env.AI_WORKER_PIN || env.AGENT_PIN || '';
 
