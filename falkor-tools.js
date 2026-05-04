@@ -134,7 +134,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fk-pray      {background-image:url(/asset/fk-pray)}
 .fk-laugh     {background-image:url(/asset/fk-laugh)}
 .fk-wait      {background-image:url(/asset/fk-wait)}
-.fk-xl{width:160px;height:160px}
+.fk-xl{width:140px;height:140px;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff}
 .fk-lg{width:96px;height:96px}
 .fk-md{width:48px;height:48px}
 .fk-sm{width:32px;height:32px}
@@ -196,6 +196,7 @@ function renderSidebar(){
  sb.appendChild(brand);
  const navItem=(id,icon,label)=>{const it=el("div",{class:"nav-item"+(STATE.view===id?" active":"")});it.appendChild(el("span",{style:"width:18px;text-align:center"},icon));it.appendChild(el("span",{},label));it.addEventListener("click",()=>{STATE.view=id;render()});return it};
  sb.appendChild(navItem("projects","\uD83D\uDCCB","Projects"));
+ sb.appendChild(navItem("guide","\u2728","Guide"));
  sb.appendChild(navItem("recent","\uD83D\uDD52","Recent"));
  sb.appendChild(navItem("finance","\uD83D\uDCB0","Finance"));
  sb.appendChild(navItem("revenue","\uD83D\uDCC8","Revenue"));
@@ -218,6 +219,7 @@ function renderSidebar(){
 function renderMain(){
  const m=el("div",{class:"main"});
  if(STATE.view==="projects")return renderProjects(m);
+ if(STATE.view==="guide")return renderGuide(m);
  if(STATE.view==="recent")return renderRecent(m);
  if(STATE.view==="finance")return renderFinance(m);
  if(STATE.view==="revenue")return renderRevenue(m);
@@ -283,7 +285,12 @@ function refreshGrid(){
   if(s==="status")return (a.status||"").localeCompare(b.status||"");
   return 0;
  });
- if(filtered.length===0){grid.appendChild(el("div",{class:"empty"},"No projects match."));return}
+ if(filtered.length===0){
+   const e=el("div",{class:"empty",style:"display:flex;flex-direction:column;align-items:center;gap:10px;padding:50px 20px"});
+   e.appendChild(el("div",{class:"fk fk-confused fk-lg"}));
+   e.appendChild(el("div",{},"No projects match."));
+   grid.appendChild(e);return;
+  }
  for(const p of filtered){
   const tile=el("div",{class:"tile"});
   tile.addEventListener("click",()=>openModal(p));
@@ -377,8 +384,20 @@ function renderChatPane(){
  }
  p.appendChild(head);
  const msgs=el("div",{class:"chat-msgs",id:"chat-msgs"});
- if(STATE.chat.length===0)msgs.appendChild(el("div",{class:"chat-empty"},"Click any tile then \u201cChat about this\u201d to scope the AI."));
- for(const m of STATE.chat)msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
+ if(STATE.chat.length===0)const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
+  empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
+  empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
+  msgs.appendChild(empty);
+ for(const m of STATE.chat){
+   if(m.role==="assistant"){
+    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
+    wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
+    wrap.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    msgs.appendChild(wrap);
+   } else {
+    msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
+   }
+  }
  p.appendChild(msgs);
  const form=el("form",{class:"chat-form"});
  const inp=el("input",{type:"text",placeholder:STATE.chatContext?("Ask about "+(STATE.chatContext.name||"this project")+"\u2026"):"Type a message\u2026"});
@@ -423,8 +442,20 @@ function renderChatPane(){
 function refreshChat(){
  const msgs=$("#chat-msgs");if(!msgs)return;
  msgs.innerHTML="";
- if(STATE.chat.length===0)msgs.appendChild(el("div",{class:"chat-empty"},"Click any tile then \u201cChat about this\u201d to scope the AI."));
- for(const m of STATE.chat)msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
+ if(STATE.chat.length===0)const empty=el("div",{class:"chat-empty",style:"display:flex;flex-direction:column;align-items:center;gap:8px;padding:40px 20px"});
+  empty.appendChild(el("div",{class:"fk fk-sleep fk-md"}));
+  empty.appendChild(el("div",{style:"text-align:center;font-size:12px"},"Ready when you are. Click any tile then \u201cChat about this\u201d to scope me to a project, or just type a question."));
+  msgs.appendChild(empty);
+ for(const m of STATE.chat){
+   if(m.role==="assistant"){
+    const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:90%"});
+    wrap.appendChild(el("div",{class:"fk fk-smile fk-xs",style:"flex:0 0 auto;margin-top:2px"}));
+    wrap.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
+    msgs.appendChild(wrap);
+   } else {
+    msgs.appendChild(el("div",{class:"msg "+m.role},m.content));
+   }
+  }
  msgs.scrollTop=msgs.scrollHeight;
 }
 
@@ -572,6 +603,92 @@ function renderRevenue(m){
  wrap.appendChild(tbl);
  m.appendChild(wrap);return m;
 }
+function renderGuide(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Guide"));m.appendChild(top);
+ const wrap=el("div",{style:"padding:20px;display:grid;gap:18px;max-width:780px"});
+ const intro=el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center"});
+ intro.appendChild(el("div",{class:"fk fk-help-book fk-md"}));
+ intro.appendChild(el("div",{},
+  el("div",{style:"font-weight:700;margin-bottom:4px"},"Talk to Falkor like a colleague who has access to everything."),
+  el("div",{style:"font-size:13px;color:var(--muted);line-height:1.5"},"Falkor edits your sites, runs SQL on your D1, deploys workers, drives your browser, and remembers what you tell it. Try the prompts below — copy any of them into the chat panel.")
+ ));
+ wrap.appendChild(intro);
+
+ const groups = [
+  { title:"Edit a project", icon:"\uD83D\uDD27", color:"var(--accent)", prompts:[
+    "Open the Bomber Boat project — show me the README",
+    "On Bomber Boat: add a section about Marvel Stadium pickup times to the README",
+    "Fix the typo on line 12 of horseracetipping.com/index.html",
+    "Edit Falkor itself: change the login subtitle from 'Project Hub' to 'Paddy Command Centre' and redeploy",
+  ]},
+  { title:"Run SQL across your portfolio", icon:"\uD83D\uDCCA", color:"var(--purple)", prompts:[
+    "What are my top 5 projects by Y3 revenue?",
+    "Show me everything tagged School/SaaS",
+    "Which projects haven't been updated in over a month?",
+    "Mark Save My Seat as live and update its Y1 to $30k",
+  ]},
+  { title:"Drive my browser", icon:"\uD83C\uDF10", color:"var(--green)", prompts:[
+    "What tabs do I have open?",
+    "Open my Stripe dashboard in a new tab and screenshot it",
+    "Go to schoolsportportal.com.au and check if anything is broken",
+    "Open the Vercel project for pj-budget and tell me when it last deployed",
+  ]},
+  { title:"Use the wider toolset", icon:"\u2699", color:"var(--amber)", prompts:[
+    "Search the web for Cloudflare Workers AI pricing 2026",
+    "Fetch https://api.github.com/repos/LuckDragonAsgard/asgard-workers and tell me when it was last pushed",
+    "Get my STRIPE_SECRET_KEY from the vault (just confirm it exists)",
+    "Redeploy falkor-school worker",
+  ]},
+  { title:"Memory + preferences", icon:"\uD83E\uDDE0", color:"var(--blue)", prompts:[
+    "Remember that I prefer all chat replies under 5 sentences",
+    "Remember: SSV Sport Takeover and Sport Portal are now merged into School Sport Portal",
+    "What do you remember about how I like to work?",
+    "Forget anything you remembered about my old PIN",
+  ]},
+ ];
+
+ groups.forEach(g => {
+  const sec = el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px"});
+  const head = el("div",{style:"display:flex;align-items:center;gap:8px;margin-bottom:10px"});
+  head.appendChild(el("span",{style:"font-size:18px"},g.icon));
+  head.appendChild(el("div",{style:"font-weight:700;font-size:15px;color:"+g.color},g.title));
+  sec.appendChild(head);
+  g.prompts.forEach(p => {
+   const row = el("div",{style:"display:flex;align-items:center;gap:8px;padding:8px 12px;margin-top:6px;background:var(--panel2);border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .1s"});
+   row.addEventListener("mouseenter",()=>{row.style.borderLeft="3px solid "+g.color;row.style.color="var(--text)"});
+   row.addEventListener("mouseleave",()=>{row.style.borderLeft="";row.style.color="var(--muted)"});
+   row.appendChild(el("span",{style:"font-family:ui-monospace,monospace;font-size:11px;color:var(--accent);flex:0 0 auto"},"\u203A"));
+   row.appendChild(el("span",{style:"flex:1"},p));
+   const useBtn = el("button",{style:"background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer"},"Try it");
+   useBtn.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    // Drop into chat input
+    const inp = document.querySelector(".chat-form input");
+    if(inp){ inp.value = p; inp.focus(); if(window.innerWidth<=720){const cp=document.querySelector(".chat-pane");if(cp)cp.classList.add("mobile-open");setTimeout(()=>inp.focus(),50)} }
+   });
+   row.appendChild(useBtn);
+   sec.appendChild(row);
+  });
+  wrap.appendChild(sec);
+ });
+
+ // Tips
+ const tips = el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13px;line-height:1.6;color:var(--muted)"});
+ tips.appendChild(el("div",{style:"font-weight:700;color:var(--text);margin-bottom:8px"},"Tips"));
+ [
+  "Click any project tile, then \u201cChat about this\u201d to scope the conversation. The agent gets full context (URL/GitHub/tech/cost) automatically.",
+  "Click the \u270F Edit code button on any project to open it in github.dev (web VS Code). Or just ask Falkor to edit it for you.",
+  "Most of your projects auto-deploy on commit — when Falkor edits + commits a file, it ships within a minute.",
+  "Browser tools need the Falkor Browser Bridge Chrome extension installed (one-time, takes 60 sec).",
+  "Falkor edits its own code: open the Falkor (this hub) tile and tell it what you want changed. It rewrites itself and redeploys."
+ ].forEach(t => tips.appendChild(el("div",{style:"margin:6px 0;display:flex;gap:8px"},
+   el("span",{style:"color:var(--accent);flex:0 0 auto"},"\u2022"),
+   el("span",{html:t.replace(/\\u201c/g,'"').replace(/\\u201d/g,'"')})
+ )));
+ wrap.appendChild(tips);
+
+ m.appendChild(wrap);return m;
+}
 function renderSystem(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"System"));m.appendChild(top);
  const wrap=el("div",{style:"padding:20px;display:grid;gap:10px"});
@@ -607,7 +724,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.9.0',mode:'asgard-hub-self-editable'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.10.0',mode:'asgard-hub-guided'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
