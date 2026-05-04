@@ -745,6 +745,36 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             if (!r.ok) return { error:'write_file HTTP '+r.status, detail: d.message || JSON.stringify(d).substring(0,300) };
             return { ok:true, commit: d.commit?.sha?.substring(0,7), html_url: d.commit?.html_url, path: p };
           }
+                    if (name === 'read_chat_history') {
+            try {
+              const limit = Math.min(parseInt(input.limit||20), 50);
+              const projectId = input.project_id;
+              let sql, params;
+              if (projectId) { sql = 'SELECT role, content, project_name, created_at FROM falkor_chat_history WHERE user_id=? AND project_id=? ORDER BY created_at DESC LIMIT ?'; params = ['paddy', projectId, limit]; }
+              else { sql = 'SELECT role, content, project_name, created_at FROM falkor_chat_history WHERE user_id=? ORDER BY created_at DESC LIMIT ?'; params = ['paddy', limit]; }
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({sql, params}),
+              });
+              const d = await r.json();
+              const rows = (d.result?.[0]?.results || []).reverse();
+              return { ok:true, turns: rows.map(r=>({role:r.role, content:String(r.content||'').substring(0,400), project: r.project_name, at: r.created_at})) };
+            } catch(e) { return { error: 'read_chat_history: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'cf_secret_set') {
+            try {
+              const wname = (input.worker||'').replace(/[^a-zA-Z0-9-]/g,'');
+              const sname = (input.name||'').replace(/[^A-Z_0-9]/g,'');
+              if (!wname||!sname||!input.value) return { error: 'worker, name, value required' };
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname+'/secrets', {
+                method:'PUT', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({ name: sname, text: input.value, type: 'secret_text' })
+              });
+              const d = await r.json();
+              if (!d.success) return { error: 'set secret failed', detail: JSON.stringify(d.errors||[]).substring(0,200) };
+              return { ok:true, worker:wname, name:sname };
+            } catch(e) { return { error: 'cf_secret_set: '+String(e).substring(0,200) }; }
+          }
           return { error:'Unknown tool: '+name };
 }
 
@@ -3600,7 +3630,7 @@ upBtn.onclick=async()=>{
               const hd = await hr.json();
               priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
             } catch(e){}
-            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies. CRITICAL: Never claim a tool failed based on prior chat history — always actually call the tool fresh. If a previous turn shows an error, that error may have been fixed since. ALWAYS try the tool before reporting an error to Paddy.\n\nYOU ARE THE CHAT UI. The chat interface Paddy is talking to you in is rendered by falkor-tools.js (this very codebase) and served from https://falkor.luckdragon.io. It is NOT Anthropic\'s Claude web UI — it is YOUR OWN UI that you self-edit. When Paddy asks for a change to the chat (image upload, voice, layout, anything), you CAN do it: edit_file falkor-tools.js → cf_deploy_worker name=falkor-tools → verify. Never tell Paddy you can\'t modify the chat — you absolutely can." + "\n\n=== ZERO-TOLERANCE PERSISTENCE RULES (NEVER VIOLATE) ===\n\nNEVER write to ephemeral/temp paths. Other Claude chats have repeatedly saved files to AppData, /tmp, /sessions, Local Settings — paths the user CANNOT ACCESS later. THIS IS THE MOST IMPORTANT RULE.\n\nALL persistence goes to one of these locations only:\n1. GitHub (LuckDragonAsgard/asgard-workers) — for code/configs — use write_file/edit_file/multi_edit\n2. Cloudflare D1 — for structured data — use run_d1_query\n3. CF KV (env.ASSETS) — for session state\n4. CF Vectorize via falkor-brain — for semantic memory\n5. User Drive (G:\\My Drive\\Luck Dragon\\) — ONLY when user explicitly asks for an Office file (docx/pptx/xlsx/pdf)\n\nNEVER ALLOWED: AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path.\n\nIf you need to remember anything across sessions, save to D1 falkor_memory or commit to GitHub. Period.\n\n=== FALKOR-TOOLS.JS CODEBASE RULES (CRITICAL — READ CAREFULLY) ===\n\nVARIABLES IN scope of fetch handler:\n- request (NOT req)\n- request.method (NOT method)\n- env.CF_ACCOUNT_ID, env.D1_DB_ID, env.CF_API_TOKEN, env.AGENT_PIN, env.ANTHROPIC_API_KEY, env.GITHUB_TOKEN, env.VAULT_PIN, env.VAULT_URL\n- env.ASSETS (KV binding)\n- url = new URL(request.url)\n- DO NOT USE: env.DB, env.ASGARD, env.AI, env.CF, defaultBranch — these don't exist\n\nD1 DATABASE PATTERN (use this exact shape):\n  const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {\n    method:'POST',\n    headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},\n    body: JSON.stringify({sql:'SELECT...', params:[a,b,c]}),\n  });\n  const d = await r.json();\n  const rows = d.result?.[0]?.results || [];\n\nENDPOINT PATTERN (copy this shape):\n  if(url.pathname==='/api/your/path'&&request.method==='POST'){\n    try {\n      const body = await request.json();\n      // ... logic ...\n      return Response.json({ok:true, ...}, {headers:{...CORS,...NOCACHE}});\n    } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }\n  }\n\nWORKFLOW for adding new endpoints:\n1. grep_file path=falkor-tools.js pattern=\"existing similar endpoint\" — find anchor\n2. read_file with start_line/end_line for context (15 lines)\n3. edit_file with full context as old_string (include 5+ surrounding lines for uniqueness)\n4. cf_deploy_worker name=falkor-tools\n5. verify_endpoint url=/api/your/path expected_field=ok — REAL VERIFICATION not just status code\n\nNEVER:\n- Use env.DB.prepare() — D1 client binding doesn't work, USE FETCH PATTERN\n- Use req or method — they're undefined\n- Run cf_deploy_worker without verifying with verify_endpoint after\n- Trust 522 errors — those mean infra issue, retry verify with delay\n- Skip verification — always confirm endpoint returns expected JSON\n\nALWAYS:\n- Use multi_edit to bundle related changes (atomic commit)\n- Include 5+ lines context in edit_file old_string to ensure uniqueness\n- After deploy, sleep 5s, then verify\n- If verify fails, READ the response, FIX the code, redeploy\n- Commit messages: describe WHAT and WHY (not 'edit_file via Falkor agent')\n=== END RULES ===\n\nFor deeper how-tos (adding sub-workers, DOs, integrations, troubleshooting common errors), read: https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch via web_fetch when stuck." + memBlock;
+            let system = "You are Falkor — Paddy's coding agent. Casual, direct, terse. No apologies.\n\n** YOU ARE THE CHAT UI Paddy is messaging you in. ** That UI lives at https://falkor.luckdragon.io and is rendered by falkor-tools.js (your repo). NOT Anthropic's Claude web UI. If you call browser_screenshot and see another Claude tab, that is a SEPARATE conversation in another window — it is NOT where Paddy is talking to you. Paddy types into your falkor.luckdragon.io chat. You CAN edit that chat: edit_file → cf_deploy_worker name=falkor-tools → verify. Never refuse a UI change.\n\nCode rules: use `request` not `req`, `env.CF_ACCOUNT_ID/D1_DB_ID/CF_API_TOKEN/GITHUB_TOKEN/ASSETS`. NO `env.DB.prepare` — use fetch-to-D1 pattern. Save persistence to GitHub (LuckDragonAsgard/asgard-workers) or D1, never to /tmp or AppData. After deploy, verify_endpoint. Full playbook at https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_PLAYBOOK.md — fetch when stuck." + memBlock;
             if (project) {
               const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
               if (project.url) ctx.push('Live: '+project.url);
