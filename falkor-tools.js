@@ -2448,13 +2448,13 @@ upBtn.onclick=async()=>{
         const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-self-improve', 'Accept':'application/vnd.github+json' };
         const toolResults = [];
         let iter = 0;
-        const maxIter = 8;
+        const maxIter = 15;
         while (iter < maxIter) {
           iter++;
           const aReq = await fetch('https://api.anthropic.com/v1/messages',{
             method:'POST',
             headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
-            body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:2048, system:'You are Falkor running an autonomous self-improvement loop. Be terse. Pick ONE small thing to ship.', tools: AGENT_TOOLS, messages}),
+            body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:2048, system:'You are Falkor in autonomous mode. You MUST ship ONE concrete improvement this cycle. If unsure, fix a typo, improve an error message, or clarify a tool description. Use grep_file once, edit_file once, cf_deploy_worker once, web_fetch /health once. Never just explore — always commit something.', tools: AGENT_TOOLS, messages}),
           });
           if (!aReq.ok) break;
           const a = await aReq.json();
