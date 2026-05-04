@@ -695,7 +695,7 @@ function renderHome(m){
  strip.appendChild(stripBody);
  wrap.appendChild(strip);
  fetch("/api/briefing",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{
-   const text=(d.briefing||"").replace(/\n+/g," ").substring(0,300);
+   const text=String(d.briefing||"").split(String.fromCharCode(10)).join(" ").substring(0,300);
    briefLine.textContent=text||"(no briefing)";
  }).catch(()=>{briefLine.textContent=""});
 
@@ -774,7 +774,7 @@ function renderHome(m){
    live.resultMood=hadErr?"error":toolCalls.length>0?"success":"normal";
    if(toolCalls.length&&live.toolStatus){live.content=live.content+String.fromCharCode(10,10)+live.toolStatus;delete live.toolStatus;}
    refreshChat();
-   if(localStorage.getItem("falkor.tts")==="1"&&live.content){try{const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:live.content.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}}catch(e){}}
+   if(localStorage.getItem("falkor.tts")==="1"&&live.content){try{const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content))})});if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}}catch(e){}}
   }catch(err){
    if(STATE.chat.length&&STATE.chat[STATE.chat.length-1].pending)STATE.chat.pop();
    const live=STATE.chat[STATE.chat.length-1];
@@ -1109,7 +1109,7 @@ function renderChatPane(){
    refreshChat();
    if(localStorage.getItem("falkor.tts")==="1" && live.content){
     try{
-     const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:live.content.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});
+     const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:((function(t){var i=t.lastIndexOf(String.fromCharCode(10)+"[");return (i>=0?t.substring(0,i):t).trim().substring(0,800);})(live.content))})});
      if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}
     }catch(e){}
    }
@@ -2320,6 +2320,4 @@ upBtn.onclick=async()=>{
       }
     }
 
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
-  },
-};
+    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...N
