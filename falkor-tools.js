@@ -837,7 +837,32 @@ function renderSchool(m){
  pe.appendChild(el("div",{class:"fcard-label"},"PE OUTDOOR ADVISOR"));
  const peBody=el("div",{style:"font-size:14px;margin-top:6px",id:"pe-body"},"Loading\u2026");
  pe.appendChild(peBody);
- fetch("https://falkor-school.luckdragon.io/pe-advisor",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{peBody.innerHTML="";if(d.error){peBody.textContent="Error: "+d.error;return}const lines=[];if(d.summary)lines.push(d.summary);if(d.recommendation)lines.push(String.fromCharCode(10,10)+d.recommendation);if(!lines.length)lines.push(JSON.stringify(d,null,2));peBody.appendChild(el("pre",{style:"white-space:pre-wrap;font-size:13px;line-height:1.5"},lines.join("")));}).catch(e=>{peBody.textContent="Error: "+e.message});
+ fetch("https://falkor-school.luckdragon.io/pe-advisor",{headers:{"X-Pin":PIN}}).then(r=>r.json()).then(d=>{
+  peBody.innerHTML="";
+  if(d.error){peBody.textContent="Error: "+d.error;return}
+  const head=el("div",{style:"display:flex;align-items:baseline;gap:8px;margin-bottom:8px"});
+  head.appendChild(el("div",{style:"font-size:22px;font-weight:700;color:"+(d.recommendation==="OUTDOOR"?"var(--green)":d.recommendation==="INDOOR"?"var(--red)":"var(--amber)")},d.recommendation||"-"));
+  head.appendChild(el("div",{style:"font-size:13px;color:var(--muted)"},d.date||""));
+  peBody.appendChild(head);
+  if(d.verdict)peBody.appendChild(el("div",{style:"font-size:14px;line-height:1.5;margin-bottom:10px"},d.verdict));
+  const cc=d.current_conditions||{};
+  const grid=el("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0"});
+  const stat=(label,val)=>{const c=el("div",{style:"background:var(--panel2);border-radius:6px;padding:8px 10px"});c.appendChild(el("div",{style:"font-size:10px;color:var(--muted);text-transform:uppercase"},label));c.appendChild(el("div",{style:"font-size:15px;font-weight:600"},String(val||"-")));return c};
+  if(cc.temp!=null)grid.appendChild(stat("Temp",cc.temp+"°C"));
+  if(cc.max!=null)grid.appendChild(stat("Max",cc.max+"°C"));
+  if(cc.condition)grid.appendChild(stat("Sky",cc.condition));
+  if(cc.uv!=null)grid.appendChild(stat("UV",cc.uv+" "+(cc.uv_category||"")));
+  if(cc.wind_kmh!=null)grid.appendChild(stat("Wind",cc.wind_kmh+" km/h"));
+  if(cc.rain_chance!=null)grid.appendChild(stat("Rain",cc.rain_chance+"%"));
+  peBody.appendChild(grid);
+  const flags=[];
+  if(d.sunscreen_required)flags.push("🧴 Sunscreen");
+  if(d.hat_required)flags.push("🧢 Hat");
+  if(d.water_breaks_required)flags.push("💧 Water breaks");
+  if(flags.length)peBody.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:6px"},flags.join(" · ")));
+  if(Array.isArray(d.stop_factors)&&d.stop_factors.length){const w=el("div",{style:"margin-top:10px;padding:10px;background:rgba(239,68,68,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--red);margin-bottom:4px"},"⛔ Stop factors"));d.stop_factors.forEach(f=>w.appendChild(el("div",{},"• "+f)));peBody.appendChild(w)}
+  if(Array.isArray(d.caution_factors)&&d.caution_factors.length){const w=el("div",{style:"margin-top:8px;padding:10px;background:rgba(245,158,11,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--amber);margin-bottom:4px"},"⚠️ Caution"));d.caution_factors.forEach(f=>w.appendChild(el("div",{},"• "+f)));peBody.appendChild(w)}
+}).catch(e=>{peBody.textContent="Error: "+e.message});
  wrap.appendChild(pe);
  // XC results card
  const xc=el("div",{class:"fcard"});
@@ -1105,7 +1130,7 @@ upBtn.onclick=async()=>{
     }
     if(url.pathname==='/api/push/vapid'){
       try {
-        const r = await fetch('https://falkor-push.luckdragon.io/vapid/key',{ headers:{'X-Pin':env.AGENT_PIN}});
+        const r = await fetch('https://falkor-push.luckdragon.io/vapid-public-key',{ headers:{'X-Pin':env.AGENT_PIN}});
         return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json',...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
