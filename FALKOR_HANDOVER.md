@@ -155,12 +155,18 @@ Public product demo ladder (also `ssp-portal`):
 |---|---|---|---|---|
 | 10 Boys | Elias D'Souza (#61, 8:06) | Thomas Reid (#62, 8:15) | Luca Galle (#63, 8:22) | William Galle (#64, 8:25) |
 | 10 Girls | Eabha Pease (#29, 9:14) | Chloe Wood (#30, 9:39) | Rose Sexton (#31, 10:29) | Sienna Jordan (#32, 10:47) |
-| 11 Boys | Henry Fielding (#124, 11:36) | Ned Hedditch (#125, 10:22) | Kai Morgan (#126, 13:04) | Bernie MacLeod (#127, 13:14) |
+| 11 Boys | Henry Fielding (#125, 11:36) | Ned Hedditch (#126, 10:22) | Kai Morgan (#127, 13:04) | Bernie MacLeod (#128, 13:14) |
 | 11 Girls | Emilia Rajch (#93, 11:47) | Greta Lovell (#94, 12:16) | Evie Vanderloo (#95, 12:58) | Ava Fleming (#96, 13:36) |
 | 12 Boys | Banjo Kane (#189, 10:40) | Jarvis Sullivan (#190, 11:49) | Otis Lethborg (#191, 12:06) | Hudson Middleton (#192, 12:18) |
 | 12 Girls | Danica Grant (#157) | Lily Sexton (#158, 16:30) | Irida Bladon (#159, 17:50) | Lana Budinoska (#160, 18:30) |
 
-24 WPS runners total. Bib numbers confirmed and live in Firebase district draw.
+24 WPS runners total. Bib numbers confirmed against /wd26 spectator page (source of truth — embedded R{} dictionary).
+
+**Physical bibs status (2026-05-04):** Paddy does NOT have physical bibs printed. Solved Mon 4 May with print-and-pin PDFs:
+- `WD26/WD26_bibs.pdf` (Drive, Luck Dragon 2.0/WD26) — 192 numbered tear-off cards, 4/A4, school-coloured stripe, name + race printed.
+- `WD26/WD26_roster.pdf` — finish-line marshal reference, 1 section per race.
+- Workflow Thursday morning: cut bibs → safety-pin/tape on at warm-up (~9am) → CT marshal mode types bib as runner finishes → /wd26 renders name from embedded R{} dictionary.
+- Sacred Heart bibs (13–16, 45–48, 77–80, 109–112, 141–144, 173–176) printed as "TBC"; if SH attends, write names on the day.
 
 ---
 
@@ -210,6 +216,12 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+
+**WD26 race-day prep (2026-05-04 afternoon):**
+- Generated print-and-pin bib PDF (`WD26_bibs.pdf`) + finish-line roster (`WD26_roster.pdf`) → `H:\My Drive\Luck Dragon 2.0\WD26\` (Drive folder). Resolves "no physical bibs" gap.
+- Corrected 11 Boys WPS bib numbers: handover had 124–127, /wd26 has them at 125–128 (page is source of truth — bib 124 = Banjo Kane WNPS, *not* WPS).
+- Verified end-to-end live: /wd26 200, WS auto-connects to `wss://carnival-timing-ws.../ws/WD26`, ct-access `WPS-2026` validates as ssp/WPS, carnival-results D1 v1.2.0 ready (no WD26 row yet — clean).
+
 
 **Firebase → Cloudflare migration COMPLETE (2026-05-04, e2e session, Phase 2 done):**
 - `/williamstowndistrict` rewritten — Firebase Auth + RTDB removed; new D1-backed page with email magic-link login + `/api/scores` + `/api/users` + admin coach provisioning. Page size shrunk 143 KB → 19 KB.
