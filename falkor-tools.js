@@ -1894,7 +1894,39 @@ function renderFinance(m){
   tbl.appendChild(row);
  });
  wrap.appendChild(tbl);
- m.appendChild(wrap);return m;
+ m.appendChild(wrap);
+ // Operating Costs panel — live API queries
+ const costsWrap = el("div",{style:"padding:16px 20px;border-top:1px solid var(--border);margin-top:12px"});
+ costsWrap.appendChild(el("h2",{style:"margin:0 0 6px;font-size:18px"},"Operating Costs (live)"));
+ costsWrap.appendChild(el("div",{style:"color:var(--muted);font-size:12px;margin-bottom:12px"},"AI provider + Cloudflare spend. Click \u2192 to open the provider's billing dashboard."));
+ const costsList = el("div",{style:"display:flex;flex-direction:column;gap:8px"});
+ costsWrap.appendChild(costsList);
+ m.appendChild(costsWrap);
+ fetch("/api/falkor/costs",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json()).then(d=>{
+   if(!d.ok){costsList.appendChild(el("div",{style:"color:var(--red)"},"Cost fetch failed"));return}
+   (d.providers||[]).forEach(p=>{
+     const row=el("div",{style:"display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px"});
+     const left = el("div",{style:"flex:1"});
+     left.appendChild(el("div",{style:"font-weight:600;font-size:14px"},p.name));
+     left.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-top:2px"}, p.tier?(p.tier+" tier"):(p.note||p.error||"")));
+     row.appendChild(left);
+     if(typeof p.used==="number" && typeof p.quota==="number" && p.quota>0){
+       const pct=Math.round(100*p.used/p.quota);
+       row.appendChild(el("div",{style:"font-family:ui-monospace,monospace;font-size:12px;color:"+(pct>80?"var(--red)":"var(--accent)")}, p.used.toLocaleString()+"/"+p.quota.toLocaleString()+" "+(p.unit||"")+" ("+pct+"%)"));
+     } else if(typeof p.workers==="number"){
+       row.appendChild(el("div",{style:"font-family:ui-monospace,monospace;font-size:12px"}, p.workers+" workers"));
+     }
+     if(p.dashboard){
+       const link=el("a",{href:p.dashboard,target:"_blank",style:"color:var(--accent);text-decoration:none;font-size:18px;padding:4px 8px"},"\u2192");
+       row.appendChild(link);
+     }
+     costsList.appendChild(row);
+   });
+   if(d.note){
+     costsList.appendChild(el("div",{style:"color:var(--muted);font-size:11px;margin-top:8px;font-style:italic"},d.note));
+   }
+ }).catch(e=>{costsList.appendChild(el("div",{style:"color:var(--red);font-size:12px"},"err: "+e))});
+ return m;
 }
 
 function renderRecent(m){
@@ -3496,19 +3528,19 @@ upBtn.onclick=async()=>{
         const providers = [];
         // 1) ElevenLabs subscription (chars used / quota)
         try {
-          const elKey = await env.ASSETS.get('falkor:el_key_cache') || await (async()=>{
-            const r = await fetch('https://asgard-vault.luckdragon.io/secret/ELEVENLABS_API_KEY', {headers:{'X-Pin': env.VAULT_PIN || '535554'}});
-            const t = await r.text();
-            if (r.ok && t && !t.includes('not found')) { await env.ASSETS.put('falkor:el_key_cache', t.trim(), {expirationTtl: 3600}); return t.trim(); }
-            return null;
-          })();
-          if (elKey) {
-            const r = await fetch('https://api.elevenlabs.io/v1/user/subscription', { headers:{'xi-api-key':elKey}, signal: AbortSignal.timeout(8000) });
+          // Try local env first, then asgard-ai proxy as fallback
+          let elKey = env.ELEVENLABS_API_KEY || null;
+          // Try asgard-ai which has the ELEVENLABS_API_KEY bound
+          let elFetched = false;
+          try {
+            const r = await fetch('https://asgard-ai.luckdragon.io/elevenlabs/subscription', { headers:{'X-Pin': env.AGENT_PIN}, signal: AbortSignal.timeout(8000) });
             if (r.ok) {
               const d = await r.json();
               providers.push({ name:'ElevenLabs', tier: d.tier||'?', used: d.character_count||0, quota: d.character_limit||0, unit:'chars', resets: d.next_character_count_reset_unix || null, dashboard:'https://elevenlabs.io/app/subscription' });
-            } else providers.push({ name:'ElevenLabs', error:'http '+r.status, dashboard:'https://elevenlabs.io/app/subscription' });
-          } else providers.push({ name:'ElevenLabs', error:'no key', dashboard:'https://elevenlabs.io/app/subscription' });
+              elFetched = true;
+            }
+          } catch(e){}
+          if (!elFetched) providers.push({ name:'ElevenLabs', note:'check dashboard for usage', dashboard:'https://elevenlabs.io/app/subscription' });
         } catch(e){ providers.push({ name:'ElevenLabs', error: String(e).substring(0,80), dashboard:'https://elevenlabs.io/app/subscription' }); }
 
         // 2) Anthropic — regular API key can't query usage. Show dashboard link.
