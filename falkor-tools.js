@@ -817,12 +817,12 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 button{cursor:pointer}
 button:hover{background:var(--panel2);border-color:var(--accent)}
 button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-weight:600}
-.grid{padding:18px 20px;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-content:start}
-.tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-height:130px}
+.grid{padding:14px 16px;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-content:start}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;gap:0;min-height:130px}
 .tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(255,107,53,.12)}
-.tile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.tile-name{font-size:14px;font-weight:700}
-.tile-cat{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.tile-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tile-name{font-size:13px;font-weight:600;line-height:1.3}
+.tile-cat{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px}
 .badge{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
 .badge.live,.badge.active{background:rgba(34,197,94,.15);color:var(--green)}
 .badge.dev,.badge.building{background:rgba(245,158,11,.15);color:var(--amber)}
@@ -942,8 +942,17 @@ const _initCtx=_loadCtx();
 window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",threads:_initThreads,activeThread:_initActive,threadList:[],chatContext:_initCtx};
 // chat property as a live alias to the active thread array
 Object.defineProperty(window.STATE,"chat",{
-  get:function(){if(!this.threads[this.activeThread])this.threads[this.activeThread]=[];return this.threads[this.activeThread];},
-  set:function(v){this.threads[this.activeThread]=v;},
+  get:function(){
+    if(!this.threads||typeof this.threads!=="object")this.threads={};
+    if(!this.activeThread)this.activeThread="general";
+    if(!Array.isArray(this.threads[this.activeThread]))this.threads[this.activeThread]=[];
+    return this.threads[this.activeThread];
+  },
+  set:function(v){
+    if(!this.threads)this.threads={};
+    if(!this.activeThread)this.activeThread="general";
+    this.threads[this.activeThread]=Array.isArray(v)?v:[];
+  },
   configurable:true
 });
 window.threadKey=function(ctx){return ctx&&ctx.id?("p"+ctx.id):"general";};
@@ -1005,7 +1014,6 @@ function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
 function clearAuth(){localStorage.removeItem("asgard.user")}
 
-setInterval(()=>{try{if(window.STATE&&Array.isArray(STATE.chat))persistChat()}catch(e){}},2000);
 window.render=render;function render(){
  const app=$("#app");app.innerHTML="";
  if(!STATE.user){renderLogin(app);return}
@@ -1307,7 +1315,8 @@ function refreshGrid(){
   const status=(p.status||"").toLowerCase();
   if(status)head.appendChild(el("div",{class:"badge "+status},p.status));
   tile.appendChild(head);
-  if(p.desc)tile.appendChild(el("div",{class:"tile-desc"},p.desc));
+  // desc only on hover via title attr — keeps tile minimal
+  if(p.desc) tile.title = p.desc;
   grid.appendChild(tile);
  }
 }
