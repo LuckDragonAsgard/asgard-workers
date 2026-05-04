@@ -931,30 +931,75 @@ fetch("/api/falkor/heartbeat",{method:"POST"}).catch(()=>{});
   }, 1500);
 })();
 
-window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:(function(){try{return JSON.parse(localStorage.getItem("falkor.chat")||"[]")}catch(e){return[]}})(),chatContext:(function(){try{return JSON.parse(localStorage.getItem("falkor.chatContext")||"null")}catch(e){return null}})()};
+// Multi-thread chat store: STATE.threads = {"general":[turns], "p10":[turns], ...}
+// Active thread key in STATE.activeThread; STATE.chat is a getter alias for current thread
+function _loadThreads(){try{return JSON.parse(localStorage.getItem("falkor.threads")||"{}")}catch(e){return{}}}
+function _loadActive(){try{return localStorage.getItem("falkor.activeThread")||"general"}catch(e){return"general"}}
+function _loadCtx(){try{return JSON.parse(localStorage.getItem("falkor.chatContext")||"null")}catch(e){return null}}
+const _initThreads=_loadThreads();
+const _initActive=_loadActive();
+const _initCtx=_loadCtx();
+window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",threads:_initThreads,activeThread:_initActive,threadList:[],chatContext:_initCtx};
+// chat property as a live alias to the active thread array
+Object.defineProperty(window.STATE,"chat",{
+  get:function(){if(!this.threads[this.activeThread])this.threads[this.activeThread]=[];return this.threads[this.activeThread];},
+  set:function(v){this.threads[this.activeThread]=v;},
+  configurable:true
+});
+window.threadKey=function(ctx){return ctx&&ctx.id?("p"+ctx.id):"general";};
+window.switchThread=async function(ctx){
+  STATE.chatContext=ctx;
+  STATE.activeThread=threadKey(ctx);
+  try{localStorage.setItem("falkor.activeThread",STATE.activeThread);localStorage.setItem("falkor.chatContext",JSON.stringify(ctx||null));}catch(e){}
+  // Load history for this thread if we don't have it yet
+  if(!STATE.threads[STATE.activeThread]||STATE.threads[STATE.activeThread].length===0){
+    await loadChatHistory();
+  }
+  if(typeof render==="function") render();
+};
 window.persistChat=function(){try{
-  // Never clobber existing history with an empty array — that's how we lost the chat before
-  if(STATE.chat&&STATE.chat.length>0){
-    localStorage.setItem("falkor.chat",JSON.stringify(STATE.chat.slice(-50)));
+  // Persist all threads object — never overwrite if it would lose data
+  if(STATE.threads&&Object.keys(STATE.threads).length>0){
+    // Keep last 50 turns per thread
+    const trimmed={};
+    for(const k in STATE.threads){
+      if(Array.isArray(STATE.threads[k])&&STATE.threads[k].length>0){
+        trimmed[k]=STATE.threads[k].slice(-50);
+      }
+    }
+    if(Object.keys(trimmed).length>0){
+      localStorage.setItem("falkor.threads",JSON.stringify(trimmed));
+    }
   }
   localStorage.setItem("falkor.chatContext",JSON.stringify(STATE.chatContext||null));
+  localStorage.setItem("falkor.activeThread",STATE.activeThread||"general");
 }catch(e){}};
 window.loadChatHistory=async function(){
-  // Always pull D1 history so user sees their thread on every reload, regardless of localStorage
   try{
     const projId=STATE.chatContext?.id||"";
     const pin=STATE.agentPin||localStorage.getItem("agentPin")||"2967";
     const r=await fetch("/api/chat/history"+(projId?("?project_id="+projId):""),{headers:{"X-Pin":pin}});
     const d=await r.json();
     if(d.ok && d.turns && d.turns.length){
-      STATE.chat = d.turns.map(t=>({role:t.role,content:t.content}));
+      STATE.threads[STATE.activeThread] = d.turns.map(t=>({role:t.role,content:t.content}));
       persistChat();
       if(typeof render==="function") render();
     }
   }catch(e){console.warn("loadChatHistory failed",e)}
 };
-// Auto-fire 1s after page loads so chat is restored on every reload
-setTimeout(()=>{try{if(window.loadChatHistory)loadChatHistory()}catch(e){}},1000);
+window.loadThreadList=async function(){
+  try{
+    const pin=STATE.agentPin||localStorage.getItem("agentPin")||"2967";
+    const r=await fetch("/api/chat/threads",{headers:{"X-Pin":pin}});
+    const d=await r.json();
+    if(d.ok&&Array.isArray(d.threads)){
+      STATE.threadList=d.threads;
+      if(typeof render==="function") render();
+    }
+  }catch(e){console.warn("loadThreadList failed",e)}
+};
+// Auto-fire 1s after page load: load active thread history + thread list
+setTimeout(()=>{try{if(window.loadChatHistory)loadChatHistory();if(window.loadThreadList)loadThreadList()}catch(e){}},1000);
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
@@ -1293,7 +1338,7 @@ function openModal(p){
   actions.appendChild(el("a",{href:editUrl,target:"_blank",rel:"noopener"},"\u270F Edit code"));
  }
  const cBtn=el("button",{},"\uD83D\uDCAC Chat about this");
- cBtn.addEventListener("click",()=>{STATE.chatContext=p;STATE.chat.push({role:"system",content:"\u2014 Now talking about "+(p.name||"project")+" \u2014"});bg.remove();render();if(window.innerWidth<=720){setTimeout(()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.add("mobile-open")},50)}});
+ cBtn.addEventListener("click",async()=>{await switchThread(p);bg.remove();if(window.innerWidth<=720){setTimeout(()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.add("mobile-open")},50)}});
  actions.appendChild(cBtn);m.appendChild(actions);
  if(p.desc)m.appendChild(el("div",{class:"desc"},p.desc));
  const rows=[
@@ -1340,10 +1385,49 @@ function renderChatPane(){
  closeBtn.addEventListener("click",()=>{const cp=document.querySelector(".chat-pane");if(cp)cp.classList.remove("mobile-open")});
  if(window.innerWidth<=720)closeBtn.style.display="block";
  head.appendChild(closeBtn);
+ // Always-visible thread picker (even in general chat)
+ if(!STATE.chatContext && (STATE.threadList||[]).length>0){
+   const gp=el("select",{style:"margin-left:auto;margin-right:6px;font-size:11px;background:#161c27;border:1px solid #222;border-radius:6px;color:#e6edf6;padding:4px 6px;cursor:pointer"});
+   const og=el("option",{value:"general"},"General");
+   gp.appendChild(og);
+   (STATE.threadList||[]).forEach(t=>{
+     if(!t.id)return;
+     gp.appendChild(el("option",{value:"p"+t.id},(t.name||"Project "+t.id)+" ("+t.turns+")"));
+   });
+   gp.value="general";
+   gp.addEventListener("change",async()=>{
+     const v=gp.value;
+     if(v==="general"){await switchThread(null);} else {
+       const id=parseInt(v.replace(/^p/,""));
+       const t=(STATE.threadList||[]).find(x=>x.id===id);
+       await switchThread(t?{id:t.id,name:t.name}:{id});
+     }
+   });
+   head.appendChild(gp);
+ }
  if(STATE.chatContext){
   head.appendChild(el("span",{style:"margin-left:8px;font-size:11px;color:var(--accent);background:rgba(255,107,53,0.1);padding:3px 8px;border-radius:99px"},"\u2192 "+(STATE.chatContext.name||"project")));
+  // Thread picker dropdown
+  const pickerSelect=el("select",{style:"margin-left:6px;font-size:11px;background:#161c27;border:1px solid #222;border-radius:6px;color:#e6edf6;padding:4px 6px;cursor:pointer"});
+  const optG=el("option",{value:"general"},"General"); pickerSelect.appendChild(optG);
+  (STATE.threadList||[]).forEach(t=>{
+    if(!t.id)return;
+    const o=el("option",{value:"p"+t.id},(t.name||"Project "+t.id)+" ("+t.turns+")");
+    pickerSelect.appendChild(o);
+  });
+  pickerSelect.value=STATE.activeThread||"general";
+  pickerSelect.addEventListener("change",async()=>{
+    const v=pickerSelect.value;
+    if(v==="general"){await switchThread(null);}
+    else{
+      const id=parseInt(v.replace(/^p/,""));
+      const t=(STATE.threadList||[]).find(x=>x.id===id);
+      await switchThread(t?{id:t.id,name:t.name}:{id});
+    }
+  });
+  head.appendChild(pickerSelect);
   const clr=el("button",{style:"margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px",title:"Exit project (keep history)"},"exit");
-  clr.addEventListener("click",()=>{STATE.chatContext=null;STATE.chat.push({role:"system",content:"\u2014 general chat \u2014"});render()});
+  clr.addEventListener("click",async()=>{await switchThread(null);});
   head.appendChild(clr);
   const rst=el("button",{style:"margin-left:6px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px",title:"Wipe chat history from server"},"\ud83d\uddd1 reset");
   rst.addEventListener("click",async()=>{
@@ -3162,6 +3246,24 @@ upBtn.onclick=async()=>{
       const v = await env.ASSETS.get('test:retry_counter') || '0';
       await env.ASSETS.delete('test:retry_counter');
       return Response.json({hits: parseInt(v)}, {headers:{...CORS,...NOCACHE}});
+    }
+    if(url.pathname==='/api/chat/threads'&&request.method==='GET'){
+      try {
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST',
+          headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT project_id, MAX(project_name) as name, COUNT(*) as turns, MAX(created_at) as last_at FROM falkor_chat_history WHERE user_id=? GROUP BY project_id ORDER BY last_at DESC LIMIT 50', params:['paddy']}),
+        });
+        const d = await r.json();
+        const rows = d.result?.[0]?.results || [];
+        const threads = rows.map(r=>({
+          id: r.project_id||null,
+          name: r.name || (r.project_id ? 'Project '+r.project_id : 'General'),
+          turns: r.turns,
+          last_at: r.last_at
+        }));
+        return Response.json({ok:true, threads}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/chat/history'&&request.method==='GET'){
       try {
