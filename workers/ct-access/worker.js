@@ -1,0 +1,233 @@
+// ct-access — Carnival Timing access code management
+// Routes:
+//   POST /validate       — check if a code is valid (public)
+//   POST /create         — create a code (PIN protected)
+//   POST /stripe-webhook — Stripe event → generate code → email customer
+//   GET  /admin/codes    — list recent codes (PIN protected)
+
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Pin",
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...CORS, "Content-Type": "application/json" },
+  });
+}
+
+// Generate a random human-friendly code: AAA-1234
+function genCode() {
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // no I or O
+  const digits  = "0123456789";
+  const arr = crypto.getRandomValues(new Uint8Array(7));
+  const L = (i) => letters[arr[i] % letters.length];
+  const D = (i) => digits[arr[i] % digits.length];
+  return `${L(0)}${L(1)}${L(2)}-${D(3)}${D(4)}${D(5)}${D(6)}`;
+}
+
+async function sendCodeEmail(env, to, code, type, school) {
+  const typeLabel = type === "annual" ? "Annual Unlimited (12 months)"
+    : type === "single" ? "Single Carnival"
+    : `School Sport Portal — ${school || "School"}`;
+
+  const body = {
+    from: "Carnival Timing <hello@carnivaltiming.com>",
+    to: [to],
+    subject: `Your Carnival Timing access code: ${code}`,
+    html: `
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+  <div style="font-size:1.4rem;font-weight:800;color:#0d1b3e;margin-bottom:8px">🏁 Carnival Timing</div>
+  <p style="color:#475569">Thanks for your purchase. Here's your access code:</p>
+  <div style="background:#f0f9ff;border:2px solid #1a56db;border-radius:12px;padding:24px;text-align:center;margin:24px 0">
+    <div style="font-size:2rem;font-weight:900;letter-spacing:0.12em;color:#0d1b3e">${code}</div>
+    <div style="color:#475569;margin-top:8px;font-size:0.9rem">${typeLabel}</div>
+  </div>
+  <p style="color:#475569"><strong>How to use:</strong> Go to <a href="https://carnivaltiming.com" style="color:#1a56db">carnivaltiming.com</a>, tap <em>New Carnival</em>, then enter this code when prompted.</p>
+  <p style="color:#475569">The code is saved to your device — you only need to enter it once.</p>
+  <p style="color:#94a3b8;font-size:0.85rem;margin-top:32px">Questions? Reply to this email or contact hello@schoolsportportal.com.au<br>Luck Dragon Pty Ltd · ABN 697 434 898</p>
+</div>`,
+  };
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  return res.ok;
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
+
+    // ── POST /validate ───────────────────────────────────────────────
+    if (path === "/validate" && request.method === "POST") {
+      const { code } = await request.json().catch(() => ({}));
+      if (!code) return json({ valid: false, error: "No code provided" }, 400);
+
+      const key = `code:${code.toUpperCase().trim()}`;
+      const raw = await env.CT_ACCESS_CODES.get(key);
+      if (!raw) return json({ valid: false, error: "Invalid code" });
+
+      const data = JSON.parse(raw);
+      const now = Date.now();
+
+      // Check expiry
+      if (data.expires && now > data.expires) {
+        return json({ valid: false, error: "Code expired" });
+      }
+
+      // Check uses for single carnival
+      if (data.type === "single" && data.uses_left <= 0) {
+        return json({ valid: false, error: "Code already used" });
+      }
+
+      // Consume a single-carnival use
+      if (data.type === "single") {
+        data.uses_left -= 1;
+        await env.CT_ACCESS_CODES.put(key, JSON.stringify(data));
+      }
+
+      return json({
+        valid: true,
+        type: data.type,
+        school: data.school || null,
+        expires: data.expires || null,
+        message: data.type === "annual" ? "Annual unlimited access"
+          : data.type === "ssp" ? `School Sport Portal — ${data.school}`
+          : "Single carnival access",
+      });
+    }
+
+    // ── POST /create (admin, PIN protected) ──────────────────────────
+    if (path === "/create" && request.method === "POST") {
+      const pin = request.headers.get("X-Pin");
+      if (pin !== env.ADMIN_PIN) return json({ error: "Unauthorized" }, 401);
+
+      const { type, school, email, custom_code } = await request.json().catch(() => ({}));
+      if (!["single", "annual", "ssp"].includes(type)) {
+        return json({ error: "type must be single|annual|ssp" }, 400);
+      }
+
+      const code = custom_code || genCode();
+      const key = `code:${code}`;
+      const now = Date.now();
+
+      const data = {
+        type,
+        school: school || null,
+        email: email || null,
+        created: now,
+        expires: type === "annual" ? now + 365 * 24 * 60 * 60 * 1000
+          : type === "ssp" ? null // never expires
+          : null, // single: no time expiry, uses_left controls it
+        uses_left: type === "single" ? 1 : null,
+      };
+
+      await env.CT_ACCESS_CODES.put(key, JSON.stringify(data), {
+        expirationTtl: type === "annual" ? 366 * 86400
+          : type === "single" ? 180 * 86400 // 6 months to be safe
+          : undefined, // ssp: never expires
+      });
+
+      // Send email if provided
+      if (email) {
+        await sendCodeEmail(env, email, code, type, school);
+      }
+
+      return json({ code, type, school, expires: data.expires });
+    }
+
+    // ── POST /stripe-webhook ─────────────────────────────────────────
+    if (path === "/stripe-webhook" && request.method === "POST") {
+      const body = await request.text();
+      const sig = request.headers.get("stripe-signature");
+
+      // Verify Stripe signature
+      let event;
+      try {
+        // Simple timestamp + signature check
+        const parts = sig.split(",").reduce((acc, p) => {
+          const [k, v] = p.split("=");
+          acc[k] = v;
+          return acc;
+        }, {});
+        const payload = `${parts.t}.${body}`;
+        const key = await crypto.subtle.importKey(
+          "raw",
+          new TextEncoder().encode(env.STRIPE_WEBHOOK_SECRET),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+        const sig_bytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload));
+        const computed = Array.from(new Uint8Array(sig_bytes)).map(b => b.toString(16).padStart(2, "0")).join("");
+        if (computed !== parts.v1) {
+          return json({ error: "Invalid signature" }, 400);
+        }
+        event = JSON.parse(body);
+      } catch (e) {
+        return json({ error: "Webhook error: " + e.message }, 400);
+      }
+
+      if (event.type === "checkout.session.completed" || event.type === "payment_intent.succeeded") {
+        const session = event.data.object;
+        const email = session.customer_details?.email || session.receipt_email || null;
+        const ct_type = session.metadata?.ct_type || "single";
+
+        const code = genCode();
+        const key = `code:${code}`;
+        const now = Date.now();
+
+        const data = {
+          type: ct_type,
+          email,
+          created: now,
+          expires: ct_type === "annual" ? now + 365 * 24 * 60 * 60 * 1000 : null,
+          uses_left: ct_type === "single" ? 1 : null,
+          stripe_session: session.id,
+        };
+
+        await env.CT_ACCESS_CODES.put(key, JSON.stringify(data), {
+          expirationTtl: ct_type === "annual" ? 366 * 86400 : 180 * 86400,
+        });
+
+        if (email) {
+          await sendCodeEmail(env, email, code, ct_type, null);
+        }
+      }
+
+      return json({ received: true });
+    }
+
+    // ── GET /admin/codes ─────────────────────────────────────────────
+    if (path === "/admin/codes" && request.method === "GET") {
+      const pin = request.headers.get("X-Pin");
+      if (pin !== env.ADMIN_PIN) return json({ error: "Unauthorized" }, 401);
+      const list = await env.CT_ACCESS_CODES.list({ prefix: "code:", limit: 100 });
+      return json({ codes: list.keys.map(k => k.name.replace("code:", "")) });
+    }
+
+
+    // ── DELETE /admin/codes/:code ────────────────────────────────────
+    if (path.startsWith("/admin/codes/") && request.method === "DELETE") {
+      const pin = request.headers.get("X-Pin");
+      if (pin !== env.ADMIN_PIN) return json({ error: "Unauthorized" }, 401);
+      const code = decodeURIComponent(path.replace("/admin/codes/", ""));
+      if (!code) return json({ error: "Missing code" }, 400);
+      await env.CT_ACCESS_CODES.delete("code:" + code);
+      return json({ deleted: code });
+    }
+
+    return json({ error: "Not found" }, 404);
+  },
+};
