@@ -1465,7 +1465,7 @@ function renderTools(m){
    ["Vercel Dashboard","https://vercel.com/dashboard","\u25B2 Vercel deploys"],
    ["Supabase","https://supabase.com/dashboard/projects","\uD83D\uDDC4 Postgres"],
    ["Google Drive","https://drive.google.com","\uD83D\uDCC1 Drive"],
-   ["Connect Google Drive","https://asgard-ai.luckdragon.io/google/oauth-start","\uD83D\uDD17 Re-auth Drive (do once if Drive tools fail with token-expired)"],
+   ["Connect Google Drive","/connect-drive?slot=ld","\uD83D\uDD17 Re-auth Drive (one click — auto-redirects to Google)"],
    ["Asgard Vault","https://asgard-vault.pgallivan.workers.dev/secrets","\uD83D\uDD11 Secrets (PIN required)"],
   ]},
   {title:"Falkor APIs",items:[
@@ -2358,7 +2358,20 @@ upBtn.onclick=async()=>{
       }
     }
 
-    if(url.pathname==='/api/weather'){
+    if(url.pathname==='/connect-drive'){
+      // Public link: hits asgard-ai oauth-start with slot=ld + X-Pin server-side, redirects user to Google OAuth.
+      try {
+        const slot = url.searchParams.get('slot') || 'ld';
+        const r = await fetch('https://asgard-ai.luckdragon.io/google/oauth-start?slot='+encodeURIComponent(slot), { headers:{ 'X-Pin': env.AGENT_PIN } });
+        const txt = await r.text();
+        const m = txt.match(/(https:\/\/accounts\.google\.com\/[^\s\r\n]+)/);
+        if (!m) return new Response('No OAuth URL: '+txt.substring(0,200), {status:500});
+        return Response.redirect(m[1], 302);
+      } catch(e) {
+        return new Response('connect-drive failed: '+String(e).substring(0,200), {status:500});
+      }
+    }
+        if(url.pathname==='/api/weather'){
       try {
         const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-37.86&longitude=144.9&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Australia/Melbourne&forecast_days=3");
         const d = await r.json();
