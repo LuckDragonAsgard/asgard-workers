@@ -1152,7 +1152,7 @@ function clearAuth(){localStorage.removeItem("asgard.user")}
   window.addEventListener("error", e => _report({message:e.message,stack:e.error?.stack||"",url:e.filename,line:e.lineno,col:e.colno}));
   window.addEventListener("unhandledrejection", e => _report({message:"unhandled-rejection: "+String(e.reason).substring(0,300),stack:e.reason?.stack||""}));
 })();
-window.render=render;});function render(){
+window.render=render;function render(){
  const app=$("#app");app.innerHTML="";
  if(!STATE.user){renderLogin(app);return}
  app.appendChild(renderShell());
