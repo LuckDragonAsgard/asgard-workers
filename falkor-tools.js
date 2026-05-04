@@ -2554,13 +2554,14 @@ upBtn.onclick=async()=>{
         if(!year || !round) return Response.json({ok:false, error:'year and round required'},{status:400,headers:{...CORS,...NOCACHE}});
         
         // Fetch completed games from Squiggle
-        const gRes = await fetch('https://api.squiggle.com.au/?q=games;year='+year+';round='+round+';complete=100&format=json', {headers:{'User-Agent':'Falkor/1.0'}});
-        const games = await gRes.json();
+        const gRes = await fetch('https://api.squiggle.com.au/?q=games;year='+year+';round='+round+';complete=100&format=json', {headers:{'User-Agent':'Falkor/1.0 (paddy@luckdragon.io)'}});
+        const gData = await gRes.json();
+        const gamesList = Array.isArray(gData) ? gData : (gData.games || []);
         
         // Build winner map: game_id -> winner team name
         const winners = {};
         const breakdown = [];
-        for (const g of games) {
+        for (const g of gamesList) {
           let winner = null;
           if (g.hscore > g.ascore) winner = g.hteam;
           else if (g.ascore > g.hscore) winner = g.ateam;
