@@ -252,7 +252,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const ghd = await ghr.json();
               const code = atob(ghd.content.replace(/\n/g,''));
               // Deploy via CF API multipart
-              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace','d1','queue','r2_bucket','analytics_engine'] };
+              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace'] };
               const boundary = '----b42deploy'+Date.now();
               const body = new TextEncoder().encode(
                 '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
