@@ -325,3 +325,50 @@ Paddy will likely say one of:
 - A fresh project ask → ask which project, then proceed.
 
 Per project instructions, this file is auto-fetched at chat start. Brief Paddy from the **Sport Portal — what's NEXT** section first.
+
+
+---
+
+## Family Finance pages — IP cascade calculators (May 2026)
+
+Three Cloudflare workers built to model the Footscray-Williamstown property cascade between Paddy/Jacky, Kelly, and Monica. All three deployed and live as of 2026-05-04.
+
+### URLs
+- **Paddy & Jacky** — https://paddy-finance.pgallivan.workers.dev (3-property portfolio: Cecil St PPOR, North Rd Newport IP, Osborne St becoming IP)
+- **Kelly** — https://kelly-finance.pgallivan.workers.dev (713/90 Buckley as IP, moving to Osborne)
+- **Monica** — https://monica-finance.pgallivan.workers.dev (308/90 Buckley as IP, moving to 713)
+
+### Architecture
+- Single `worker.js` per page, plain HTML+inline CSS+JS. No frameworks, no D1, no KV.
+- Source files: `/tmp/kelly_v9.js`, `/tmp/monica_v8.js`, `/tmp/paddy_v9.js` in the active session sandbox.
+- Deploy via CF API multipart PUT to `accounts/$ACCOUNT/workers/scripts/<name>-finance` with `metadata.main_module = "worker.js"`.
+
+### What each page does (parity feature set)
+- Hero: net weekly cashflow + CGT 6-yr-rule savings.
+- Long-term wealth banner: 10-year wealth built, equity, CGT avoided, break-even/portfolio summary.
+- Before-vs-after IP comparison with diff bar (positive = better off, negative = worse).
+- Tax math correctly nets rental income against deductions before applying marginal rate (was a bug — fixed).
+- Inputs: salary, loan, rate, repayment, rents in/out, body corp, rates, insurance, maintenance, depreciation, land tax, other deductibles, vacancy %, rent growth %, cost growth %.
+- IP/OO toggle that bumps rate +0.5% on IP and recalculates.
+- PPOR designation warning explaining only one property at a time can be CGT-exempt.
+- Action plan / next-steps panel.
+- Mobile-friendly: viewport meta + 600px media queries collapsing all grids to single column.
+
+### Deploy gotchas
+- **CF API token vault**: `https://asgard-vault.pgallivan.workers.dev/secret/CF_API_TOKEN` with `X-Pin: 535554`.
+- **CF account ID**: `a6f47c17811ee2f8b6caeb8f38768c20`.
+- **No D1 binding needed** — these are pure HTML responses, not DB-backed.
+- File-tool writes to outputs/ are NOT visible to bash sandbox (one-way Win→Linux mount). Either write directly via bash heredoc, or write to `Luck Dragon 2.0` mount which IS shared. Lost an hour to this on May 4.
+
+### Optimised defaults baked in
+All three pages now open with cashflow-near-neutral assumptions: refinanced rate 5.5%, proper QS depreciation reports ($13k Kelly / $11k Monica), top-of-market rents, $2k/yr other deductibles, vacancy 2-4%, land tax pre-filled (apartments $0 under VIC threshold; Paddy NR $7k + Osborne $9k). Each page shows a green "optimised defaults applied" note above the calculator.
+
+### Current state at default values
+- **Kelly**: weekly diff -$41/wk, +$441k wealth built over 10 yrs.
+- **Monica**: weekly diff -$83/wk, +$368k wealth built over 10 yrs.
+- **Paddy & Jacky**: $3.76M combined IP value at year 10, $3.23M equity, $332k Cecil St paid down by IPs.
+
+### Known limits
+- Without going interest-only, Monica's diff cannot reach $0/wk within ATO market-rate constraints (cascade is structurally biased against the bottom rung).
+- Banner break-even year shows 30+ for Kelly/Monica because both rent-in and rent-out grow at same 3%/yr rate — gap doesn't close.
+- Real-world Paddy is positively-geared once Osborne is IP (no Osborne loan), so net tax position is small additional liability not refund — labeled clearly on the banner.
