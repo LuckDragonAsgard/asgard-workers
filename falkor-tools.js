@@ -2,7 +2,416 @@
 const PROJECTS_API = 'https://falkor-dashboard.luckdragon.io/api/projects';
 const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
+
+const AGENT_TOOLS = [
+          { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
+            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
+          { name:'read_file', description:'Read a file from the project repo.',
+            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path to file in repo' } }, required:['path'] } },
+          { name:'write_file', description:'Write/overwrite a file in the project repo and commit. Use after the user confirms a change.',
+            input_schema:{ type:'object', properties:{ path:{ type:'string' }, content:{ type:'string' }, message:{ type:'string', description:'Commit message' } }, required:['path','content','message'] } },
+          { name:'update_project_metadata', description:"Update this project metadata in the Asgard D1 products table. Use to fix URL, status, dates, costs, revenue projections, descriptions. Auto-stamps last_updated.",
+            input_schema:{ type:'object', properties:{
+              live_url:{type:'string'},
+              github_url:{type:'string'},
+              status:{type:'string',description:'live | active | dev | building | idea | merged | archived | dormant'},
+              description:{type:'string'},
+              cost_monthly:{type:'number'},
+              cost_notes:{type:'string'},
+              revenue_y1:{type:'number'},
+              revenue_y2:{type:'number'},
+              revenue_y3:{type:'number'},
+              next_action:{type:'string'},
+              progress_pct:{type:'number'},
+              notes:{type:'string'},
+            }, required:[] } },
+          { name:'web_fetch', description:"Fetch a URL over HTTP. Returns response status, headers, and body (truncated to 30KB). Use for reading docs, JSON APIs, etc.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'}, method:{type:'string',description:'GET/POST/etc, default GET'}, body:{type:'string'}, headers:{type:'object'} }, required:['url'] } },
+          { name:'web_search', description:"Search the web via DuckDuckGo. Returns top 5 results with title + snippet + URL.",
+            input_schema:{ type:'object', properties:{ query:{type:'string'} }, required:['query'] } },
+          { name:'run_d1_query', description:"Run a SQL query against the Asgard D1 products database. Tables: products (50 projects), spend_log, deployments, audit_log, conversations, messages, etc. Use SELECT for reads, UPDATE for changes (be careful). Use ? params to avoid SQL injection.",
+            input_schema:{ type:'object', properties:{ sql:{type:'string'}, params:{type:'array', items:{}} }, required:['sql'] } },
+          { name:'vault_get', description:"Fetch a secret value from asgard-vault by key name. Use for tokens/credentials. Available keys: ANTHROPIC_API_KEY, GITHUB_TOKEN, CF_API_TOKEN, RESEND_API_KEY, STRIPE_SECRET_KEY, SUPABASE_*, etc.",
+            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
+          { name:'cf_deploy_worker', description:"Re-deploy a Cloudflare worker from the latest source in LuckDragonAsgard/asgard-workers GitHub repo. Use after editing a worker file via write_file. Existing bindings are preserved.",
+            input_schema:{ type:'object', properties:{ name:{type:'string',description:'Worker name e.g. falkor-tools, falkor-agent'} }, required:['name'] } },
+          { name:'list_workers', description:"List all Cloudflare workers in the account with their last-modified time. Use to see the fleet.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'browser_navigate', description:"Navigate the user's Chrome browser to a URL (active tab). Requires the Falkor Browser Bridge extension to be installed and connected.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'}, tabId:{type:'number'} }, required:['url'] } },
+          { name:'browser_screenshot', description:"Capture a screenshot of the user's current browser viewport as PNG. Returns base64.",
+            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
+          { name:'browser_click', description:"Click an element in the user's browser. Provide either CSS selector or x,y coordinates.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, x:{type:'number'}, y:{type:'number'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_type', description:"Type text into an input/textarea in the user's browser. Provide selector to target element.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, text:{type:'string'}, tabId:{type:'number'} }, required:['text'] } },
+          { name:'browser_press_key', description:"Press a key in the user's browser (Enter, Tab, Escape, etc.).",
+            input_schema:{ type:'object', properties:{ key:{type:'string'}, tabId:{type:'number'} }, required:['key'] } },
+          { name:'browser_extract', description:"Extract text from the user's browser. Without selector returns full page text. With selector returns matching element details.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_get_html', description:"Get the HTML of the user's browser page or a specific element.",
+            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
+          { name:'browser_eval', description:"Run arbitrary JavaScript in the user's browser page context. Returns the value of the last expression.",
+            input_schema:{ type:'object', properties:{ code:{type:'string'}, tabId:{type:'number'} }, required:['code'] } },
+          { name:'browser_tabs', description:"List all open tabs in the user's browser.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'browser_new_tab', description:"Open a new tab in the user's browser.",
+            input_schema:{ type:'object', properties:{ url:{type:'string'} }, required:[] } },
+          { name:'browser_close_tab', description:"Close a tab in the user's browser by tabId.",
+            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
+          { name:'browser_scroll', description:"Scroll the user's browser page by x,y pixels. Set absolute=true to scroll to position instead of by delta.",
+            input_schema:{ type:'object', properties:{ x:{type:'number'}, y:{type:'number'}, absolute:{type:'boolean'} }, required:[] } },
+          { name:'generate_image', description:"Generate an image from a text prompt via asgard-ai image generation (Flux / SDXL / Gemini Imagen depending on availability). Returns a URL or base64 of the generated PNG.",
+            input_schema:{ type:'object', properties:{ prompt:{type:'string'}, model:{type:'string',description:'optional model hint: flux, sdxl, gemini'}, width:{type:'number'}, height:{type:'number'} }, required:['prompt'] } },
+          { name:'cf_kv_list', description:"List keys in the falkor-tools ASSETS KV namespace, with optional prefix filter. Useful for browsing uploaded mascots or browser results.",
+            input_schema:{ type:'object', properties:{ prefix:{type:'string'} }, required:[] } },
+          { name:'cf_kv_get', description:"Get a value from the ASSETS KV namespace by key.",
+            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
+          { name:'save_memory', description:"Save a fact to long-term memory about this user. Use when user says 'remember that X' or whenever you learn something durable about their preferences, work style, or platform.",
+            input_schema:{ type:'object', properties:{ fact:{type:'string'}, category:{type:'string',description:'profile, preferences, platform, project, style, etc.'}, importance:{type:'number',description:'1-10, default 5'} }, required:['fact'] } },
+          { name:'recall_memory', description:"Search remembered facts about the user. Returns matching memories.",
+            input_schema:{ type:'object', properties:{ query:{type:'string',description:'optional keyword filter'}, category:{type:'string',description:'optional category filter'} }, required:[] } },
+          { name:'list_memories', description:"List all stored memories for this user, sorted by importance.",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'delete_memory', description:"Delete a stored memory by id. Use when user says 'forget X'.",
+            input_schema:{ type:'object', properties:{ id:{type:'number'} }, required:['id'] } },
+          { name:'self_heal_worker', description:"Trigger Falkor's self-healing routine on a Cloudflare worker (via falkor-code). Restarts unhealthy workers, redeploys from GitHub if missing.",
+            input_schema:{ type:'object', properties:{ name:{type:'string',description:'worker name, omit to heal whole fleet'} }, required:[] } },
+          { name:'fleet_health', description:"Get health + version of every worker in the fleet (via falkor-code /workers).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'vector_remember', description:"Store a fact in the falkor-brain Vectorize index for semantic recall (richer than D1 memory). Use for things you want to look up later by meaning, not just keyword.",
+            input_schema:{ type:'object', properties:{ text:{type:'string'}, source:{type:'string'} }, required:['text'] } },
+          { name:'vector_recall', description:"Semantic search the falkor-brain Vectorize index. Returns top-K most similar facts to a query.",
+            input_schema:{ type:'object', properties:{ query:{type:'string'}, k:{type:'number'} }, required:['query'] } },
+          { name:'afl_ladder', description:"Live AFL ladder via Squiggle API (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'nrl_ladder', description:"Live NRL ladder via nrl.com API (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'racing_comp', description:"Family racing tipping competition leaderboard + today's picks (falkor-sport).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'pe_advisor', description:"Get PE outdoor lesson advice for today — temperature, UV, conditions, recommendation (falkor-school /pe-advisor).",
+            input_schema:{ type:'object', properties:{}, required:[] } },
+          { name:'xc_results', description:"Cross-country results for a date (falkor-school /xc/results).",
+            input_schema:{ type:'object', properties:{ date:{type:'string',description:'YYYY-MM-DD'} }, required:[] } },
+          { name:'kbt_game_status', description:"Get status of a live KBT trivia game by code (falkor-kbt).",
+            input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
+        ];
 const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
+
+
+async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
+          const needRepo = ['list_files','read_file','write_file','cf_deploy_worker'].includes(name);
+          if (needRepo && !owner && name !== 'cf_deploy_worker') {
+            // cf_deploy_worker pulls from a fixed repo, others need project repo
+            return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
+          }
+          if (name === 'list_files') {
+            const p = (input.path||'').replace(/^\//,'');
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'list_files HTTP '+r.status };
+            const d = await r.json();
+            if (!Array.isArray(d)) return { error:'Path is a file, not a directory' };
+            return { files: d.map(f => ({ name:f.name, type:f.type, size:f.size })) };
+          }
+          if (name === 'read_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'read_file HTTP '+r.status };
+            const d = await r.json();
+            if (!d.content) return { error:'No content (might be a directory)' };
+            const decoded = atob(d.content.replace(/\n/g,''));
+            return { path:p, sha:d.sha, content: decoded.length>40000 ? decoded.substring(0,40000)+String.fromCharCode(10)+"[truncated]" : decoded };
+          }
+          if (name === 'update_project_metadata') {
+            if (!project || !project.id) return { error:'No project id; cannot update metadata.' };
+            const allowed = ['live_url','github_url','status','description','cost_monthly','cost_notes','revenue_y1','revenue_y2','revenue_y3','next_action','progress_pct','notes'];
+            const sets = []; const params = [];
+            for (const k of allowed) {
+              if (input[k] !== undefined) { sets.push(k+' = ?'); params.push(input[k]); }
+            }
+            if (sets.length === 0) return { error:'No fields to update' };
+            sets.push("last_updated = datetime('now')");
+            params.push(project.id);
+            const sql = "UPDATE products SET "+sets.join(', ')+" WHERE id = ?";
+            const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+              method:'POST',
+              headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+              body: JSON.stringify({ sql, params }),
+            });
+            const d = await r.json();
+            if (!d.success) return { error:'D1 update failed', detail: JSON.stringify(d.errors||[]).substring(0,300) };
+            return { ok:true, updated_fields: Object.keys(input), changes: d.result?.[0]?.meta?.changes };
+          }
+          if (name === 'web_fetch') {
+            try {
+              const r = await fetch(input.url, { method: input.method||'GET', headers: input.headers||{}, body: input.body });
+              const text = await r.text();
+              return { status: r.status, headers: Object.fromEntries(r.headers.entries()), body: text.length>30000 ? text.substring(0,30000)+'...[truncated]' : text };
+            } catch(e) { return { error: 'fetch failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'web_search') {
+            try {
+              const u = 'https://html.duckduckgo.com/html/?q='+encodeURIComponent(input.query||'');
+              const r = await fetch(u, { headers: { 'User-Agent':'Mozilla/5.0' } });
+              const html = await r.text();
+              // crude extraction of result-link blocks
+              const results = [];
+              const re = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>(.*?)<\/a>/g;
+              let m;
+              while((m = re.exec(html)) && results.length < 5) {
+                const strip = s => s.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#x27;/g,"'");
+                let url = m[1]; const um = url.match(/uddg=([^&]+)/); if(um) url = decodeURIComponent(um[1]);
+                results.push({ title: strip(m[2]).trim(), url, snippet: strip(m[3]).trim() });
+              }
+              return { query: input.query, results };
+            } catch(e) { return { error: 'search failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'run_d1_query') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql: input.sql, params: input.params||[] }),
+              });
+              const d = await r.json();
+              if (!d.success) return { error: 'D1 error', detail: JSON.stringify(d.errors||[]).substring(0,400) };
+              const rows = d.result?.[0]?.results || [];
+              const meta = d.result?.[0]?.meta || {};
+              return { rows: rows.length>50 ? rows.slice(0,50) : rows, total: rows.length, meta };
+            } catch(e) { return { error: 'query failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'vault_get') {
+            try {
+              const r = await fetch(env.VAULT_URL+'/secret/'+encodeURIComponent(input.key||''), { headers: { 'X-Pin': env.VAULT_PIN } });
+              if (!r.ok) return { error: 'vault HTTP '+r.status };
+              const text = await r.text();
+              if (text.startsWith('{') && text.includes('"error"')) return { error: text.substring(0,200) };
+              return { key: input.key, value: text };
+            } catch(e) { return { error: 'vault fetch failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'cf_deploy_worker') {
+            try {
+              const wname = (input.name||'').replace(/[^a-zA-Z0-9-]/g,'');
+              if (!wname) return { error: 'worker name required' };
+              // Pull source from GitHub
+              const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
+              if (!ghr.ok) return { error: 'worker source not found in repo: '+wname+'.js (HTTP '+ghr.status+')' };
+              const ghd = await ghr.json();
+              const code = atob(ghd.content.replace(/\n/g,''));
+              // Deploy via CF API multipart
+              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace'] };
+              const boundary = '----b42deploy'+Date.now();
+              const body = new TextEncoder().encode(
+                '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
+                '--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n'+
+                code+'\r\n--'+boundary+'--\r\n'
+              );
+              const dr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname, {
+                method:'PUT',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'multipart/form-data; boundary='+boundary },
+                body,
+              });
+              const dd = await dr.json();
+              if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
+              return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha };
+            } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
+          }
+          // Helper to dispatch browser commands via Chrome extension bridge
+          async function browserDispatch(action, input) {
+            const cmdId = 'b_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+            // append to queue
+            const queue = await env.ASSETS.get('browser:queue', { type:'json' }) || [];
+            queue.push({ id: cmdId, action, input });
+            await env.ASSETS.put('browser:queue', JSON.stringify(queue));
+            // poll for result up to 25s
+            const deadline = Date.now() + 45000;
+            while (Date.now() < deadline) {
+              await new Promise(r => setTimeout(r, 400));
+              const res = await env.ASSETS.get('browser:result:'+cmdId);
+              if (res) {
+                await env.ASSETS.delete('browser:result:'+cmdId);
+                try { return JSON.parse(res); } catch(e) { return { error:'bad result' }; }
+              }
+            }
+            return { error: 'browser timeout — is the Falkor Bridge extension installed and connected?' };
+          }
+          if (name === 'generate_image') {
+            try {
+              const r = await fetch('https://asgard-ai.luckdragon.io/image/generate', {
+                method:'POST',
+                headers:{ 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN },
+                body: JSON.stringify({ prompt: input.prompt, model: input.model, width: input.width, height: input.height }),
+              });
+              const text = await r.text();
+              try { const d = JSON.parse(text); return d; }
+              catch(e) { return { ok:false, error: 'image gen returned non-json', body: text.substring(0,300) }; }
+            } catch(e) { return { error: 'image gen failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'cf_kv_list') {
+            try {
+              const u = 'https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/storage/kv/namespaces/84ba4a49116b4e62913498de3dbacfa5/keys'+(input.prefix?'?prefix='+encodeURIComponent(input.prefix):'');
+              const r = await fetch(u, { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
+              const d = await r.json();
+              return { keys: (d.result||[]).map(k => k.name) };
+            } catch(e) { return { error: 'kv list failed' }; }
+          }
+          if (name === 'cf_kv_get') {
+            try {
+              const v = await env.ASSETS.get(input.key);
+              return { key: input.key, value: v ? (v.length>5000 ? v.substring(0,5000)+'...[truncated]' : v) : null };
+            } catch(e) { return { error: 'kv get failed' }; }
+          }
+          if (name === 'save_memory') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST',
+                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)", params:["paddy", input.category||"general", input.fact, "agent", input.importance||5] }),
+              });
+              const d = await r.json();
+              if (!d.success) return { error:'save failed', detail: JSON.stringify(d.errors||[]) };
+              return { ok:true, id: d.result?.[0]?.meta?.last_row_id, fact: input.fact };
+            } catch(e){ return { error:'save failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'recall_memory') {
+            try {
+              let sql = 'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy"';
+              const params = [];
+              if (input.category) { sql += ' AND category = ?'; params.push(input.category); }
+              if (input.query) { sql += ' AND fact LIKE ?'; params.push('%'+input.query+'%'); }
+              sql += ' ORDER BY importance DESC, created_at DESC LIMIT 30';
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql, params }),
+              });
+              const d = await r.json();
+              return { memories: d.result?.[0]?.results || [] };
+            } catch(e){ return { error: 'recall failed' }; }
+          }
+          if (name === 'list_memories') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy" ORDER BY importance DESC, created_at DESC' }),
+              });
+              const d = await r.json();
+              return { memories: d.result?.[0]?.results || [] };
+            } catch(e){ return { error: 'list failed' }; }
+          }
+          if (name === 'delete_memory') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
+                body: JSON.stringify({ sql:'DELETE FROM falkor_memory WHERE id = ? AND user_id="paddy"', params:[input.id] }),
+              });
+              const d = await r.json();
+              return { ok: !!d.success, deleted: d.result?.[0]?.meta?.changes };
+            } catch(e){ return { error: 'delete failed' }; }
+          }
+          const sportPin = env.AGENT_PIN;
+          const ghHeadersForBrain = { 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN };
+          if (name === 'self_heal_worker') {
+            try {
+              const r = await fetch('https://falkor-code.luckdragon.io/self-heal', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify(input.name ? { worker: input.name } : {}),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok:r.ok, body: text.substring(0,400) }; }
+            } catch(e){ return { error:'self-heal failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'fleet_health') {
+            try {
+              const r = await fetch('https://falkor-code.luckdragon.io/workers', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error:'fleet check failed' }; }
+          }
+          if (name === 'vector_remember') {
+            try {
+              const r = await fetch('https://falkor-brain.luckdragon.io/remember', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify({ text: input.text, source: input.source || 'agent' }),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,300) }; }
+            } catch(e){ return { error: String(e).substring(0,200) }; }
+          }
+          if (name === 'vector_recall') {
+            try {
+              const r = await fetch('https://falkor-brain.luckdragon.io/recall', {
+                method:'POST', headers: ghHeadersForBrain,
+                body: JSON.stringify({ query: input.query, k: input.k || 5 }),
+              });
+              const text = await r.text();
+              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,500) }; }
+            } catch(e){ return { error: String(e).substring(0,200) }; }
+          }
+          if (name === 'afl_ladder') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/afl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'afl ladder failed' }; }
+          }
+          if (name === 'nrl_ladder') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/nrl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'nrl ladder failed' }; }
+          }
+          if (name === 'racing_comp') {
+            try {
+              const r = await fetch('https://falkor-sport.luckdragon.io/racing/comp?pin='+encodeURIComponent(env.AGENT_PIN));
+              return await r.json();
+            } catch(e){ return { error: 'racing comp failed' }; }
+          }
+          if (name === 'pe_advisor') {
+            try {
+              const r = await fetch('https://falkor-school.luckdragon.io/pe-advisor', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'pe advisor failed' }; }
+          }
+          if (name === 'xc_results') {
+            try {
+              const url = 'https://falkor-school.luckdragon.io/xc/results' + (input.date ? '?date='+input.date : '');
+              const r = await fetch(url, { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'xc results failed' }; }
+          }
+          if (name === 'kbt_game_status') {
+            try {
+              const r = await fetch('https://falkor-kbt.luckdragon.io/game/'+encodeURIComponent(input.code||'')+'/status', { headers:{ 'X-Pin': env.AGENT_PIN } });
+              return await r.json();
+            } catch(e){ return { error: 'kbt status failed' }; }
+          }
+          if (name && name.startsWith('browser_')) {
+            const action = name.replace('browser_','');
+            return await browserDispatch(action, input);
+          }
+          if (name === 'list_workers') {
+            try {
+              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts', { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
+              const d = await r.json();
+              if (!d.success) return { error: 'list failed' };
+              return { workers: d.result.map(w => ({ name: w.id, modified: w.modified_on })) };
+            } catch(e) { return { error: 'list failed: '+String(e).substring(0,200) }; }
+          }
+          if (name === 'write_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            // get sha if exists
+            let sha=null;
+            try {
+              const r0 = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+              if (r0.ok) { const d0 = await r0.json(); sha = d0.sha; }
+            } catch(e){}
+            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))), branch: defaultBranch };
+            if (sha) payload.sha = sha;
+            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            const d = await r.json();
+            if (!r.ok) return { error:'write_file HTTP '+r.status, detail: d.message || JSON.stringify(d).substring(0,300) };
+            return { ok:true, commit: d.commit?.sha?.substring(0,7), html_url: d.commit?.html_url, path: p };
+          }
+          return { error:'Unknown tool: '+name };
+}
 
 const HTML = `<!doctype html>
 <html lang="en"><head>
@@ -600,52 +1009,87 @@ function renderChatPane(){
   inp.value="";refreshChat();
   btn.disabled=true;
   try{
-   // Always route through agent-chat — has full toolset (web/D1/CF/browser/etc.)
-   const r=await fetch("/api/agent-chat",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
-   const d=await r.json();
-   let reply=d.reply||d.error||"No response";
-   if(d.tool_calls&&d.tool_calls.length){
-    const summary=d.tool_calls.map(t=>{
-     const o=t.output||{};
-     if(t.tool==="write_file"&&o.ok)return "Edited "+o.path+" (commit "+o.commit+")";
-     if(t.tool==="write_file"&&o.error)return "Edit FAILED: "+o.error;
-     if(t.tool==="read_file"&&!o.error)return "Read "+t.input.path;
-     if(t.tool==="list_files"&&!o.error)return "Listed "+(t.input.path||"/");
-     if(t.tool==="run_d1_query"&&!o.error)return "SQL ("+(o.total||0)+" rows)";
-     if(t.tool==="web_fetch"&&!o.error)return "Fetched "+(t.input.url||"").substring(0,50);
-     if(t.tool==="web_search"&&!o.error)return "Searched: "+(t.input.query||"");
-     if(t.tool==="vault_get"&&!o.error)return "Got secret "+t.input.key;
-     if(t.tool==="cf_deploy_worker"&&o.ok)return "Deployed "+o.worker;
-     if(t.tool==="list_workers"&&!o.error)return "Listed workers";
-     if(t.tool&&t.tool.startsWith("browser_"))return t.tool.replace("browser_","")+(o.error?" FAILED: "+o.error:" ok");
-     if(t.tool==="update_project_metadata"&&o.ok)return "Updated "+(t.input?Object.keys(t.input).join(","):"")+" fields";
-     return t.tool+" -> "+(o.error?"err: "+o.error:"ok");
-    }).join(" \u00b7 ");
-    reply=reply+String.fromCharCode(10,10)+"["+summary+"]";
+   // Streaming: route through agent-chat-stream — tokens arrive word-by-word
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
+   if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
+   // Convert pending placeholder into live streaming bubble
+   const live = STATE.chat[STATE.chat.length-1];
+   if(live && live.pending){ live.pending=false; live.streaming=true; live.content=""; }
+   refreshChat();
+   const reader=r.body.getReader();
+   const td=new TextDecoder();
+   let buf="";
+   let toolCalls=[];
+   let images=[];
+   let liveSummary=[];
+   while(true){
+    const{done,value}=await reader.read();
+    if(done)break;
+    buf+=td.decode(value,{stream:true});
+    let nl;
+    while((nl=buf.indexOf(String.fromCharCode(10)))!==-1){
+     const line=buf.slice(0,nl);buf=buf.slice(nl+1);
+     if(!line.trim())continue;
+     let ev;try{ev=JSON.parse(line)}catch(e){continue}
+     if(ev.type==="token"){
+      live.content+=ev.text;
+      refreshChat();
+     } else if(ev.type==="tool_start"){
+      live.resultMood="thinking";
+      refreshChat();
+     } else if(ev.type==="tool_call"){
+      const t=ev.tool;
+      const i=ev.input||{};
+      let label=t;
+      if(t==="write_file")label="Editing "+i.path;
+      else if(t==="read_file")label="Reading "+i.path;
+      else if(t==="run_d1_query")label="SQL query";
+      else if(t==="web_fetch")label="Fetching "+(i.url||"").substring(0,40);
+      else if(t==="web_search")label="Searching: "+(i.query||"");
+      else if(t==="vault_get")label="Getting secret";
+      else if(t==="cf_deploy_worker")label="Deploying "+(i.name||"worker");
+      else if(t==="generate_image")label="Drawing image";
+      else if(t&&t.startsWith("browser_"))label=t.replace("browser_","");
+      liveSummary.push(label);
+      live.toolStatus="["+liveSummary.join(" \u00b7 ")+"]";
+      refreshChat();
+     } else if(ev.type==="tool_result"){
+      if(liveSummary.length){
+       const last=liveSummary[liveSummary.length-1];
+       liveSummary[liveSummary.length-1]=last+(ev.output_summary&&ev.output_summary.startsWith("err")?" \u2716":" \u2713");
+       live.toolStatus="["+liveSummary.join(" \u00b7 ")+"]";
+       refreshChat();
+      }
+     } else if(ev.type==="done"){
+      toolCalls=ev.tool_calls||[];
+      images=ev.images||[];
+     } else if(ev.type==="error"){
+      live.content+=String.fromCharCode(10)+"Error: "+ev.message;
+      refreshChat();
+     }
+    }
    }
-   // Surface image gen outputs inline
-   const images = (d.tool_calls||[]).flatMap(t => {
-    const o = t.output || {};
-    if(t.tool === "generate_image" && (o.image_url || o.url || o.base64)) {
-     return [{ src: o.image_url || o.url || ("data:image/png;base64,"+o.base64) }];
-    }
-    if(t.tool === "browser_screenshot" && o.base64) {
-     return [{ src: "data:"+(o.content_type||"image/png")+";base64,"+o.base64, caption: o.url || "" }];
-    }
-    return [];
-   });
-   // Remove the pending placeholder, push real reply
-   if(STATE.chat.length && STATE.chat[STATE.chat.length-1].pending) STATE.chat.pop();
-   const hadErr = (d.tool_calls||[]).some(t => t.output?.error);
-   STATE.chat.push({role:"assistant",content:reply,images:images,resultMood: hadErr?"error":(d.tool_calls||[]).length>0?"success":"normal"});
-   // Auto-speak if TTS enabled
-   if(localStorage.getItem("falkor.tts")==="1" && reply){
+   live.streaming=false;
+   live.images=images;
+   const hadErr=toolCalls.some(t=>t.output&&t.output.error);
+   live.resultMood=hadErr?"error":toolCalls.length>0?"success":"normal";
+   if(toolCalls.length && live.toolStatus){
+    live.content=live.content+String.fromCharCode(10,10)+live.toolStatus;
+    delete live.toolStatus;
+   }
+   refreshChat();
+   if(localStorage.getItem("falkor.tts")==="1" && live.content){
     try{
-     const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:reply.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});
-     if(r.ok){const blob=await r.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}
+     const tr=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({text:live.content.replace(/\[[^\]]+\]$/,"").trim().substring(0,800)})});
+     if(tr.ok){const blob=await tr.blob();const audio=new Audio(URL.createObjectURL(blob));audio.play()}
     }catch(e){}
    }
-  }catch(err){STATE.chat.push({role:"assistant",content:"Error: "+err.message})}
+  }catch(err){
+   if(STATE.chat.length && STATE.chat[STATE.chat.length-1].pending) STATE.chat.pop();
+   const live=STATE.chat[STATE.chat.length-1];
+   if(live && live.streaming){live.streaming=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
+   else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
+  }
   btn.disabled=false;refreshChat();inp.focus();
  });
  p.appendChild(form);return p;
@@ -1159,7 +1603,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.5.0',mode:'asgard-hub-home'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'3.6.0',mode:'asgard-hub-home',streaming:true},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -1406,6 +1850,176 @@ upBtn.onclick=async()=>{
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
+    if(url.pathname==='/api/agent-chat-stream'&&request.method==='POST'){
+      const body = await request.json();
+      const userMsg = body.message || '';
+      const project = body.project || null;
+      const history = Array.isArray(body.history) ? body.history : [];
+      const enc = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          const send = (obj) => controller.enqueue(enc.encode(JSON.stringify(obj)+String.fromCharCode(10)));
+          const fail = (m) => { send({type:'error', message:m}); controller.close(); };
+          try {
+            // Same setup as non-streaming agent
+            let owner=null, repo=null;
+            if (project && project.github) { const m = project.github.match(/github\.com\/([^/]+)\/([^/?#]+)/); if (m) { owner=m[1]; repo=m[2].replace(/\.git$/,''); } }
+            // Memory + history loading
+            let memBlock = '';
+            try {
+              const mr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({sql:'SELECT category, fact FROM falkor_memory WHERE user_id="paddy" ORDER BY importance DESC LIMIT 30'}),
+              });
+              const md = await mr.json();
+              const mems = md.result?.[0]?.results || [];
+              if (mems.length) memBlock = String.fromCharCode(10,10) + 'WHAT YOU REMEMBER ABOUT PADDY:'+ String.fromCharCode(10) + mems.map(m=>'- ['+m.category+'] '+m.fact).join(String.fromCharCode(10));
+            } catch(e){}
+            let priorTurns = [];
+            try {
+              const hr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({sql:'SELECT role, content FROM falkor_chat_history WHERE user_id="paddy" ORDER BY created_at DESC LIMIT 20'}),
+              });
+              const hd = await hr.json();
+              priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
+            } catch(e){}
+            let system = "You are Falkor — Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies." + memBlock;
+            if (project) {
+              const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
+              if (project.url) ctx.push('Live: '+project.url);
+              if (project.github) ctx.push('GitHub: '+project.github);
+              if (project.tech) ctx.push('Tech: '+project.tech);
+              if (project.desc) ctx.push('Description: '+project.desc);
+              system += String.fromCharCode(10) + ctx.join(String.fromCharCode(10));
+            }
+            const tools = AGENT_TOOLS;  // shared with non-streaming
+            const messages = [...priorTurns, ...history, { role:'user', content: userMsg }];
+            const toolResults = [];
+            let iterations = 0;
+            const maxIter = 6;
+            let finalText = '';
+
+            while (iterations < maxIter) {
+              iterations++;
+              const aReq = await fetch('https://api.anthropic.com/v1/messages', {
+                method:'POST',
+                headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
+                body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:4096, system, tools, messages, stream:true}),
+              });
+              if (!aReq.ok) { const t = await aReq.text(); fail('Anthropic '+aReq.status+': '+t.substring(0,300)); return; }
+
+              // Parse SSE stream
+              const reader = aReq.body.getReader();
+              const td = new TextDecoder();
+              let buf = '';
+              const assistantContent = [];   // running content blocks for this turn
+              let stopReason = null;
+              let currentBlock = null;       // {type, index, ...}
+
+              while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                buf += td.decode(value, {stream:true});
+                // SSE events split on double-newline
+                let nl;
+                while ((nl = buf.indexOf(String.fromCharCode(10,10))) !== -1) {
+                  const evtBlock = buf.slice(0, nl);
+                  buf = buf.slice(nl+2);
+                  // each block has lines "event: X" and "data: {...}"
+                  const lines = evtBlock.split(String.fromCharCode(10));
+                  let evt = '', data = '';
+                  for (const ln of lines) {
+                    if (ln.startsWith('event: ')) evt = ln.slice(7);
+                    else if (ln.startsWith('data: ')) data += ln.slice(6);
+                  }
+                  if (!data) continue;
+                  let ev; try { ev = JSON.parse(data); } catch(e) { continue; }
+                  if (ev.type === 'content_block_start') {
+                    currentBlock = { ...ev.content_block, _index: ev.index };
+                    if (currentBlock.type === 'tool_use') {
+                      currentBlock.input_json = '';
+                      send({ type:'tool_start', name: currentBlock.name, id: currentBlock.id });
+                    }
+                  } else if (ev.type === 'content_block_delta') {
+                    if (ev.delta.type === 'text_delta') {
+                      finalText += ev.delta.text;
+                      send({ type:'token', text: ev.delta.text });
+                    } else if (ev.delta.type === 'input_json_delta' && currentBlock) {
+                      currentBlock.input_json += ev.delta.partial_json || '';
+                    }
+                  } else if (ev.type === 'content_block_stop') {
+                    if (currentBlock) {
+                      if (currentBlock.type === 'tool_use') {
+                        try { currentBlock.input = JSON.parse(currentBlock.input_json || '{}'); } catch(e){ currentBlock.input = {}; }
+                        delete currentBlock.input_json;
+                      }
+                      assistantContent.push(currentBlock);
+                      currentBlock = null;
+                    }
+                  } else if (ev.type === 'message_delta') {
+                    stopReason = ev.delta?.stop_reason || stopReason;
+                  } else if (ev.type === 'message_stop') {
+                    // end of one assistant message
+                  }
+                }
+              }
+              // Append assistant message to history
+              const cleanContent = assistantContent.map(b => {
+                if (b.type === 'tool_use') return { type:'tool_use', id: b.id, name: b.name, input: b.input };
+                if (b.type === 'text') return { type:'text', text: b.text || '' };
+                return b;
+              });
+              messages.push({ role:'assistant', content: cleanContent });
+
+              if (stopReason === 'tool_use') {
+                // Execute each tool_use block (reuse the dispatcher from the non-streaming endpoint via a function)
+                const ghHeaders = { 'Authorization':'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
+                const results = [];
+                for (const blk of cleanContent.filter(b => b.type === 'tool_use')) {
+                  send({ type:'tool_call', tool: blk.name, input: blk.input });
+                  let out;
+                  try { out = await execAgentTool(blk.name, blk.input, env, project, owner, repo, ghHeaders); }
+                  catch(e) { out = { error: String(e).substring(0,200) }; }
+                  toolResults.push({ tool: blk.name, input: blk.input, output: out });
+                  send({ type:'tool_result', tool: blk.name, output_summary: out.error ? ('err: '+String(out.error).substring(0,80)) : 'ok' });
+                  results.push({ type:'tool_result', tool_use_id: blk.id, content: JSON.stringify(out).substring(0, 50000) });
+                }
+                messages.push({ role:'user', content: results });
+                continue;
+              }
+              break;
+            }
+
+            // Persist + auto-memory (same as non-streaming)
+            try {
+              const projId = project?.id || null;
+              const projName = project?.name || null;
+              const toolsUsed = toolResults.map(t=>t.tool).join(',');
+              await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+                method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                body: JSON.stringify({sql:'INSERT INTO falkor_chat_history (user_id, role, content, project_id, project_name, tools_used) VALUES (?,?,?,?,?,?), (?,?,?,?,?,?)',
+                  params:['paddy','user',userMsg,projId,projName,null,'paddy','assistant', finalText || '(no text)', projId,projName, toolsUsed]}),
+              });
+            } catch(e){}
+
+            // Surface images at end (browser screenshots / generated)
+            const images = toolResults.flatMap(t => {
+              const o = t.output || {};
+              if (t.tool === 'generate_image' && (o.image_url || o.url || o.base64)) return [{src: o.image_url || o.url || ('data:image/png;base64,'+o.base64)}];
+              if (t.tool === 'browser_screenshot' && o.base64) return [{src:'data:'+(o.content_type||'image/png')+';base64,'+o.base64, caption:o.url||''}];
+              return [];
+            });
+            send({ type:'done', tool_calls: toolResults, images });
+            controller.close();
+          } catch(e) {
+            send({ type:'error', message: String(e).substring(0,300) });
+            controller.close();
+          }
+        },
+      });
+      return new Response(stream, { headers: { 'Content-Type':'application/x-ndjson', 'Cache-Control':'no-cache', 'X-Accel-Buffering':'no', ...CORS } });
+    }
     if(url.pathname==='/api/agent-chat'&&request.method==='POST'){
       try {
         const body = await request.json();
@@ -1420,415 +2034,11 @@ upBtn.onclick=async()=>{
           if (m) { owner=m[1]; repo=m[2].replace(/\.git$/,''); }
         }
 
-        const tools = [
-          { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
-            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
-          { name:'read_file', description:'Read a file from the project repo.',
-            input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path to file in repo' } }, required:['path'] } },
-          { name:'write_file', description:'Write/overwrite a file in the project repo and commit. Use after the user confirms a change.',
-            input_schema:{ type:'object', properties:{ path:{ type:'string' }, content:{ type:'string' }, message:{ type:'string', description:'Commit message' } }, required:['path','content','message'] } },
-          { name:'update_project_metadata', description:"Update this project metadata in the Asgard D1 products table. Use to fix URL, status, dates, costs, revenue projections, descriptions. Auto-stamps last_updated.",
-            input_schema:{ type:'object', properties:{
-              live_url:{type:'string'},
-              github_url:{type:'string'},
-              status:{type:'string',description:'live | active | dev | building | idea | merged | archived | dormant'},
-              description:{type:'string'},
-              cost_monthly:{type:'number'},
-              cost_notes:{type:'string'},
-              revenue_y1:{type:'number'},
-              revenue_y2:{type:'number'},
-              revenue_y3:{type:'number'},
-              next_action:{type:'string'},
-              progress_pct:{type:'number'},
-              notes:{type:'string'},
-            }, required:[] } },
-          { name:'web_fetch', description:"Fetch a URL over HTTP. Returns response status, headers, and body (truncated to 30KB). Use for reading docs, JSON APIs, etc.",
-            input_schema:{ type:'object', properties:{ url:{type:'string'}, method:{type:'string',description:'GET/POST/etc, default GET'}, body:{type:'string'}, headers:{type:'object'} }, required:['url'] } },
-          { name:'web_search', description:"Search the web via DuckDuckGo. Returns top 5 results with title + snippet + URL.",
-            input_schema:{ type:'object', properties:{ query:{type:'string'} }, required:['query'] } },
-          { name:'run_d1_query', description:"Run a SQL query against the Asgard D1 products database. Tables: products (50 projects), spend_log, deployments, audit_log, conversations, messages, etc. Use SELECT for reads, UPDATE for changes (be careful). Use ? params to avoid SQL injection.",
-            input_schema:{ type:'object', properties:{ sql:{type:'string'}, params:{type:'array', items:{}} }, required:['sql'] } },
-          { name:'vault_get', description:"Fetch a secret value from asgard-vault by key name. Use for tokens/credentials. Available keys: ANTHROPIC_API_KEY, GITHUB_TOKEN, CF_API_TOKEN, RESEND_API_KEY, STRIPE_SECRET_KEY, SUPABASE_*, etc.",
-            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
-          { name:'cf_deploy_worker', description:"Re-deploy a Cloudflare worker from the latest source in LuckDragonAsgard/asgard-workers GitHub repo. Use after editing a worker file via write_file. Existing bindings are preserved.",
-            input_schema:{ type:'object', properties:{ name:{type:'string',description:'Worker name e.g. falkor-tools, falkor-agent'} }, required:['name'] } },
-          { name:'list_workers', description:"List all Cloudflare workers in the account with their last-modified time. Use to see the fleet.",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'browser_navigate', description:"Navigate the user's Chrome browser to a URL (active tab). Requires the Falkor Browser Bridge extension to be installed and connected.",
-            input_schema:{ type:'object', properties:{ url:{type:'string'}, tabId:{type:'number'} }, required:['url'] } },
-          { name:'browser_screenshot', description:"Capture a screenshot of the user's current browser viewport as PNG. Returns base64.",
-            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
-          { name:'browser_click', description:"Click an element in the user's browser. Provide either CSS selector or x,y coordinates.",
-            input_schema:{ type:'object', properties:{ selector:{type:'string'}, x:{type:'number'}, y:{type:'number'}, tabId:{type:'number'} }, required:[] } },
-          { name:'browser_type', description:"Type text into an input/textarea in the user's browser. Provide selector to target element.",
-            input_schema:{ type:'object', properties:{ selector:{type:'string'}, text:{type:'string'}, tabId:{type:'number'} }, required:['text'] } },
-          { name:'browser_press_key', description:"Press a key in the user's browser (Enter, Tab, Escape, etc.).",
-            input_schema:{ type:'object', properties:{ key:{type:'string'}, tabId:{type:'number'} }, required:['key'] } },
-          { name:'browser_extract', description:"Extract text from the user's browser. Without selector returns full page text. With selector returns matching element details.",
-            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
-          { name:'browser_get_html', description:"Get the HTML of the user's browser page or a specific element.",
-            input_schema:{ type:'object', properties:{ selector:{type:'string'}, tabId:{type:'number'} }, required:[] } },
-          { name:'browser_eval', description:"Run arbitrary JavaScript in the user's browser page context. Returns the value of the last expression.",
-            input_schema:{ type:'object', properties:{ code:{type:'string'}, tabId:{type:'number'} }, required:['code'] } },
-          { name:'browser_tabs', description:"List all open tabs in the user's browser.",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'browser_new_tab', description:"Open a new tab in the user's browser.",
-            input_schema:{ type:'object', properties:{ url:{type:'string'} }, required:[] } },
-          { name:'browser_close_tab', description:"Close a tab in the user's browser by tabId.",
-            input_schema:{ type:'object', properties:{ tabId:{type:'number'} }, required:[] } },
-          { name:'browser_scroll', description:"Scroll the user's browser page by x,y pixels. Set absolute=true to scroll to position instead of by delta.",
-            input_schema:{ type:'object', properties:{ x:{type:'number'}, y:{type:'number'}, absolute:{type:'boolean'} }, required:[] } },
-          { name:'generate_image', description:"Generate an image from a text prompt via asgard-ai image generation (Flux / SDXL / Gemini Imagen depending on availability). Returns a URL or base64 of the generated PNG.",
-            input_schema:{ type:'object', properties:{ prompt:{type:'string'}, model:{type:'string',description:'optional model hint: flux, sdxl, gemini'}, width:{type:'number'}, height:{type:'number'} }, required:['prompt'] } },
-          { name:'cf_kv_list', description:"List keys in the falkor-tools ASSETS KV namespace, with optional prefix filter. Useful for browsing uploaded mascots or browser results.",
-            input_schema:{ type:'object', properties:{ prefix:{type:'string'} }, required:[] } },
-          { name:'cf_kv_get', description:"Get a value from the ASSETS KV namespace by key.",
-            input_schema:{ type:'object', properties:{ key:{type:'string'} }, required:['key'] } },
-          { name:'save_memory', description:"Save a fact to long-term memory about this user. Use when user says 'remember that X' or whenever you learn something durable about their preferences, work style, or platform.",
-            input_schema:{ type:'object', properties:{ fact:{type:'string'}, category:{type:'string',description:'profile, preferences, platform, project, style, etc.'}, importance:{type:'number',description:'1-10, default 5'} }, required:['fact'] } },
-          { name:'recall_memory', description:"Search remembered facts about the user. Returns matching memories.",
-            input_schema:{ type:'object', properties:{ query:{type:'string',description:'optional keyword filter'}, category:{type:'string',description:'optional category filter'} }, required:[] } },
-          { name:'list_memories', description:"List all stored memories for this user, sorted by importance.",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'delete_memory', description:"Delete a stored memory by id. Use when user says 'forget X'.",
-            input_schema:{ type:'object', properties:{ id:{type:'number'} }, required:['id'] } },
-          { name:'self_heal_worker', description:"Trigger Falkor's self-healing routine on a Cloudflare worker (via falkor-code). Restarts unhealthy workers, redeploys from GitHub if missing.",
-            input_schema:{ type:'object', properties:{ name:{type:'string',description:'worker name, omit to heal whole fleet'} }, required:[] } },
-          { name:'fleet_health', description:"Get health + version of every worker in the fleet (via falkor-code /workers).",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'vector_remember', description:"Store a fact in the falkor-brain Vectorize index for semantic recall (richer than D1 memory). Use for things you want to look up later by meaning, not just keyword.",
-            input_schema:{ type:'object', properties:{ text:{type:'string'}, source:{type:'string'} }, required:['text'] } },
-          { name:'vector_recall', description:"Semantic search the falkor-brain Vectorize index. Returns top-K most similar facts to a query.",
-            input_schema:{ type:'object', properties:{ query:{type:'string'}, k:{type:'number'} }, required:['query'] } },
-          { name:'afl_ladder', description:"Live AFL ladder via Squiggle API (falkor-sport).",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'nrl_ladder', description:"Live NRL ladder via nrl.com API (falkor-sport).",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'racing_comp', description:"Family racing tipping competition leaderboard + today's picks (falkor-sport).",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'pe_advisor', description:"Get PE outdoor lesson advice for today — temperature, UV, conditions, recommendation (falkor-school /pe-advisor).",
-            input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'xc_results', description:"Cross-country results for a date (falkor-school /xc/results).",
-            input_schema:{ type:'object', properties:{ date:{type:'string',description:'YYYY-MM-DD'} }, required:[] } },
-          { name:'kbt_game_status', description:"Get status of a live KBT trivia game by code (falkor-kbt).",
-            input_schema:{ type:'object', properties:{ code:{type:'string'} }, required:['code'] } },
-        ];
+        const tools = AGENT_TOOLS;
 
         const ghHeaders = { 'Authorization': 'token '+env.GITHUB_TOKEN, 'User-Agent':'falkor-tools-agent', 'Accept':'application/vnd.github+json' };
 
-        async function execTool(name, input) {
-          const needRepo = ['list_files','read_file','write_file','cf_deploy_worker'].includes(name);
-          if (needRepo && !owner && name !== 'cf_deploy_worker') {
-            // cf_deploy_worker pulls from a fixed repo, others need project repo
-            return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
-          }
-          if (name === 'list_files') {
-            const p = (input.path||'').replace(/^\//,'');
-            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
-            if (!r.ok) return { error:'list_files HTTP '+r.status };
-            const d = await r.json();
-            if (!Array.isArray(d)) return { error:'Path is a file, not a directory' };
-            return { files: d.map(f => ({ name:f.name, type:f.type, size:f.size })) };
-          }
-          if (name === 'read_file') {
-            const p = (input.path||'').replace(/^\//,'');
-            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
-            if (!r.ok) return { error:'read_file HTTP '+r.status };
-            const d = await r.json();
-            if (!d.content) return { error:'No content (might be a directory)' };
-            const decoded = atob(d.content.replace(/\n/g,''));
-            return { path:p, sha:d.sha, content: decoded.length>40000 ? decoded.substring(0,40000)+String.fromCharCode(10)+"[truncated]" : decoded };
-          }
-          if (name === 'update_project_metadata') {
-            if (!project || !project.id) return { error:'No project id; cannot update metadata.' };
-            const allowed = ['live_url','github_url','status','description','cost_monthly','cost_notes','revenue_y1','revenue_y2','revenue_y3','next_action','progress_pct','notes'];
-            const sets = []; const params = [];
-            for (const k of allowed) {
-              if (input[k] !== undefined) { sets.push(k+' = ?'); params.push(input[k]); }
-            }
-            if (sets.length === 0) return { error:'No fields to update' };
-            sets.push("last_updated = datetime('now')");
-            params.push(project.id);
-            const sql = "UPDATE products SET "+sets.join(', ')+" WHERE id = ?";
-            const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-              method:'POST',
-              headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-              body: JSON.stringify({ sql, params }),
-            });
-            const d = await r.json();
-            if (!d.success) return { error:'D1 update failed', detail: JSON.stringify(d.errors||[]).substring(0,300) };
-            return { ok:true, updated_fields: Object.keys(input), changes: d.result?.[0]?.meta?.changes };
-          }
-          if (name === 'web_fetch') {
-            try {
-              const r = await fetch(input.url, { method: input.method||'GET', headers: input.headers||{}, body: input.body });
-              const text = await r.text();
-              return { status: r.status, headers: Object.fromEntries(r.headers.entries()), body: text.length>30000 ? text.substring(0,30000)+'...[truncated]' : text };
-            } catch(e) { return { error: 'fetch failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'web_search') {
-            try {
-              const u = 'https://html.duckduckgo.com/html/?q='+encodeURIComponent(input.query||'');
-              const r = await fetch(u, { headers: { 'User-Agent':'Mozilla/5.0' } });
-              const html = await r.text();
-              // crude extraction of result-link blocks
-              const results = [];
-              const re = /<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)<\/a>[\s\S]*?class="result__snippet"[^>]*>(.*?)<\/a>/g;
-              let m;
-              while((m = re.exec(html)) && results.length < 5) {
-                const strip = s => s.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#x27;/g,"'");
-                let url = m[1]; const um = url.match(/uddg=([^&]+)/); if(um) url = decodeURIComponent(um[1]);
-                results.push({ title: strip(m[2]).trim(), url, snippet: strip(m[3]).trim() });
-              }
-              return { query: input.query, results };
-            } catch(e) { return { error: 'search failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'run_d1_query') {
-            try {
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                method:'POST',
-                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                body: JSON.stringify({ sql: input.sql, params: input.params||[] }),
-              });
-              const d = await r.json();
-              if (!d.success) return { error: 'D1 error', detail: JSON.stringify(d.errors||[]).substring(0,400) };
-              const rows = d.result?.[0]?.results || [];
-              const meta = d.result?.[0]?.meta || {};
-              return { rows: rows.length>50 ? rows.slice(0,50) : rows, total: rows.length, meta };
-            } catch(e) { return { error: 'query failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'vault_get') {
-            try {
-              const r = await fetch(env.VAULT_URL+'/secret/'+encodeURIComponent(input.key||''), { headers: { 'X-Pin': env.VAULT_PIN } });
-              if (!r.ok) return { error: 'vault HTTP '+r.status };
-              const text = await r.text();
-              if (text.startsWith('{') && text.includes('"error"')) return { error: text.substring(0,200) };
-              return { key: input.key, value: text };
-            } catch(e) { return { error: 'vault fetch failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'cf_deploy_worker') {
-            try {
-              const wname = (input.name||'').replace(/[^a-zA-Z0-9-]/g,'');
-              if (!wname) return { error: 'worker name required' };
-              // Pull source from GitHub
-              const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
-              if (!ghr.ok) return { error: 'worker source not found in repo: '+wname+'.js (HTTP '+ghr.status+')' };
-              const ghd = await ghr.json();
-              const code = atob(ghd.content.replace(/\n/g,''));
-              // Deploy via CF API multipart
-              const metadata = { main_module:'worker.js', compatibility_date:'2024-09-30', bindings:[], keep_bindings:['secret_text','kv_namespace','durable_object_namespace'] };
-              const boundary = '----b42deploy'+Date.now();
-              const body = new TextEncoder().encode(
-                '--'+boundary+'\r\nContent-Disposition: form-data; name="metadata"\r\nContent-Type: application/json\r\n\r\n'+JSON.stringify(metadata)+'\r\n'+
-                '--'+boundary+'\r\nContent-Disposition: form-data; name="worker.js"; filename="worker.js"\r\nContent-Type: application/javascript+module\r\n\r\n'+
-                code+'\r\n--'+boundary+'--\r\n'
-              );
-              const dr = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts/'+wname, {
-                method:'PUT',
-                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'multipart/form-data; boundary='+boundary },
-                body,
-              });
-              const dd = await dr.json();
-              if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
-              return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha };
-            } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
-          }
-          // Helper to dispatch browser commands via Chrome extension bridge
-          async function browserDispatch(action, input) {
-            const cmdId = 'b_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-            // append to queue
-            const queue = await env.ASSETS.get('browser:queue', { type:'json' }) || [];
-            queue.push({ id: cmdId, action, input });
-            await env.ASSETS.put('browser:queue', JSON.stringify(queue));
-            // poll for result up to 25s
-            const deadline = Date.now() + 45000;
-            while (Date.now() < deadline) {
-              await new Promise(r => setTimeout(r, 400));
-              const res = await env.ASSETS.get('browser:result:'+cmdId);
-              if (res) {
-                await env.ASSETS.delete('browser:result:'+cmdId);
-                try { return JSON.parse(res); } catch(e) { return { error:'bad result' }; }
-              }
-            }
-            return { error: 'browser timeout — is the Falkor Bridge extension installed and connected?' };
-          }
-          if (name === 'generate_image') {
-            try {
-              const r = await fetch('https://asgard-ai.luckdragon.io/image/generate', {
-                method:'POST',
-                headers:{ 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN },
-                body: JSON.stringify({ prompt: input.prompt, model: input.model, width: input.width, height: input.height }),
-              });
-              const text = await r.text();
-              try { const d = JSON.parse(text); return d; }
-              catch(e) { return { ok:false, error: 'image gen returned non-json', body: text.substring(0,300) }; }
-            } catch(e) { return { error: 'image gen failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'cf_kv_list') {
-            try {
-              const u = 'https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/storage/kv/namespaces/84ba4a49116b4e62913498de3dbacfa5/keys'+(input.prefix?'?prefix='+encodeURIComponent(input.prefix):'');
-              const r = await fetch(u, { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
-              const d = await r.json();
-              return { keys: (d.result||[]).map(k => k.name) };
-            } catch(e) { return { error: 'kv list failed' }; }
-          }
-          if (name === 'cf_kv_get') {
-            try {
-              const v = await env.ASSETS.get(input.key);
-              return { key: input.key, value: v ? (v.length>5000 ? v.substring(0,5000)+'...[truncated]' : v) : null };
-            } catch(e) { return { error: 'kv get failed' }; }
-          }
-          if (name === 'save_memory') {
-            try {
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                method:'POST',
-                headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)", params:["paddy", input.category||"general", input.fact, "agent", input.importance||5] }),
-              });
-              const d = await r.json();
-              if (!d.success) return { error:'save failed', detail: JSON.stringify(d.errors||[]) };
-              return { ok:true, id: d.result?.[0]?.meta?.last_row_id, fact: input.fact };
-            } catch(e){ return { error:'save failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'recall_memory') {
-            try {
-              let sql = 'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy"';
-              const params = [];
-              if (input.category) { sql += ' AND category = ?'; params.push(input.category); }
-              if (input.query) { sql += ' AND fact LIKE ?'; params.push('%'+input.query+'%'); }
-              sql += ' ORDER BY importance DESC, created_at DESC LIMIT 30';
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                body: JSON.stringify({ sql, params }),
-              });
-              const d = await r.json();
-              return { memories: d.result?.[0]?.results || [] };
-            } catch(e){ return { error: 'recall failed' }; }
-          }
-          if (name === 'list_memories') {
-            try {
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                body: JSON.stringify({ sql:'SELECT id, category, fact, importance, created_at FROM falkor_memory WHERE user_id="paddy" ORDER BY importance DESC, created_at DESC' }),
-              });
-              const d = await r.json();
-              return { memories: d.result?.[0]?.results || [] };
-            } catch(e){ return { error: 'list failed' }; }
-          }
-          if (name === 'delete_memory') {
-            try {
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                body: JSON.stringify({ sql:'DELETE FROM falkor_memory WHERE id = ? AND user_id="paddy"', params:[input.id] }),
-              });
-              const d = await r.json();
-              return { ok: !!d.success, deleted: d.result?.[0]?.meta?.changes };
-            } catch(e){ return { error: 'delete failed' }; }
-          }
-          const sportPin = env.AGENT_PIN;
-          const ghHeadersForBrain = { 'Content-Type':'application/json', 'X-Pin': env.AGENT_PIN };
-          if (name === 'self_heal_worker') {
-            try {
-              const r = await fetch('https://falkor-code.luckdragon.io/self-heal', {
-                method:'POST', headers: ghHeadersForBrain,
-                body: JSON.stringify(input.name ? { worker: input.name } : {}),
-              });
-              const text = await r.text();
-              try { return JSON.parse(text); } catch(e){ return { ok:r.ok, body: text.substring(0,400) }; }
-            } catch(e){ return { error:'self-heal failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'fleet_health') {
-            try {
-              const r = await fetch('https://falkor-code.luckdragon.io/workers', { headers:{ 'X-Pin': env.AGENT_PIN } });
-              return await r.json();
-            } catch(e){ return { error:'fleet check failed' }; }
-          }
-          if (name === 'vector_remember') {
-            try {
-              const r = await fetch('https://falkor-brain.luckdragon.io/remember', {
-                method:'POST', headers: ghHeadersForBrain,
-                body: JSON.stringify({ text: input.text, source: input.source || 'agent' }),
-              });
-              const text = await r.text();
-              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,300) }; }
-            } catch(e){ return { error: String(e).substring(0,200) }; }
-          }
-          if (name === 'vector_recall') {
-            try {
-              const r = await fetch('https://falkor-brain.luckdragon.io/recall', {
-                method:'POST', headers: ghHeadersForBrain,
-                body: JSON.stringify({ query: input.query, k: input.k || 5 }),
-              });
-              const text = await r.text();
-              try { return JSON.parse(text); } catch(e){ return { ok: r.ok, body: text.substring(0,500) }; }
-            } catch(e){ return { error: String(e).substring(0,200) }; }
-          }
-          if (name === 'afl_ladder') {
-            try {
-              const r = await fetch('https://falkor-sport.luckdragon.io/afl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
-              return await r.json();
-            } catch(e){ return { error: 'afl ladder failed' }; }
-          }
-          if (name === 'nrl_ladder') {
-            try {
-              const r = await fetch('https://falkor-sport.luckdragon.io/nrl/ladder?pin='+encodeURIComponent(env.AGENT_PIN));
-              return await r.json();
-            } catch(e){ return { error: 'nrl ladder failed' }; }
-          }
-          if (name === 'racing_comp') {
-            try {
-              const r = await fetch('https://falkor-sport.luckdragon.io/racing/comp?pin='+encodeURIComponent(env.AGENT_PIN));
-              return await r.json();
-            } catch(e){ return { error: 'racing comp failed' }; }
-          }
-          if (name === 'pe_advisor') {
-            try {
-              const r = await fetch('https://falkor-school.luckdragon.io/pe-advisor', { headers:{ 'X-Pin': env.AGENT_PIN } });
-              return await r.json();
-            } catch(e){ return { error: 'pe advisor failed' }; }
-          }
-          if (name === 'xc_results') {
-            try {
-              const url = 'https://falkor-school.luckdragon.io/xc/results' + (input.date ? '?date='+input.date : '');
-              const r = await fetch(url, { headers:{ 'X-Pin': env.AGENT_PIN } });
-              return await r.json();
-            } catch(e){ return { error: 'xc results failed' }; }
-          }
-          if (name === 'kbt_game_status') {
-            try {
-              const r = await fetch('https://falkor-kbt.luckdragon.io/game/'+encodeURIComponent(input.code||'')+'/status', { headers:{ 'X-Pin': env.AGENT_PIN } });
-              return await r.json();
-            } catch(e){ return { error: 'kbt status failed' }; }
-          }
-          if (name && name.startsWith('browser_')) {
-            const action = name.replace('browser_','');
-            return await browserDispatch(action, input);
-          }
-          if (name === 'list_workers') {
-            try {
-              const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/workers/scripts', { headers: { 'Authorization':'Bearer '+env.CF_API_TOKEN } });
-              const d = await r.json();
-              if (!d.success) return { error: 'list failed' };
-              return { workers: d.result.map(w => ({ name: w.id, modified: w.modified_on })) };
-            } catch(e) { return { error: 'list failed: '+String(e).substring(0,200) }; }
-          }
-          if (name === 'write_file') {
-            const p = (input.path||'').replace(/^\//,'');
-            // get sha if exists
-            let sha=null;
-            try {
-              const r0 = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
-              if (r0.ok) { const d0 = await r0.json(); sha = d0.sha; }
-            } catch(e){}
-            const payload = { message: input.message || 'edit via Falkor agent', content: btoa(unescape(encodeURIComponent(input.content||''))), branch: defaultBranch };
-            if (sha) payload.sha = sha;
-            const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{method:'PUT',headers:{...ghHeaders,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-            const d = await r.json();
-            if (!r.ok) return { error:'write_file HTTP '+r.status, detail: d.message || JSON.stringify(d).substring(0,300) };
-            return { ok:true, commit: d.commit?.sha?.substring(0,7), html_url: d.commit?.html_url, path: p };
-          }
-          return { error:'Unknown tool: '+name };
-        }
+        async function execTool(name, input) { return await execAgentTool(name, input, env, project, owner, repo, ghHeaders); }
 
         // System prompt with project context
         let system = "You are a coding agent embedded in Paddy's Asgard project hub. You can read and edit files in the project's GitHub repo via tools.";
@@ -1979,6 +2189,4 @@ upBtn.onclick=async()=>{
       }
     }
 
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
-  },
-};
+    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CO
