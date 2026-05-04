@@ -3246,8 +3246,6 @@ upBtn.onclick=async()=>{
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
-    , {headers:{...CORS,...NOCACHE}});
-    }
     if(url.pathname==='/api/fleet/health'&&request.method==='GET'){
       try {
         const workers = ["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget"];
