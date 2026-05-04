@@ -3334,7 +3334,7 @@ upBtn.onclick=async()=>{
         }
         // Check 1: /health responds
         await run('health', async () => {
-          const r = await fetch('https://falkor.luckdragon.io/health', { signal: AbortSignal.timeout(8000) });
+          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/health', { signal: AbortSignal.timeout(8000) });
           if (!r.ok) throw new Error('http '+r.status);
           const d = await r.json();
           if (!d.ok) throw new Error('not ok');
@@ -3342,14 +3342,14 @@ upBtn.onclick=async()=>{
         });
         // Check 2: served HTML still parses
         await run('served_js_parses', async () => {
-          const r = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served', { signal: AbortSignal.timeout(8000) });
+          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/falkor/verify-served', { signal: AbortSignal.timeout(8000) });
           const d = await r.json();
           if (!d.ok) throw new Error((d.errors||[]).join('|'));
           return 'parses';
         });
         // Check 3: agent-chat round-trip
         await run('agent_chat', async () => {
-          const r = await fetch('https://falkor.luckdragon.io/api/agent-chat', {
+          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/agent-chat', {
             method:'POST', headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN || '2967'},
             body: JSON.stringify({message:'reply with the single word OK', project:null}),
             signal: AbortSignal.timeout(45000)
@@ -3367,13 +3367,13 @@ upBtn.onclick=async()=>{
             signal: AbortSignal.timeout(8000)
           });
           const d = await r.json();
-          const c = d.result?.[0]?.results?.[0]?.c;
-          if (typeof c !== 'number') throw new Error('no count');
-          return c+' projects';
+          if (!d.success) throw new Error('d1 failed');
+          const c = d.result?.[0]?.results?.[0]?.c ?? d.result?.[0]?.results?.[0]?.['COUNT(*)'];
+          return (c||'?') + ' projects';
         });
         // Check 5: fleet health (server proxy)
         await run('fleet', async () => {
-          const r = await fetch('https://falkor.luckdragon.io/api/fleet/health', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(45000) });
+          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/fleet/health', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(45000) });
           const d = await r.json();
           if (!d.ok) throw new Error('not ok');
           if (d.healthy < d.total) throw new Error(d.healthy+'/'+d.total+' healthy');
@@ -3381,7 +3381,7 @@ upBtn.onclick=async()=>{
         });
         // Check 6: chat/threads endpoint
         await run('chat_threads', async () => {
-          const r = await fetch('https://falkor.luckdragon.io/api/chat/threads', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(8000) });
+          const r = await fetch('https://falkor-tools.pgallivan.workers.dev/api/chat/threads', { headers:{'X-Pin': env.AGENT_PIN || '2967'}, signal: AbortSignal.timeout(8000) });
           const d = await r.json();
           if (!d.ok) throw new Error('not ok');
           return (d.threads||[]).length+' threads';
