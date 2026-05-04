@@ -3765,8 +3765,19 @@ upBtn.onclick=async()=>{
 
             // Persist + auto-memory (same as non-streaming)
             try {
-              const projId = project?.id || null;
-              const projName = project?.name || null;
+              let projId = project?.id || null;
+              let projName = project?.name || null;
+              if (projId && !projName) {
+                try {
+                  const lookup = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/3708c025-cf0d-442a-a57b-67f2a304932f/query', {
+                    method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                    body: JSON.stringify({sql:'SELECT project_name FROM project_hub WHERE id=?', params:[projId]})
+                  });
+                  const lj = await lookup.json();
+                  projName = lj.result?.[0]?.results?.[0]?.project_name || ('Project '+projId);
+                } catch(e) { projName = 'Project '+projId; }
+              }
+              if (projName && !projId) projName = null;
               const toolsUsed = toolResults.map(t=>t.tool).join(',');
               await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
                 method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
