@@ -584,8 +584,9 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             const expected = input.expected_field || 'ok';
             const opts = { method, headers: {'X-Pin': env.AGENT_PIN, 'Cache-Control':'no-cache'} };
             if (method === 'POST' && input.body) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(input.body); }
-            for (let attempt = 0; attempt < 3; attempt++) {
-              if (attempt > 0) await new Promise(r => setTimeout(r, 4000));
+            const MAX_ATTEMPTS = 6;
+            for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+              if (attempt > 0) await new Promise(r => setTimeout(r, 3000 + attempt*2000));
               try {
                 const r = await fetch(url, opts);
                 const text = await r.text();
@@ -595,7 +596,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 }
                 // Detect CF 522
                 if (text.includes('error code: 522') || text.includes('error code: 530')) {
-                  if (attempt < 2) continue;
+                  if (attempt < MAX_ATTEMPTS - 1) continue;
                   return { ok: false, attempt: attempt+1, error: 'CF infra error: '+text.substring(0,80) };
                 }
                 let json;
@@ -608,8 +609,8 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 }
                 return { ok: true, status: r.status, attempt: attempt+1, body: json };
               } catch(e) {
-                if (attempt < 2) continue;
-                return { ok: false, attempt: attempt+1, error: 'fetch failed: '+String(e).substring(0,200) };
+                if (attempt < MAX_ATTEMPTS - 1) continue;
+                return { ok: false, attempt: attempt+1, error: 'fetch failed (deploy may have succeeded): '+String(e).substring(0,200) };
               }
             }
             return { ok: false, error: 'all retries exhausted' };
