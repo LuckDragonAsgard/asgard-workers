@@ -881,19 +881,29 @@ fetch("/api/falkor/heartbeat",{method:"POST"}).catch(()=>{});
 })();
 
 window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",chat:(function(){try{return JSON.parse(localStorage.getItem("falkor.chat")||"[]")}catch(e){return[]}})(),chatContext:(function(){try{return JSON.parse(localStorage.getItem("falkor.chatContext")||"null")}catch(e){return null}})()};
-window.persistChat=function(){try{localStorage.setItem("falkor.chat",JSON.stringify(STATE.chat.slice(-50)));localStorage.setItem("falkor.chatContext",JSON.stringify(STATE.chatContext))}catch(e){}};
-window.loadChatHistory=async function(force){
-  if(STATE.chat.length>0 && !force) return;
+window.persistChat=function(){try{
+  // Never clobber existing history with an empty array — that's how we lost the chat before
+  if(STATE.chat&&STATE.chat.length>0){
+    localStorage.setItem("falkor.chat",JSON.stringify(STATE.chat.slice(-50)));
+  }
+  localStorage.setItem("falkor.chatContext",JSON.stringify(STATE.chatContext||null));
+}catch(e){}};
+window.loadChatHistory=async function(){
+  // Always pull D1 history so user sees their thread on every reload, regardless of localStorage
   try{
     const projId=STATE.chatContext?.id||"";
-    const r=await fetch("/api/chat/history"+(projId?("?project_id="+projId):""),{headers:{"X-Pin":STATE.agentPin||""}});
+    const pin=STATE.agentPin||localStorage.getItem("agentPin")||"2967";
+    const r=await fetch("/api/chat/history"+(projId?("?project_id="+projId):""),{headers:{"X-Pin":pin}});
     const d=await r.json();
     if(d.ok && d.turns && d.turns.length){
       STATE.chat = d.turns.map(t=>({role:t.role,content:t.content}));
       persistChat();
+      if(typeof render==="function") render();
     }
   }catch(e){console.warn("loadChatHistory failed",e)}
 };
+// Auto-fire 1s after page loads so chat is restored on every reload
+setTimeout(()=>{try{if(window.loadChatHistory)loadChatHistory()}catch(e){}},1000);
 
 function loadAuth(){try{return JSON.parse(localStorage.getItem("asgard.user")||"null")}catch{return null}}
 function saveAuth(u){localStorage.setItem("asgard.user",JSON.stringify(u))}
