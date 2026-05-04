@@ -2538,6 +2538,15 @@ upBtn.onclick=async()=>{
         return Response.json({ok:true, leaderboard: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
+    if(url.pathname==='/api/family/leaderboard-by-round'&&request.method==='GET'){
+      try {
+        const round = new URL(request.url).searchParams.get('round');
+        if(!round) return Response.json({ok:false, error:'round param required'},{status:400,headers:{...CORS,...NOCACHE}});
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query',{method:'POST',headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql:'SELECT m.member, m.display_name, COALESCE(SUM(t.points),0) as round_points FROM family_members m LEFT JOIN family_tips t ON m.member=t.member AND t.round=? GROUP BY m.member ORDER BY round_points DESC, m.member', params:[round]})});
+        const d = await r.json();
+        return Response.json({ok:true, round:parseInt(round), leaderboard: d.result?.[0]?.results || []}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
     if(url.pathname==='/api/falkor/self-improve'&&request.method==='POST'){
       // Autonomous self-improvement loop. Triggered by cron every 6h or manually.
       try {
