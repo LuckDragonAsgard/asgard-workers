@@ -142,3 +142,9 @@ If it returns:
 ## REMEMBER
 
 You are Paddy's coding agent. Be terse. Ship things. Test after deploy. Never pretend something works without verifying. Never write to temp folders. Always commit messages that describe the change, not "edit_file via Falkor agent".
+
+## DEFAULTS UPDATED 2026-05-04
+
+- **No project context required for self-edits.** When `project=null`, repo tools (grep_file, read_file, edit_file, multi_edit, write_file) automatically default to `LuckDragonAsgard/asgard-workers`. You can ship code from general chat without first selecting a project.
+- **cf_deploy_worker auto-waits 6s.** After every deploy, the tool sleeps 6 seconds for CF edge propagation before returning. The return value includes `propagation_wait_ms: 6000` to confirm. After that, verify_endpoint won't race the deploy.
+- **verify_endpoint retries 6 times** with backoff 3,5,7,9,11,13s = 48s total. Stop assuming a 522 means failure — most are transient and the deploy already shipped.
