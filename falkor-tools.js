@@ -1,4 +1,4 @@
-// falkor-tools v2.1.0 ÃÂ¢ÃÂÃÂ Asgard-style project hub with Finance, sorting, all info per project
+// falkor-tools v2.1.0 ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Asgard-style project hub with Finance, sorting, all info per project
 const PROJECTS_API = 'https://falkor-dashboard.luckdragon.io/api/projects';
 const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
@@ -7,7 +7,7 @@ const AGENT_TOOLS = [
           { name:'grep_file', description:'Search a file for a regex pattern. Returns matching line numbers with context. Use this to navigate large files instead of paging through chunks. flags=i for case-insensitive.',
             input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer'} }, required:['path','pattern'] } },
           { name:'edit_file', description:"Make a precise, surgical edit to a file. Provide old_string (exact text to find) and new_string (replacement). The old_string must appear EXACTLY ONCE in the file unless replace_all=true. Best for editing large files (e.g. falkor-tools.js itself) without rewriting everything. Auto-commits.",
-            input_schema:{ type:'object', properties:{ path:{type:'string'}, old_string:{type:'string', description:'exact text to replace ÃÂ¢ÃÂÃÂ include enough context to be unique'}, new_string:{type:'string'}, replace_all:{type:'boolean', description:'replace every occurrence (default false)'}, message:{type:'string', description:'commit message'} }, required:['path','old_string','new_string'] } },
+            input_schema:{ type:'object', properties:{ path:{type:'string'}, old_string:{type:'string', description:'exact text to replace ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ include enough context to be unique'}, new_string:{type:'string'}, replace_all:{type:'boolean', description:'replace every occurrence (default false)'}, message:{type:'string', description:'commit message'} }, required:['path','old_string','new_string'] } },
           { name:'multi_edit', description:"Apply multiple edits to a file sequentially in one commit.",
             input_schema:{ type:'object', properties:{ path:{type:'string'}, edits:{type:'array', items:{type:'object', properties:{old_string:{type:'string'}, new_string:{type:'string'}, replace_all:{type:'boolean'}}}}, message:{type:'string'} }, required:['path','edits','message'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
@@ -95,7 +95,7 @@ const AGENT_TOOLS = [
             input_schema:{ type:'object', properties:{}, required:[] } },
           { name:'racing_comp', description:"Family racing tipping competition leaderboard + today's picks (falkor-sport).",
             input_schema:{ type:'object', properties:{}, required:[] } },
-          { name:'pe_advisor', description:"Get PE outdoor lesson advice for today ÃÂ¢ÃÂÃÂ temperature, UV, conditions, recommendation (falkor-school /pe-advisor).",
+          { name:'pe_advisor', description:"Get PE outdoor lesson advice for today ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ temperature, UV, conditions, recommendation (falkor-school /pe-advisor).",
             input_schema:{ type:'object', properties:{}, required:[] } },
           { name:'xc_results', description:"Cross-country results for a date (falkor-school /xc/results).",
             input_schema:{ type:'object', properties:{ date:{type:'string',description:'YYYY-MM-DD'} }, required:[] } },
@@ -109,7 +109,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
           const needRepo = ['list_files','read_file','grep_file','edit_file','write_file','cf_deploy_worker'].includes(name);
           if (needRepo && !owner && name !== 'cf_deploy_worker') {
             // cf_deploy_worker pulls from a fixed repo, others need project repo
-            return { error:'No GitHub repo bound to this project ÃÂ¢ÃÂÃÂ cannot run '+name+'.' };
+            return { error:'No GitHub repo bound to this project ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ cannot run '+name+'.' };
           }
           if (name === 'list_files') {
             const p = (input.path||'').replace(/^\//,'');
@@ -173,7 +173,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               return { path:p, sha, total_lines: lines.length, start_line: sl||1, end_line: (el2||lines.length), content: slice.join(String.fromCharCode(10)) };
             }
             const MAX = 180000;
-            return { path:p, sha, total_bytes: decoded.length, content: decoded.length>MAX ? decoded.substring(0,MAX)+String.fromCharCode(10)+"[truncated at "+MAX+" of "+decoded.length+" bytes ÃÂ¢ÃÂÃÂ pass start_line/end_line for chunked read]" : decoded };
+            return { path:p, sha, total_bytes: decoded.length, content: decoded.length>MAX ? decoded.substring(0,MAX)+String.fromCharCode(10)+"[truncated at "+MAX+" of "+decoded.length+" bytes ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ pass start_line/end_line for chunked read]" : decoded };
           }
           if (name === 'update_project_metadata') {
             if (!project || !project.id) return { error:'No project id; cannot update metadata.' };
@@ -286,7 +286,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
                 try { return JSON.parse(res); } catch(e) { return { error:'bad result' }; }
               }
             }
-            return { error: 'browser timeout ÃÂ¢ÃÂÃÂ is the Falkor Bridge extension installed and connected?' };
+            return { error: 'browser timeout ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ is the Falkor Bridge extension installed and connected?' };
           }
           if (name === 'generate_image') {
             try {
@@ -469,8 +469,8 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             // Count occurrences
             const parts = decoded.split(oldStr);
             const occurrences = parts.length - 1;
-            if (occurrences === 0) return { error:'old_string NOT FOUND in '+p+' ÃÂ¢ÃÂÃÂ check exact match incl. whitespace/indent' };
-            if (occurrences > 1 && !replaceAll) return { error:'old_string matches '+occurrences+' times ÃÂ¢ÃÂÃÂ add more context to be unique, or set replace_all=true' };
+            if (occurrences === 0) return { error:'old_string NOT FOUND in '+p+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ check exact match incl. whitespace/indent' };
+            if (occurrences > 1 && !replaceAll) return { error:'old_string matches '+occurrences+' times ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ add more context to be unique, or set replace_all=true' };
             const patched = replaceAll ? parts.join(newStr) : parts[0]+newStr+parts.slice(1).join(oldStr);
             // Commit via Contents API (works up to 100MB; we encode as base64)
             const payload = { message: input.message || 'edit_file via Falkor agent', content: btoa(unescape(encodeURIComponent(patched))), sha };
@@ -501,7 +501,7 @@ const HTML = `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Asgard ÃÂ¢ÃÂÃÂ Project Hub</title>
+<title>Asgard ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Project Hub</title>
 <style>
 :root{--bg:#0a0e14;--panel:#11161f;--panel2:#161c27;--border:#222936;--text:#e6edf6;--muted:#8b95a7;--accent:#ff6b35;--accent2:#ffa94d;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;}
 *{box-sizing:border-box}
@@ -624,7 +624,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fee-row{display:grid;grid-template-columns:1fr 100px 90px;gap:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;align-items:center}
 .fee-row:hover{border-color:var(--accent)}
 .placeholder{padding:40px 30px;color:var(--muted);text-align:center;line-height:1.6}
-/* Falkor mascot ÃÂ¢ÃÂÃÂ individual pose PNGs uploaded to /asset/fk-* */
+/* Falkor mascot ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ individual pose PNGs uploaded to /asset/fk-* */
 .fk{display:inline-block;background-repeat:no-repeat;background-size:contain;background-position:center;background-color:transparent;border-radius:12px}
 .fk-think     {background-image:url(/asset/fk-think)}
 .fk-thumbsup  {background-image:url(/asset/fk-thumbsup)}
@@ -775,7 +775,7 @@ function renderHome(m){
  strip.appendChild(el("div",{class:"fk fk-wave fk-sm",style:"flex:0 0 auto;margin-top:2px"}));
  const stripBody=el("div",{style:"flex:1;display:flex;flex-direction:column;gap:2px"});
  stripBody.appendChild(el("div",{style:"font-size:15px;font-weight:600"},greet+", "+userName+"."));
- const briefLine=el("div",{style:"font-size:12px;color:var(--muted);line-height:1.4"},"Loading todayÃÂ¢ÃÂÃÂs briefingÃÂ¢ÃÂÃÂ¦");
+ const briefLine=el("div",{style:"font-size:12px;color:var(--muted);line-height:1.4"},"Loading todayÃÂÃÂ¢ÃÂÃÂÃÂÃÂs briefingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦");
  stripBody.appendChild(briefLine);
  strip.appendChild(stripBody);
  wrap.appendChild(strip);
@@ -784,15 +784,15 @@ function renderHome(m){
    briefLine.textContent=text||"(no briefing)";
  }).catch(()=>{briefLine.textContent=""});
 
- // Suggestion chips ÃÂ¢ÃÂÃÂ clickable shortcuts that pre-fill chat
+ // Suggestion chips ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ clickable shortcuts that pre-fill chat
  const chips=el("div",{style:"display:flex;flex-wrap:wrap;gap:6px;padding:10px 4px"});
  const suggestions=[
-  ["ÃÂ°ÃÂÃÂÃÂ TodayÃÂ¢ÃÂÃÂs PE outlook", "What's the PE outlook for today? Use the pe-advisor."],
-  ["ÃÂ°ÃÂÃÂÃÂ Top 5 next actions", "List the top 5 pending project next-actions."],
-  ["ÃÂ°ÃÂÃÂÃÂ¯ Essendon news", "Anything new for Essendon this week ÃÂ¢ÃÂÃÂ fixture, ladder, news?"],
-  ["ÃÂ°ÃÂÃÂÃÂ° Revenue snapshot", "Give me a one-paragraph revenue snapshot across the portfolio."],
-  ["ÃÂ°ÃÂÃÂÃÂ§ What needs my attention", "What in the portfolio needs my attention right now? Be specific."],
-  ["ÃÂ°ÃÂÃÂÃÂ¬ Family comp update", "Any updates I should push to the family comp?"]
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ TodayÃÂÃÂ¢ÃÂÃÂÃÂÃÂs PE outlook", "What's the PE outlook for today? Use the pe-advisor."],
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ Top 5 next actions", "List the top 5 pending project next-actions."],
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¯ Essendon news", "Anything new for Essendon this week ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ fixture, ladder, news?"],
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ° Revenue snapshot", "Give me a one-paragraph revenue snapshot across the portfolio."],
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ§ What needs my attention", "What in the portfolio needs my attention right now? Be specific."],
+  ["ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¬ Family comp update", "Any updates I should push to the family comp?"]
  ];
  suggestions.forEach(([label,prompt])=>{
   const c=el("button",{type:"button",style:"background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:99px;cursor:pointer;font-size:12px;white-space:nowrap"},label);
@@ -806,18 +806,18 @@ function renderHome(m){
  });
  wrap.appendChild(chips);
 
- // Big chat surface ÃÂ¢ÃÂÃÂ reuse renderChatPane content but stretched
+ // Big chat surface ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ reuse renderChatPane content but stretched
  const chatBox=el("div",{class:"chat-pane chat-home",style:"flex:1;background:transparent;border:none;border-radius:0;display:flex;flex-direction:column;min-height:0"});
  // chat messages
  const msgs=el("div",{class:"chat-msgs",id:"chat-msgs",style:"flex:1;overflow-y:auto;padding:12px 4px;display:flex;flex-direction:column;gap:10px"});
  chatBox.appendChild(msgs);
  // chat form
  const form=el("form",{class:"chat-form",style:"display:flex;gap:6px;padding:10px 4px 14px;border-top:1px solid var(--border);background:var(--bg)"});
- const inp=el("input",{type:"text",placeholder:STATE.chatContext?("Ask about "+(STATE.chatContext.name||"this project")+"ÃÂ¢ÃÂÃÂ¦"):"Ask Falkor anythingÃÂ¢ÃÂÃÂ¦",style:"flex:1;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px"});
- const micBtn=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer",title:"Hold to record voice"},"ÃÂ°ÃÂÃÂÃÂ¤");
+ const inp=el("input",{type:"text",placeholder:STATE.chatContext?("Ask about "+(STATE.chatContext.name||"this project")+"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦"):"Ask Falkor anythingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦",style:"flex:1;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:14px"});
+ const micBtn=el("button",{type:"button",style:"background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer",title:"Hold to record voice"},"ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¤");
  let recorder=null,chunks=[];
- micBtn.addEventListener("mousedown",async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream,{mimeType:"audio/webm"});recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};recorder.start();micBtn.style.background="var(--accent)";micBtn.textContent="ÃÂ¢ÃÂÃÂº";}catch(e){alert("Mic blocked: "+e.message)}});
- const stop=async()=>{if(!recorder||recorder.state==="inactive")return;recorder.stop();micBtn.style.background="var(--panel2)";micBtn.textContent="ÃÂ°ÃÂÃÂÃÂ¤";await new Promise(r=>recorder.onstop=r);recorder.stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:"audio/webm"});micBtn.disabled=true;micBtn.textContent="ÃÂ¢ÃÂÃÂ¦";try{const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"audio/webm","X-Pin":STATE.agentPin||""},body:blob});const d=await r.json();if(d.text||d.transcript){inp.value=(d.text||d.transcript).trim();form.dispatchEvent(new Event("submit",{cancelable:true}))}else{inp.value=JSON.stringify(d).substring(0,80)}}catch(e){inp.value="STT err: "+e.message}micBtn.disabled=false;micBtn.textContent="ÃÂ°ÃÂÃÂÃÂ¤";};
+ micBtn.addEventListener("mousedown",async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream,{mimeType:"audio/webm"});recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data)};recorder.start();micBtn.style.background="var(--accent)";micBtn.textContent="ÃÂÃÂ¢ÃÂÃÂÃÂÃÂº";}catch(e){alert("Mic blocked: "+e.message)}});
+ const stop=async()=>{if(!recorder||recorder.state==="inactive")return;recorder.stop();micBtn.style.background="var(--panel2)";micBtn.textContent="ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¤";await new Promise(r=>recorder.onstop=r);recorder.stream.getTracks().forEach(t=>t.stop());const blob=new Blob(chunks,{type:"audio/webm"});micBtn.disabled=true;micBtn.textContent="ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦";try{const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"audio/webm","X-Pin":STATE.agentPin||""},body:blob});const d=await r.json();if(d.text||d.transcript){inp.value=(d.text||d.transcript).trim();form.dispatchEvent(new Event("submit",{cancelable:true}))}else{inp.value=JSON.stringify(d).substring(0,80)}}catch(e){inp.value="STT err: "+e.message}micBtn.disabled=false;micBtn.textContent="ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¤";};
  micBtn.addEventListener("mouseup",stop);micBtn.addEventListener("mouseleave",stop);
  micBtn.addEventListener("touchstart",e=>{e.preventDefault();micBtn.dispatchEvent(new Event("mousedown"))});micBtn.addEventListener("touchend",e=>{e.preventDefault();stop()});
  const sendBtn=el("button",{class:"primary",type:"submit",style:"background:var(--accent);color:#fff;border:none;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:600"},"Send");
@@ -827,7 +827,7 @@ function renderHome(m){
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
   STATE.chat.push({role:"user",content:text});
-  STATE.chat.push({role:"assistant",content:"ÃÂ¢ÃÂÃÂ¦",pending:true});
+  STATE.chat.push({role:"assistant",content:"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦",pending:true});
   inp.value="";refreshChat();
   sendBtn.disabled=true;
   try{
@@ -878,8 +878,8 @@ function renderHome(m){
  // home view also gets a small project context indicator if scoped
  if(STATE.chatContext){
   const ctxBar=el("div",{style:"position:absolute;top:14px;right:20px;background:rgba(255,107,53,0.1);color:var(--accent);padding:5px 10px;border-radius:99px;font-size:11px;display:flex;align-items:center;gap:6px;z-index:5"});
-  ctxBar.appendChild(el("span",{},"ÃÂ¢ÃÂÃÂ "+(STATE.chatContext.name||"project")));
-  const clr=el("button",{style:"background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;line-height:1"},"ÃÂÃÂ");
+  ctxBar.appendChild(el("span",{},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ "+(STATE.chatContext.name||"project")));
+  const clr=el("button",{style:"background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;line-height:1"},"ÃÂÃÂÃÂÃÂ");
   clr.addEventListener("click",()=>{STATE.chatContext=null;render()});
   ctxBar.appendChild(clr);
   m.appendChild(ctxBar);
@@ -1119,11 +1119,11 @@ function renderChatPane(){
   const text=inp.value.trim();if(!text)return;
   STATE.chat.push({role:"user",content:text});
   // Add a "thinking" placeholder while AI works
-  STATE.chat.push({role:"assistant",content:"ÃÂ¢ÃÂÃÂ¦",pending:true});
+  STATE.chat.push({role:"assistant",content:"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦",pending:true});
   inp.value="";refreshChat();
   btn.disabled=true;
   try{
-   // Streaming: route through agent-chat-stream ÃÂ¢ÃÂÃÂ tokens arrive word-by-word
+   // Streaming: route through agent-chat-stream ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ tokens arrive word-by-word
    const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
    if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
    // Convert pending placeholder into live streaming bubble
@@ -1348,7 +1348,7 @@ function renderTools(m){
  const vcard=el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px"});
  vcard.appendChild(el("div",{style:"font-weight:600;font-size:13px;margin-bottom:8px"},"TTS provider"));
  const provSel=el("select",{style:"background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;width:100%;margin-bottom:8px"});
- [["openai","OpenAI TTS (default, free-ish)"],["elevenlabs","ElevenLabs (paid plan needed ÃÂ¢ÃÂÃÂ voice clone)"]].forEach(([v,t])=>{const o=el("option",{value:v},t);if(localStorage.getItem("falkor.tts.provider")===v)o.selected=true;provSel.appendChild(o)});
+ [["openai","OpenAI TTS (default, free-ish)"],["elevenlabs","ElevenLabs (paid plan needed ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ voice clone)"]].forEach(([v,t])=>{const o=el("option",{value:v},t);if(localStorage.getItem("falkor.tts.provider")===v)o.selected=true;provSel.appendChild(o)});
  provSel.addEventListener("change",()=>{localStorage.setItem("falkor.tts.provider",provSel.value)});
  vcard.appendChild(provSel);
  vcard.appendChild(el("div",{style:"font-weight:600;font-size:13px;margin:8px 0 4px"},"Voice ID (ElevenLabs)"));
@@ -1432,13 +1432,13 @@ function renderGuide(m){
  intro.appendChild(el("div",{class:"fk fk-help-book fk-md"}));
  intro.appendChild(el("div",{},
   el("div",{style:"font-weight:700;margin-bottom:4px"},"Talk to Falkor like a colleague who has access to everything."),
-  el("div",{style:"font-size:13px;color:var(--muted);line-height:1.5"},"Falkor edits your sites, runs SQL on your D1, deploys workers, drives your browser, and remembers what you tell it. Try the prompts below ÃÂ¢ÃÂÃÂ copy any of them into the chat panel.")
+  el("div",{style:"font-size:13px;color:var(--muted);line-height:1.5"},"Falkor edits your sites, runs SQL on your D1, deploys workers, drives your browser, and remembers what you tell it. Try the prompts below ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ copy any of them into the chat panel.")
  ));
  wrap.appendChild(intro);
 
  const groups = [
   { title:"Edit a project", icon:"\uD83D\uDD27", color:"var(--accent)", prompts:[
-    "Open the Bomber Boat project ÃÂ¢ÃÂÃÂ show me the README",
+    "Open the Bomber Boat project ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ show me the README",
     "On Bomber Boat: add a section about Marvel Stadium pickup times to the README",
     "Fix the typo on line 12 of horseracetipping.com/index.html",
     "Edit Falkor itself: change the login subtitle from 'Project Hub' to 'Paddy Command Centre' and redeploy",
@@ -1500,7 +1500,7 @@ function renderGuide(m){
  [
   "Click any project tile, then \u201cChat about this\u201d to scope the conversation. The agent gets full context (URL/GitHub/tech/cost) automatically.",
   "Click the \u270F Edit code button on any project to open it in github.dev (web VS Code). Or just ask Falkor to edit it for you.",
-  "Most of your projects auto-deploy on commit ÃÂ¢ÃÂÃÂ when Falkor edits + commits a file, it ships within a minute.",
+  "Most of your projects auto-deploy on commit ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ when Falkor edits + commits a file, it ships within a minute.",
   "Browser tools need the Falkor Browser Bridge Chrome extension installed (one-time, takes 60 sec).",
   "Falkor edits its own code: open the Falkor (this hub) tile and tell it what you want changed. It rewrites itself and redeploys."
  ].forEach(t => tips.appendChild(el("div",{style:"margin:6px 0;display:flex;gap:8px"},
@@ -1635,26 +1635,26 @@ function renderSchool(m){
  lessonCard.appendChild(planOut);
  planBtn.addEventListener("click",async()=>{
   planOut.innerHTML="";planOut.appendChild(el("div",{class:"fk fk-think fk-md",style:"margin:10px auto;display:block"}));
-  planOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating 5-day planÃÂ¢ÃÂÃÂ¦ (~30s)"));
+  planOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating 5-day planÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦ (~30s)"));
   planBtn.disabled=true;
   try{
    const r=await fetch("https://falkor-school.luckdragon.io/lesson-week",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({year_level:yrIn.value,duration:Number(durIn.value),theme:themeIn.value||null,class_size:Number(sizeIn.value)})});
    const d=await r.json();
    planOut.innerHTML="";
    if(d.error){planOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+d.error));return}
-   if(d.weather_note)planOut.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-bottom:8px;background:var(--panel2);padding:6px 10px;border-radius:6px"},"ÃÂ¢ÃÂÃÂ "+d.weather_note));
+   if(d.weather_note)planOut.appendChild(el("div",{style:"font-size:11px;color:var(--muted);margin-bottom:8px;background:var(--panel2);padding:6px 10px;border-radius:6px"},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ "+d.weather_note));
    const days=d.days||d.lessons||[];
    if(days.length===0){const pre=el("pre",{style:"white-space:pre-wrap;font-size:12px;background:var(--panel2);padding:10px;border-radius:6px"});pre.textContent=d.plan||d.raw||JSON.stringify(d,null,2);planOut.appendChild(pre);return}
    days.forEach((day,i)=>{
     const dc=el("details",{style:"background:var(--panel2);border-radius:8px;padding:10px;margin-bottom:6px"});
-    const sm=el("summary",{style:"cursor:pointer;font-weight:600;font-size:13px"},"Day "+(i+1)+(day.focus?" ÃÂ¢ÃÂÃÂ "+day.focus:""));
+    const sm=el("summary",{style:"cursor:pointer;font-weight:600;font-size:13px"},"Day "+(i+1)+(day.focus?" ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ "+day.focus:""));
     dc.appendChild(sm);
     const body=el("div",{style:"margin-top:8px;font-size:12px;line-height:1.6"});
     if(day.warm_up)body.appendChild(el("div",{},el("strong",{style:"color:var(--accent)"},"Warm-up: "),day.warm_up));
     if(day.main_activity)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--accent)"},"Main: "),day.main_activity));
     if(day.game)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--accent)"},"Game: "),day.game));
     if(day.equipment)body.appendChild(el("div",{style:"margin-top:4px"},el("strong",{style:"color:var(--muted)"},"Equipment: "),Array.isArray(day.equipment)?day.equipment.join(", "):day.equipment));
-    if(day.curriculum)body.appendChild(el("div",{style:"margin-top:4px;font-size:11px;color:var(--muted)"},"ÃÂ°ÃÂÃÂÃÂ "+day.curriculum));
+    if(day.curriculum)body.appendChild(el("div",{style:"margin-top:4px;font-size:11px;color:var(--muted)"},"ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ "+day.curriculum));
     dc.appendChild(body);
     planOut.appendChild(dc);
    });
@@ -1682,20 +1682,20 @@ function renderSchool(m){
   const cc=d.current_conditions||{};
   const grid=el("div",{style:"display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:10px 0"});
   const stat=(label,val)=>{const c=el("div",{style:"background:var(--panel2);border-radius:6px;padding:8px 10px"});c.appendChild(el("div",{style:"font-size:10px;color:var(--muted);text-transform:uppercase"},label));c.appendChild(el("div",{style:"font-size:15px;font-weight:600"},String(val||"-")));return c};
-  if(cc.temp!=null)grid.appendChild(stat("Temp",cc.temp+"ÃÂÃÂ°C"));
-  if(cc.max!=null)grid.appendChild(stat("Max",cc.max+"ÃÂÃÂ°C"));
+  if(cc.temp!=null)grid.appendChild(stat("Temp",cc.temp+"ÃÂÃÂÃÂÃÂ°C"));
+  if(cc.max!=null)grid.appendChild(stat("Max",cc.max+"ÃÂÃÂÃÂÃÂ°C"));
   if(cc.condition)grid.appendChild(stat("Sky",cc.condition));
   if(cc.uv!=null)grid.appendChild(stat("UV",cc.uv+" "+(cc.uv_category||"")));
   if(cc.wind_kmh!=null)grid.appendChild(stat("Wind",cc.wind_kmh+" km/h"));
   if(cc.rain_chance!=null)grid.appendChild(stat("Rain",cc.rain_chance+"%"));
   peBody.appendChild(grid);
   const flags=[];
-  if(d.sunscreen_required)flags.push("ÃÂ°ÃÂÃÂ§ÃÂ´ Sunscreen");
-  if(d.hat_required)flags.push("ÃÂ°ÃÂÃÂ§ÃÂ¢ Hat");
-  if(d.water_breaks_required)flags.push("ÃÂ°ÃÂÃÂÃÂ§ Water breaks");
-  if(flags.length)peBody.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:6px"},flags.join(" ÃÂÃÂ· ")));
-  if(Array.isArray(d.stop_factors)&&d.stop_factors.length){const w=el("div",{style:"margin-top:10px;padding:10px;background:rgba(239,68,68,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--red);margin-bottom:4px"},"ÃÂ¢ÃÂÃÂ Stop factors"));d.stop_factors.forEach(f=>w.appendChild(el("div",{},"ÃÂ¢ÃÂÃÂ¢ "+f)));peBody.appendChild(w)}
-  if(Array.isArray(d.caution_factors)&&d.caution_factors.length){const w=el("div",{style:"margin-top:8px;padding:10px;background:rgba(245,158,11,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--amber);margin-bottom:4px"},"ÃÂ¢ÃÂÃÂ ÃÂ¯ÃÂ¸ÃÂ Caution"));d.caution_factors.forEach(f=>w.appendChild(el("div",{},"ÃÂ¢ÃÂÃÂ¢ "+f)));peBody.appendChild(w)}
+  if(d.sunscreen_required)flags.push("ÃÂÃÂ°ÃÂÃÂÃÂÃÂ§ÃÂÃÂ´ Sunscreen");
+  if(d.hat_required)flags.push("ÃÂÃÂ°ÃÂÃÂÃÂÃÂ§ÃÂÃÂ¢ Hat");
+  if(d.water_breaks_required)flags.push("ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ§ Water breaks");
+  if(flags.length)peBody.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:6px"},flags.join(" ÃÂÃÂÃÂÃÂ· ")));
+  if(Array.isArray(d.stop_factors)&&d.stop_factors.length){const w=el("div",{style:"margin-top:10px;padding:10px;background:rgba(239,68,68,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--red);margin-bottom:4px"},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Stop factors"));d.stop_factors.forEach(f=>w.appendChild(el("div",{},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¢ "+f)));peBody.appendChild(w)}
+  if(Array.isArray(d.caution_factors)&&d.caution_factors.length){const w=el("div",{style:"margin-top:8px;padding:10px;background:rgba(245,158,11,.1);border-radius:6px;font-size:12px"});w.appendChild(el("div",{style:"font-weight:600;color:var(--amber);margin-bottom:4px"},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ÃÂÃÂ¯ÃÂÃÂ¸ÃÂÃÂ Caution"));d.caution_factors.forEach(f=>w.appendChild(el("div",{},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¢ "+f)));peBody.appendChild(w)}
 }).catch(e=>{peBody.textContent="Error: "+e.message});
  wrap.appendChild(pe);
  // XC results card
@@ -1732,7 +1732,7 @@ function renderKBT(m){
  buildBtn.addEventListener("click",async()=>{
   const theme=themeIn.value.trim()||"general knowledge Australia";
   buildOut.innerHTML="";buildOut.appendChild(el("div",{class:"fk fk-think fk-md",style:"margin:10px auto;display:block"}));
-  buildOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating "+roundsIn.value+" rounds ÃÂÃÂ "+qprIn.value+" questionsÃÂ¢ÃÂÃÂ¦ (~30s)"));
+  buildOut.appendChild(el("div",{style:"text-align:center;color:var(--muted);font-size:12px;margin-top:6px"},"Generating "+roundsIn.value+" rounds ÃÂÃÂÃÂÃÂ "+qprIn.value+" questionsÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦ (~30s)"));
   buildBtn.disabled=true;
   try{
    const r=await fetch("https://falkor-kbt.luckdragon.io/build-pack",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":PIN},body:JSON.stringify({theme,rounds:Number(roundsIn.value),qpr:Number(qprIn.value)})});
@@ -1741,7 +1741,7 @@ function renderKBT(m){
    if(d.error){buildOut.appendChild(el("div",{style:"color:var(--red)"},"Error: "+d.error));return}
    const head=el("div",{style:"display:flex;align-items:baseline;gap:10px;margin-bottom:8px"});
    head.appendChild(el("div",{style:"font-size:15px;font-weight:700"},theme));
-   if(d.suno_prompt)head.appendChild(el("div",{style:"font-size:11px;color:var(--muted)"},"ÃÂ°ÃÂÃÂÃÂµ Suno prompt available"));
+   if(d.suno_prompt)head.appendChild(el("div",{style:"font-size:11px;color:var(--muted)"},"ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂµ Suno prompt available"));
    buildOut.appendChild(head);
    (d.rounds||d.pack?.rounds||[]).forEach((rnd,i)=>{
     const rb=el("details",{style:"background:var(--panel2);border-radius:8px;padding:10px;margin-bottom:6px"});
@@ -1751,7 +1751,7 @@ function renderKBT(m){
      const qd=el("div",{style:"margin-top:8px;padding:8px;background:var(--panel);border-radius:6px;font-size:12px"});
      qd.appendChild(el("div",{style:"font-weight:600"},(j+1)+". "+(q.q||q.question||"")));
      qd.appendChild(el("div",{style:"color:var(--accent);margin-top:4px"},"Ans: "+(q.a||q.answer||"")));
-     if(q.fun_fact)qd.appendChild(el("div",{style:"color:var(--muted);margin-top:2px;font-style:italic"},"ÃÂ°ÃÂÃÂÃÂ¡ "+q.fun_fact));
+     if(q.fun_fact)qd.appendChild(el("div",{style:"color:var(--muted);margin-top:2px;font-style:italic"},"ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ¡ "+q.fun_fact));
      rb.appendChild(qd);
     });
     buildOut.appendChild(rb);
@@ -1767,10 +1767,10 @@ function renderKBT(m){
  // === Live games list + host controls ===
  const liveCard=el("div",{class:"fcard"});
  liveCard.appendChild(el("div",{class:"fcard-label"},"LIVE GAMES"));
- const liveBody=el("div",{style:"margin-top:8px;font-size:13px"},"LoadingÃÂ¢ÃÂÃÂ¦");
+ const liveBody=el("div",{style:"margin-top:8px;font-size:13px"},"LoadingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦");
  liveCard.appendChild(liveBody);
- const refresh=async()=>{liveBody.textContent="LoadingÃÂ¢ÃÂÃÂ¦";try{const r=await fetch("https://falkor-kbt.luckdragon.io/game/list",{headers:{"X-Pin":PIN}});const d=await r.json();liveBody.innerHTML="";const games=d.games||(Array.isArray(d)?d:[]);if(games.length===0){liveBody.appendChild(el("div",{style:"color:var(--muted);font-size:12px;text-align:center;padding:20px"},"No live games. Use the build-pack form above to generate a quiz, then host it via the falkor-kbt API."));return}games.forEach(g=>{const gr=el("div",{style:"display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:10px;background:var(--panel2);border-radius:6px;margin-bottom:6px;align-items:center"});gr.appendChild(el("div",{},el("div",{style:"font-weight:600"},g.code||g.id||"?"),el("div",{style:"font-size:11px;color:var(--muted)"},g.theme||g.title||"")));gr.appendChild(el("span",{class:"badge "+(g.status||"").toLowerCase()},g.status||"?"));const view=el("a",{href:"https://falkor-kbt.luckdragon.io/scoreboard/"+(g.code||g.id),target:"_blank",style:"color:var(--accent);font-size:12px;text-decoration:none"},"ÃÂ°ÃÂÃÂÃÂº Scoreboard");gr.appendChild(view);liveBody.appendChild(gr)});}catch(e){liveBody.textContent="Error: "+e.message}};
- const refreshBtn=el("button",{style:"margin-top:8px;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer"},"ÃÂ¢ÃÂÃÂ» Refresh");
+ const refresh=async()=>{liveBody.textContent="LoadingÃÂÃÂ¢ÃÂÃÂÃÂÃÂ¦";try{const r=await fetch("https://falkor-kbt.luckdragon.io/game/list",{headers:{"X-Pin":PIN}});const d=await r.json();liveBody.innerHTML="";const games=d.games||(Array.isArray(d)?d:[]);if(games.length===0){liveBody.appendChild(el("div",{style:"color:var(--muted);font-size:12px;text-align:center;padding:20px"},"No live games. Use the build-pack form above to generate a quiz, then host it via the falkor-kbt API."));return}games.forEach(g=>{const gr=el("div",{style:"display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:10px;background:var(--panel2);border-radius:6px;margin-bottom:6px;align-items:center"});gr.appendChild(el("div",{},el("div",{style:"font-weight:600"},g.code||g.id||"?"),el("div",{style:"font-size:11px;color:var(--muted)"},g.theme||g.title||"")));gr.appendChild(el("span",{class:"badge "+(g.status||"").toLowerCase()},g.status||"?"));const view=el("a",{href:"https://falkor-kbt.luckdragon.io/scoreboard/"+(g.code||g.id),target:"_blank",style:"color:var(--accent);font-size:12px;text-decoration:none"},"ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂº Scoreboard");gr.appendChild(view);liveBody.appendChild(gr)});}catch(e){liveBody.textContent="Error: "+e.message}};
+ const refreshBtn=el("button",{style:"margin-top:8px;background:var(--panel2);color:var(--text);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer"},"ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ» Refresh");
  refreshBtn.addEventListener("click",refresh);
  liveCard.appendChild(refreshBtn);
  wrap.appendChild(liveCard);
@@ -1822,7 +1822,7 @@ export default {
     const cron = event.cron || '';
     const now = new Date();
     try {
-      // 09:00 UTC = 7pm Melbourne AEST ÃÂ¢ÃÂÃÂ AFL daily digest to family
+      // 09:00 UTC = 7pm Melbourne AEST ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ AFL daily digest to family
       if (cron === '0 9 * * *') {
         const d = await fetch('https://falkor.luckdragon.io/api/sport/afl/digest').then(r => r.json());
         if (d.digest) {
@@ -1834,19 +1834,19 @@ export default {
           await env.ASSETS.put('cron:afl_digest:'+now.toISOString().substring(0,10), JSON.stringify({status:r.status, sent:Date.now()}), {expirationTtl: 7*86400});
         }
       }
-      // 21:00 UTC = 7am Melbourne AEST next-day ÃÂ¢ÃÂÃÂ daily morning briefing to Paddy
+      // 21:00 UTC = 7am Melbourne AEST next-day ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ daily morning briefing to Paddy
       else if (cron === '0 21 * * *') {
         const d = await fetch('https://falkor.luckdragon.io/api/briefing', {headers:{'X-Pin':env.AGENT_PIN}}).then(r => r.json());
         if (d.briefing) {
           await fetch('https://falkor-telegram.luckdragon.io/send', {
             method:'POST',
             headers:{'Content-Type':'application/json','X-Pin': env.AGENT_PIN},
-            body: JSON.stringify({target:'paddy', text: 'ÃÂ°ÃÂÃÂÃÂ <b>Morning briefing</b>\n\n'+d.briefing, parse_mode:'HTML'}),
+            body: JSON.stringify({target:'paddy', text: 'ÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂ <b>Morning briefing</b>\n\n'+d.briefing, parse_mode:'HTML'}),
           });
           await env.ASSETS.put('cron:briefing:'+now.toISOString().substring(0,10), JSON.stringify({sent:Date.now()}), {expirationTtl: 7*86400});
         }
       }
-      // 17:00 UTC = 3am Melbourne AEST ÃÂ¢ÃÂÃÂ memory consolidation (placeholder log)
+      // 17:00 UTC = 3am Melbourne AEST ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ memory consolidation (placeholder log)
       else if (cron === '0 17 * * *') {
         await env.ASSETS.put('cron:memory_consolidate:'+now.toISOString().substring(0,10), JSON.stringify({ran:Date.now()}), {expirationTtl: 7*86400});
       }
@@ -2065,7 +2065,7 @@ upBtn.onclick=async()=>{
           'groq': 1000,              // 1000 req/day free
           'gemini-flash-lite': 1000, // 1000 req/day
           'openrouter-free': 200,    // 200 req/day
-          'mistral-free': 1000,      // ~33k req/month ÃÂ¢ÃÂÃÂ 1000/day
+          'mistral-free': 1000,      // ~33k req/month ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ 1000/day
           'deepseek': Infinity,      // paid but cheapest
           'qwen': Infinity,
           'gemini-flash': Infinity,
@@ -2115,7 +2115,7 @@ upBtn.onclick=async()=>{
           pick = tiers[1] || 'haiku';
         }
 
-        // Map provider ÃÂ¢ÃÂÃÂ asgard-ai supported model + provider
+        // Map provider ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ asgard-ai supported model + provider
         // Map our tier names to asgard-ai's model aliases (only providers asgard-ai supports today)
         const PROVIDER_MAP = {
           'groq':              {alias:'groq-fast'},
@@ -2271,6 +2271,51 @@ upBtn.onclick=async()=>{
           return Response.json({ok:true, digest: lines.join(String.fromCharCode(10))}, {headers:{...CORS,...NOCACHE}});
         }
         return Response.json({error:'unknown sub: '+sub},{status:404,headers:{...CORS,...NOCACHE}});
+      }
+
+    // Family AFL tipping comp endpoints
+    if(url.pathname==='/api/family/members'&&request.method==='GET'){
+      try {
+        const res = await env.D1.prepare('SELECT member,display_name FROM family_members ORDER BY member').all();
+        return Response.json({ok:true, members: res.results||[]}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/family/tip'&&request.method==='POST'){
+      try {
+        const body = await request.json();
+        const {member, round, game_id, tip} = body;
+        await env.D1.prepare('INSERT INTO family_tips (member,year,round,game_id,tip,locked_in_at) VALUES (?,2025,?,?,?,?) ON CONFLICT(member,year,round,game_id) DO UPDATE SET tip=?,locked_in_at=?')
+          .bind(member, round, game_id, tip, Date.now(), tip, Date.now()).run();
+        return Response.json({ok:true}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/family/tips'&&request.method==='GET'){
+      try {
+        const round = url.searchParams.get('round');
+        const q = round ? 'SELECT * FROM family_tips WHERE round=? AND year=2025 ORDER BY member' : 'SELECT * FROM family_tips WHERE year=2025 ORDER BY round,member';
+        const res = round ? await env.D1.prepare(q).bind(round).all() : await env.D1.prepare(q).all();
+        return Response.json({ok:true, tips: res.results||[]}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
+    if(url.pathname==='/api/family/leaderboard'&&request.method==='GET'){
+      try {
+        const res = await env.D1.prepare(`
+          SELECT member, COUNT(*) as tips_submitted, SUM(CASE WHEN points>0 THEN 1 ELSE 0 END) as correct, SUM(points) as total_points
+          FROM family_tips WHERE year=2025 GROUP BY member ORDER BY total_points DESC, member
+        `).all();
+        return Response.json({ok:true, leaderboard: res.results||[]}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
@@ -2375,7 +2420,7 @@ upBtn.onclick=async()=>{
               const hd = await hr.json();
               priorTurns = (hd.result?.[0]?.results || []).reverse().map(r=>({role:r.role,content:r.content}));
             } catch(e){}
-            let system = "You are Falkor ÃÂ¢ÃÂÃÂ Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies." + memBlock;
+            let system = "You are Falkor ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Paddy's personal coding agent embedded in his Asgard project hub. Casual, direct, terse. No fluff, no apologies." + memBlock;
             if (project) {
               const ctx = ['','PROJECT CONTEXT:','Name: '+project.name];
               if (project.url) ctx.push('Live: '+project.url);
@@ -2556,7 +2601,7 @@ upBtn.onclick=async()=>{
           });
           const md = await mr.json();
           const mems = md.result?.[0]?.results || [];
-          if (mems.length) memBlock = String.fromCharCode(10,10) + 'WHAT YOU REMEMBER ABOUT PADDY (long-term memory ÃÂ¢ÃÂÃÂ these are important):'+ String.fromCharCode(10) + mems.map(m => '- ['+m.category+'] '+m.fact).join(String.fromCharCode(10));
+          if (mems.length) memBlock = String.fromCharCode(10,10) + 'WHAT YOU REMEMBER ABOUT PADDY (long-term memory ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ these are important):'+ String.fromCharCode(10) + mems.map(m => '- ['+m.category+'] '+m.fact).join(String.fromCharCode(10));
         } catch(e){}
         system += memBlock;
 
