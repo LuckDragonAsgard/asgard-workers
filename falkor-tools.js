@@ -1242,14 +1242,14 @@ function renderHome(m){
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
   STATE.chat.push({role:"user",content:text});
-  STATE.chat.push({role:"assistant",content:"…",pending:true});
-  inp.value="";inp.disabled=true;refreshChat();
+  STATE.chat.push({role:"assistant",content:"⟳",pending:true,spinning:true});
+  inp.value="";refreshChat();
   sendBtn.disabled=true;
   try{
    const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
    const live=STATE.chat[STATE.chat.length-1];
-   if(live&&live.pending){live.pending=false;live.streaming=true;live.content=""}
+   if(live&&live.pending){live.pending=false;live.streaming=true;live.spinning=false;live.content=""}
    refreshChat();
    const reader=r.body.getReader();const td=new TextDecoder();
    let buf="";let toolCalls=[];let images=[];let liveSummary=[];
@@ -1278,10 +1278,9 @@ function renderHome(m){
   }catch(err){
    if(STATE.chat.length&&STATE.chat[STATE.chat.length-1].pending)STATE.chat.pop();
    const live=STATE.chat[STATE.chat.length-1];
-   if(live&&live.streaming){live.streaming=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
+   if(live&&live.streaming){live.streaming=false;live.spinning=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
    else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
   }
-  inp.disabled=false;
   sendBtn.disabled=false;refreshChat();inp.focus();
  });
  chatBox.appendChild(form);
