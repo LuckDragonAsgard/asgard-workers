@@ -1242,14 +1242,17 @@ function renderHome(m){
  form.appendChild(upload);
  form.appendChild(micBtn);form.appendChild(inp);form.appendChild(sendBtn);
 
- form.addEventListener("submit",async(e)=>{
-  e.preventDefault();
-  const text=inp.value.trim();if(!text)return;
+ STATE.messageQueue=STATE.messageQueue||[];
+ const processQueue=async()=>{
+  if(STATE.isWaiting||STATE.messageQueue.length===0)return;
+  STATE.isWaiting=true;
+  const text=STATE.messageQueue.shift();
   STATE.chat.push({role:"user",content:text});
-  STATE.chat.push({role:"assistant",content:"...",pending:true,spinning:true});
-  inp.value="";refreshChat();
+  STATE.chat.push({role:"assistant",content:"⟳",pending:true,spinning:true});
+  refreshChat();
   saveChat();
-  sendBtn.disabled=true;
+  sendBtn.textContent="Processing ⟳";
+  sendBtn.style.opacity="0.6";
   try{
    const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[]})});if(STATE.pendingImages)STATE.pendingImages=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
@@ -1286,10 +1289,22 @@ function renderHome(m){
    if(live&&live.streaming){live.streaming=false;live.spinning=false;live.content+=String.fromCharCode(10)+"Error: "+err.message}
    else STATE.chat.push({role:"assistant",content:"Error: "+err.message,resultMood:"error"});
   }
-  sendBtn.disabled=false;
+  STATE.isWaiting=false;
+  sendBtn.textContent="Send";
+  sendBtn.style.opacity="1";
   refreshChat();
   saveChat();
+  const chatArea=document.querySelector(".chat-area");
+  if(chatArea)setTimeout(()=>{chatArea.scrollTop=chatArea.scrollHeight},50);
+  processQueue();
   inp.focus();
+ });
+ form.addEventListener("submit",async(e)=>{
+  e.preventDefault();
+  const text=inp.value.trim();if(!text)return;
+  inp.value="";
+  STATE.messageQueue.push(text);
+  if(!STATE.isWaiting)processQueue();
  });
  chatBox.appendChild(form);
  wrap.appendChild(chatBox);
