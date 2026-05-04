@@ -2483,9 +2483,10 @@ export default {
         try {
           const vr = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served');
           const vd = await vr.json();
-          if (!vd.ok && vd.errors && vd.errors.length > 0) {
+          const realErrors = (vd.errors||[]).filter(e => e.severity !== 'warn');
+          if (realErrors.length > 0) {
             // Browser-side JS broke! Auto-rollback to previous commit.
-            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:vd.errors, at:Date.now()}), {expirationTtl:30*86400});
+            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:realErrors, at:Date.now()}), {expirationTtl:30*86400});
             await fetch('https://falkor.luckdragon.io/api/falkor/auto-rollback', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
           }
         } catch(e){}
@@ -2505,8 +2506,10 @@ export default {
         try {
           const vr = await fetch('https://falkor.luckdragon.io/api/falkor/verify-served');
           const vd = await vr.json();
-          if (!vd.ok && vd.errors && vd.errors.length > 0) {
-            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:vd.errors, at:Date.now()}), {expirationTtl:30*86400});
+          // Only fire auto-rollback on DEFINITIVE errors (not warnings like balance-check false positives)
+          const realErrors = (vd.errors||[]).filter(e => e.severity !== 'warn');
+          if (realErrors.length > 0) {
+            await env.ASSETS.put('cron:autorollback_triggered:'+now.toISOString(), JSON.stringify({errors:realErrors, at:Date.now()}), {expirationTtl:30*86400});
             await fetch('https://falkor.luckdragon.io/api/falkor/auto-rollback', {method:'POST', headers:{'X-Pin':env.AGENT_PIN}});
           }
         } catch(e){}
@@ -3296,7 +3299,8 @@ upBtn.onclick=async()=>{
             i++;
           }
           if (p!==0 || b!==0 || br!==0) {
-            errors.push({error:'inline JS unbalanced (parens='+p+', braces='+b+', brackets='+br+')'});
+            // Balance check has false positives on regex literals — informational only, not auto-rollback trigger
+            errors.push({warn:'inline JS unbalanced (parens='+p+', braces='+b+', brackets='+br+') — may be regex-literal false positive', severity:'warn'});
           }
           // Anti-dupe Object.defineProperty
           const dpMatches = [...js.matchAll(/Object\.defineProperty\s*\(\s*([\w.]+)\s*,\s*["']([^"']+)["']/g)];
@@ -3315,7 +3319,8 @@ upBtn.onclick=async()=>{
         // Heartbeat freshness (informational only — not a failure)
         let lastHB = null;
         try { const v = await env.ASSETS.get('falkor:heartbeat:latest'); if (v) lastHB = parseInt(v); } catch(e){}
-        return Response.json({ok: errors.length===0, errors, html_size: html.length, last_heartbeat: lastHB, last_heartbeat_age_sec: lastHB ? Math.round((Date.now()-lastHB)/1000) : null}, {headers:{...CORS,...NOCACHE}});
+        const realErrCount = errors.filter(e => e.severity !== 'warn').length;
+        return Response.json({ok: realErrCount===0, errors, real_errors: realErrCount, html_size: html.length, last_heartbeat: lastHB, last_heartbeat_age_sec: lastHB ? Math.round((Date.now()-lastHB)/1000) : null}, {headers:{...CORS,...NOCACHE}});
       } catch(e){
         return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}});
       }
