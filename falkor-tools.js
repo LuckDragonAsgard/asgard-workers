@@ -128,6 +128,16 @@ const AGENT_TOOLS = [
 const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
 
 
+async function logCost(env, opts) {
+  // Fire-and-forget cost log. opts: {service, model, tokens_in, tokens_out, source, category}
+  try {
+    fetch('https://falkor.luckdragon.io/api/cost/log', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(opts), signal: AbortSignal.timeout(2000)
+    }).catch(()=>{});
+  } catch(e) {}
+}
+
 async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
           const needRepo = ['list_files','read_file','grep_file','edit_file','multi_edit','write_file','cf_deploy_worker'].includes(name);
           // Default to asgard-workers when no project repo is bound — most self-edits target this repo
@@ -3522,6 +3532,88 @@ upBtn.onclick=async()=>{
     }
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
+    }
+    if(url.pathname==='/api/cost/log'&&request.method==='POST'){
+      try {
+        const b = await request.json();
+        // Price table — $ per 1M tokens (or per unit for non-token services). Source: each provider's pricing page, May 2026.
+        const PRICES = {
+          'anthropic': {
+            'claude-haiku-4-5-20251001': { in: 1.00, out: 5.00 },
+            'claude-haiku-4-5': { in: 1.00, out: 5.00 },
+            'claude-sonnet-4': { in: 3.00, out: 15.00 },
+            'claude-sonnet-4-5': { in: 3.00, out: 15.00 },
+            'claude-opus-4': { in: 15.00, out: 75.00 },
+            'default': { in: 1.00, out: 5.00 }
+          },
+          'openai': {
+            'gpt-4o-mini': { in: 0.15, out: 0.60 },
+            'gpt-4o': { in: 2.50, out: 10.00 },
+            'gpt-4-turbo': { in: 10.00, out: 30.00 },
+            'whisper-1': { per_min: 0.006 },
+            'tts-1': { per_M_chars: 15.00 },
+            'tts-1-hd': { per_M_chars: 30.00 },
+            'dall-e-3': { per_image: 0.04 },
+            'default': { in: 0.50, out: 2.00 }
+          },
+          'gemini': {
+            'gemini-1.5-flash': { in: 0.075, out: 0.30 },
+            'gemini-1.5-pro': { in: 1.25, out: 5.00 },
+            'default': { in: 0.075, out: 0.30 }
+          },
+          'groq': {
+            'default': { in: 0, out: 0 }  // currently free tier
+          },
+          'elevenlabs': {
+            'default': { per_M_chars: 165.00 }  // ~$165 per 1M chars on Starter
+          },
+          'tavily': { default: { per_search: 0.005 } },
+          'serper': { default: { per_search: 0.001 } }
+        };
+        const service = String(b.service||'').toLowerCase();
+        const model = String(b.model||'default');
+        const inT = parseInt(b.tokens_in||0);
+        const outT = parseInt(b.tokens_out||0);
+        const count = parseInt(b.count||1);
+        const pt = PRICES[service]?.[model] || PRICES[service]?.default || {};
+        let amount = 0;
+        if (pt.in !== undefined) amount += (inT * pt.in / 1000000);
+        if (pt.out !== undefined) amount += (outT * pt.out / 1000000);
+        if (pt.per_M_chars !== undefined) amount += (parseInt(b.chars||0) * pt.per_M_chars / 1000000);
+        if (pt.per_image !== undefined) amount += (count * pt.per_image);
+        if (pt.per_search !== undefined) amount += (count * pt.per_search);
+        if (pt.per_min !== undefined) amount += (parseFloat(b.minutes||0) * pt.per_min);
+        const today = new Date().toISOString().substring(0,10);
+        const meta = JSON.stringify({model, tokens_in:inT, tokens_out:outT, count, chars:b.chars, minutes:b.minutes});
+        // Write to cost_logs D1 (separate DB)
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/009455d1-0919-4fac-a60f-6e2a2bb18839/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'INSERT INTO cost_logs (date, service, category, amount, currency, source, metadata) VALUES (?, ?, ?, ?, ?, ?, ?)', params:[today, service, String(b.category||model), amount, 'USD', String(b.source||'unknown'), meta]})
+        });
+        return Response.json({ok:true, amount: Math.round(amount*1000000)/1000000, service, model}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/cost/summary'&&request.method==='GET'){
+      try {
+        const days = Math.min(parseInt(url.searchParams.get('days')||30), 90);
+        const since = new Date(Date.now() - days*86400000).toISOString().substring(0,10);
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/009455d1-0919-4fac-a60f-6e2a2bb18839/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT service, category, COUNT(*) as calls, SUM(amount) as total FROM cost_logs WHERE date >= ? GROUP BY service, category ORDER BY total DESC', params:[since]})
+        });
+        const d = await r.json();
+        const rows = d.result?.[0]?.results || [];
+        const byService = {};
+        let grand = 0;
+        for (const row of rows) {
+          if (!byService[row.service]) byService[row.service] = { total:0, calls:0, breakdown:[] };
+          byService[row.service].total += row.total;
+          byService[row.service].calls += row.calls;
+          byService[row.service].breakdown.push({ category: row.category, calls: row.calls, total: row.total });
+          grand += row.total;
+        }
+        return Response.json({ok:true, days, since, grand_total: Math.round(grand*100)/100, by_service: byService, raw: rows}, {headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
     }
     if(url.pathname==='/api/falkor/costs'&&request.method==='GET'){
       try {
