@@ -552,7 +552,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fk-pray      {background-image:url(/asset/fk-pray)}
 .fk-laugh     {background-image:url(/asset/fk-laugh)}
 .fk-wait      {background-image:url(/asset/fk-wait)}
-.fk-xl{width:140px;height:140px;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff}
+.fk-xl{width:140px;height:140px;background-size:contain;background-position:center;background-repeat:no-repeat;background-color:transparent}
 .fk-lg{width:96px;height:96px}
 .fk-md{width:48px;height:48px}
 .fk-sm{width:32px;height:32px}
@@ -1750,7 +1750,7 @@ upBtn.onclick=async()=>{
       if (!obj || !obj.value) return new Response('Not found',{status:404,headers:CORS});
       const ct = obj.metadata?.content_type || 'application/octet-stream';
       const bin = Uint8Array.from(atob(obj.value), c => c.charCodeAt(0));
-      return new Response(bin, {headers:{'Content-Type':ct,'Cache-Control':'public, max-age=31536000, immutable',...CORS}});
+      return new Response(bin, {headers:{'Content-Type':ct,'Cache-Control':'public, max-age=300, must-revalidate',...CORS}});
     }
     if(url.pathname==='/api/stt'&&request.method==='POST'){
       try {
@@ -2190,5 +2190,3 @@ upBtn.onclick=async()=>{
     }
 
     return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
-  },
-};
