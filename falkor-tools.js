@@ -264,28 +264,79 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               const pname = (input.name||'').replace(/[^a-zA-Z0-9-]/g,'');
               if (!pname) return { error:'project name required' };
               const dir = (input.dir||'public').replace(/[^a-zA-Z0-9_./-]/g,'');
-              // Check if Pages project exists
+              const cfHeaders = {'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'};
+              // 1) Ensure the Pages project exists
               const existR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/pages/projects/'+pname, { headers:{'Authorization':'Bearer '+env.CF_API_TOKEN} });
               if (existR.status === 404) {
-                // Create the project
                 const createR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/pages/projects', {
-                  method:'POST',
-                  headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+                  method:'POST', headers:cfHeaders,
                   body: JSON.stringify({ name: pname, production_branch: 'main' }),
                 });
                 const cd = await createR.json();
                 if (!cd.success) return { error:'create Pages project failed', detail: JSON.stringify(cd.errors||[]).substring(0,400) };
               }
-              // Trigger a deployment from GitHub via direct upload of the dir
-              // Fetch file list from GitHub for the directory
-              const treeR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+dir, { headers: ghHeaders });
-              if (!treeR.ok) return { error:'dir '+dir+' not found in repo (HTTP '+treeR.status+')' };
-              const tree = await treeR.json();
-              if (!Array.isArray(tree) || tree.length === 0) return { error:'no files in '+dir };
-              // Build a manifest for Pages direct upload (we can only upload files <25MB each)
-              // Use the simpler approach: trigger a deployment from the GitHub source if Pages is connected to GH
-              // Fallback: report what would be deployed
-              return { ok:true, project:pname, files_in_dir: tree.length, note:'Pages source listed — full deploy requires either GitHub integration in Pages settings or wrangler-pages CLI for direct upload. List of files: ' + tree.map(f=>f.name).join(', ').substring(0,400) };
+              // 2) Recursively walk GitHub dir to get all files
+              async function walk(p) {
+                const r = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+p, { headers: ghHeaders });
+                if (!r.ok) throw new Error('walk '+p+' HTTP '+r.status);
+                const list = await r.json();
+                if (!Array.isArray(list)) throw new Error('not a dir: '+p);
+                let out = [];
+                for (const item of list) {
+                  if (item.type === 'file') out.push(item);
+                  else if (item.type === 'dir') out = out.concat(await walk(item.path));
+                }
+                return out;
+              }
+              const files = await walk(dir);
+              if (files.length === 0) return { error:'no files in '+dir };
+              if (files.length > 50) return { error:'too many files ('+files.length+') — direct-upload tool is for small static sites <50 files' };
+              // 3) Fetch content + compute SHA256 for each file (Pages requires hex SHA256 of base64-encoded content)
+              const manifest = {};   // {pathKey: {hash, base64, ct}}
+              for (const f of files) {
+                const fr = await fetch(f.download_url || ('https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/'+f.path), { headers: ghHeaders });
+                if (!fr.ok) return { error:'fetch '+f.path+' HTTP '+fr.status };
+                const buf = new Uint8Array(await fr.arrayBuffer());
+                if (buf.length > 25*1024*1024) return { error:'file '+f.path+' >25MB' };
+                let b64=''; for (let i=0;i<buf.length;i++) b64+=String.fromCharCode(buf[i]);
+                b64 = btoa(b64);
+                const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(b64));
+                const hashArr = Array.from(new Uint8Array(hashBuf));
+                const hashHex = hashArr.map(b=>b.toString(16).padStart(2,'0')).join('');
+                // Path inside Pages: strip the dir prefix
+                const key = '/' + f.path.replace(new RegExp('^'+dir.replace(/[^a-zA-Z0-9]/g,'\\$&')+'/?'), '');
+                const ext = (f.name.split('.').pop()||'').toLowerCase();
+                const ctMap = { html:'text/html', js:'application/javascript', css:'text/css', json:'application/json', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', svg:'image/svg+xml', ico:'image/x-icon', txt:'text/plain', md:'text/markdown' };
+                manifest[key] = { hash: hashHex, base64: b64, contentType: ctMap[ext]||'application/octet-stream' };
+              }
+              // 4) Get upload JWT
+              const tokR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/pages/projects/'+pname+'/upload-token', { headers:{'Authorization':'Bearer '+env.CF_API_TOKEN} });
+              const tokD = await tokR.json();
+              if (!tokD.success) return { error:'upload-token failed', detail: JSON.stringify(tokD.errors||[]).substring(0,400) };
+              const jwt = tokD.result.jwt;
+              // 5) Check missing
+              const hashes = Object.values(manifest).map(m=>m.hash);
+              const missR = await fetch('https://api.cloudflare.com/client/v4/pages/assets/check-missing', { method:'POST', headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}, body: JSON.stringify({hashes}) });
+              const missD = await missR.json();
+              const missing = new Set(missD.result || []);
+              // 6) Upload missing
+              const toUpload = Object.values(manifest).filter(m=>missing.has(m.hash));
+              for (let i=0; i<toUpload.length; i+=5) {
+                const batch = toUpload.slice(i, i+5);
+                const payload = batch.map(m=>({ key: m.hash, value: m.base64, base64: true, metadata: { contentType: m.contentType } }));
+                const upR = await fetch('https://api.cloudflare.com/client/v4/pages/assets/upload', { method:'POST', headers:{'Authorization':'Bearer '+jwt,'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                const upD = await upR.json();
+                if (!upD.success) return { error:'asset upload batch '+i+' failed', detail: JSON.stringify(upD.errors||[]).substring(0,400) };
+              }
+              // 7) Create deployment with manifest
+              const deployManifest = {};
+              for (const [key, m] of Object.entries(manifest)) deployManifest[key] = m.hash;
+              const fd = new FormData();
+              fd.append('manifest', JSON.stringify(deployManifest));
+              const depR = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/pages/projects/'+pname+'/deployments', { method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN}, body: fd });
+              const depD = await depR.json();
+              if (!depD.success) return { error:'deployment creation failed', detail: JSON.stringify(depD.errors||[]).substring(0,400) };
+              return { ok:true, project: pname, deployment_id: depD.result?.id, url: depD.result?.url, files_uploaded: toUpload.length, files_total: files.length };
             } catch(e) { return { error: 'cf_deploy_pages: '+String(e).substring(0,200) }; }
           }
           if (name === 'cf_deploy_worker') {
