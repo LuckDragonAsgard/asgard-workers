@@ -212,6 +212,15 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## ✅ Recently shipped (2026-05-03 → 2026-05-04)
 
+**Firebase → Cloudflare migration Phase 1 (2026-05-04, e2e session):**
+- Bulk migrated Firebase /fl/ → D1 carnival-results (12 real carnivals, 4 result rows; 210 LOAD-* test entries skipped).
+- carnival-timing-ws now double-writes to D1 alongside dormant Firebase mirror — WD26 race results will permanently land in D1.
+- carnival-results v1.1.0 — added /api/winners GET+POST + /health; new D1 table `division_winners`.
+- ssp-portal HOBSONS_HTML — removed ~150KB Firebase SDK; reads from /api/winners with 30s polling.
+- Comprehensive plan in [`docs/FIREBASE_DECOMMISSION.md`](docs/FIREBASE_DECOMMISSION.md).
+- DEFERRED: schoolsportportal /williamstowndistrict (Firebase Auth + RTDB scores) — too risky 3 days before race day. Phase 2 post-Thursday.
+
+
 **sportcarnival-hub v3.2.0 (2026-05-04, e2e session):**
 - `/api/results?carnival=CODE` and `/api/draw?carnival=CODE` now read from `carnival-results` D1 (no Sheet/Firebase dep on the read path).
 - New `/api/list` endpoint returns published carnivals.
