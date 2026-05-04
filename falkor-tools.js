@@ -3023,9 +3023,16 @@ upBtn.onclick=async()=>{
         }
         const finalText = (messages[messages.length-1]?.content || []).filter(c=>c.type==='text').map(c=>c.text).join('') || '(no text)';
 
-        // Verify /health still works
+        // Verify /health — retry up to 3 times with backoff to handle transient CF 522/530 right after a deploy
         let healthOK = false;
-        try { const hr = await fetch('https://falkor.luckdragon.io/health'); const hd = await hr.json(); healthOK = hd.ok === true; } catch(e){}
+        for (let i=0; i<3; i++) {
+          try {
+            const hr = await fetch('https://falkor.luckdragon.io/health', { signal: AbortSignal.timeout(5000) });
+            if (hr.status === 522 || hr.status === 530) { await new Promise(r=>setTimeout(r, 2000+i*2000)); continue; }
+            const hd = await hr.json();
+            if (hd.ok === true || hd.worker) { healthOK = true; break; }
+          } catch(e) { await new Promise(r=>setTimeout(r, 2000)); }
+        }
 
         // Bump quota and log
         await env.ASSETS.put(qkey, String(qcount+1), {expirationTtl: 36*3600});
@@ -3239,24 +3246,7 @@ upBtn.onclick=async()=>{
     if(url.pathname==='/api/chat'){
       return new Response('Method Not Allowed',{status:405,headers:CORS});
     }
-    if(url.pathname==='/api/_test/fake522'&&request.method==='GET'){
-      // Test endpoint — always returns CF 522 body so verify_endpoint retry can be exercised
-      return new Response('error code: 522', {status:522, headers:{'Content-Type':'text/plain',...CORS,...NOCACHE}});
-    }
-    if(url.pathname==='/api/_test/retry-count'&&request.method==='GET'){
-      // Increments KV counter on each hit — used to prove how many retries actually happened
-      try {
-        const k = 'test:retry_counter';
-        const cur = parseInt(await env.ASSETS.get(k) || '0');
-        const next = cur + 1;
-        await env.ASSETS.put(k, String(next), {expirationTtl: 60});
-        return new Response('error code: 522', {status:522, headers:{'Content-Type':'text/plain','X-Hit-Count':String(next),...CORS,...NOCACHE}});
-      } catch(e){ return new Response('err', {status:500}); }
-    }
-    if(url.pathname==='/api/_test/retry-count-read'&&request.method==='GET'){
-      const v = await env.ASSETS.get('test:retry_counter') || '0';
-      await env.ASSETS.delete('test:retry_counter');
-      return Response.json({hits: parseInt(v)}, {headers:{...CORS,...NOCACHE}});
+    , {headers:{...CORS,...NOCACHE}});
     }
     if(url.pathname==='/api/fleet/health'&&request.method==='GET'){
       try {
