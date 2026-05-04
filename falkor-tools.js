@@ -294,7 +294,7 @@ function openModal(p){
   actions.appendChild(el("a",{href:editUrl,target:"_blank",rel:"noopener"},"\u270F Edit code"));
  }
  const cBtn=el("button",{},"\uD83D\uDCAC Chat about this");
- cBtn.addEventListener("click",()=>{STATE.chatContext=p;STATE.chat.push({role:"system",content:"\u2014 Now talking about "+(p.name||"project")+" \u2014"});bg.remove();refreshChat();if(window.innerWidth<=1100){STATE.view="chat";render()}});
+ cBtn.addEventListener("click",()=>{STATE.chatContext=p;STATE.chat.push({role:"system",content:"\u2014 Now talking about "+(p.name||"project")+" \u2014"});bg.remove();render();});
  actions.appendChild(cBtn);m.appendChild(actions);
  if(p.desc)m.appendChild(el("div",{class:"desc"},p.desc));
  const rows=[
@@ -335,7 +335,7 @@ function renderChatPane(){
  if(STATE.chatContext){
   head.appendChild(el("span",{style:"margin-left:8px;font-size:11px;color:var(--accent);background:rgba(255,107,53,0.1);padding:3px 8px;border-radius:99px"},"\u2192 "+(STATE.chatContext.name||"project")));
   const clr=el("button",{style:"margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px"},"clear");
-  clr.addEventListener("click",()=>{STATE.chatContext=null;STATE.chat.push({role:"system",content:"\u2014 general chat \u2014"});refreshChat()});
+  clr.addEventListener("click",()=>{STATE.chatContext=null;STATE.chat.push({role:"system",content:"\u2014 general chat \u2014"});render()});
   head.appendChild(clr);
  }
  p.appendChild(head);
@@ -353,29 +353,30 @@ function renderChatPane(){
   STATE.chat.push({role:"user",content:text});inp.value="";refreshChat();
   btn.disabled=true;
   try{
-   let r,d;
-   if(STATE.chatContext){
-    // Use the agent-chat endpoint with full project context — AI can read/edit repo files
-    r=await fetch("/api/agent-chat",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext})});
-    d=await r.json();
-    let reply=d.reply||d.error||"No response";
-    if(d.tool_calls&&d.tool_calls.length){
-     const summary=d.tool_calls.map(t=>{
-      if(t.tool==="write_file"&&t.output&&t.output.ok)return "Edited "+t.output.path+" (commit "+t.output.commit+")";
-      if(t.tool==="write_file"&&t.output&&t.output.error)return "Edit FAILED on "+t.input.path+": "+t.output.error;
-      if(t.tool==="read_file"&&t.output&&!t.output.error)return "Read "+t.input.path;
-      if(t.tool==="list_files"&&t.output&&!t.output.error)return "Listed "+(t.input.path||"/");
-      return t.tool+" -> "+(t.output&&t.output.error?"err":"ok");
-     }).join(" \u00b7 ");
-     reply=reply+String.fromCharCode(10,10)+"["+summary+"]";
-    }
-    STATE.chat.push({role:"assistant",content:reply});
-   } else {
-    // General chat via /api/chat -> asgard-ai
-    r=await fetch(CHAT_API,{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,model:"groq-fast"})});
-    d=await r.json();
-    STATE.chat.push({role:"assistant",content:d.reply||d.content||d.error||"No response"});
+   // Always route through agent-chat — has full toolset (web/D1/CF/browser/etc.)
+   const r=await fetch("/api/agent-chat",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null})});
+   const d=await r.json();
+   let reply=d.reply||d.error||"No response";
+   if(d.tool_calls&&d.tool_calls.length){
+    const summary=d.tool_calls.map(t=>{
+     const o=t.output||{};
+     if(t.tool==="write_file"&&o.ok)return "Edited "+o.path+" (commit "+o.commit+")";
+     if(t.tool==="write_file"&&o.error)return "Edit FAILED: "+o.error;
+     if(t.tool==="read_file"&&!o.error)return "Read "+t.input.path;
+     if(t.tool==="list_files"&&!o.error)return "Listed "+(t.input.path||"/");
+     if(t.tool==="run_d1_query"&&!o.error)return "SQL ("+(o.total||0)+" rows)";
+     if(t.tool==="web_fetch"&&!o.error)return "Fetched "+(t.input.url||"").substring(0,50);
+     if(t.tool==="web_search"&&!o.error)return "Searched: "+(t.input.query||"");
+     if(t.tool==="vault_get"&&!o.error)return "Got secret "+t.input.key;
+     if(t.tool==="cf_deploy_worker"&&o.ok)return "Deployed "+o.worker;
+     if(t.tool==="list_workers"&&!o.error)return "Listed workers";
+     if(t.tool&&t.tool.startsWith("browser_"))return t.tool.replace("browser_","")+(o.error?" FAILED: "+o.error:" ok");
+     if(t.tool==="update_project_metadata"&&o.ok)return "Updated "+(t.input?Object.keys(t.input).join(","):"")+" fields";
+     return t.tool+" -> "+(o.error?"err: "+o.error:"ok");
+    }).join(" \u00b7 ");
+    reply=reply+String.fromCharCode(10,10)+"["+summary+"]";
    }
+   STATE.chat.push({role:"assistant",content:reply});
   }catch(err){STATE.chat.push({role:"assistant",content:"Error: "+err.message})}
   btn.disabled=false;refreshChat();inp.focus();
  });
@@ -569,7 +570,7 @@ export default {
   async fetch(request, env) {
     const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{headers:CORS});
-    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.6.0',mode:'asgard-hub-browser-bridge'},{headers:{...CORS,...NOCACHE}});
+    if(url.pathname==='/health')return Response.json({ok:true,worker:'falkor-tools',version:'2.7.0',mode:'asgard-hub-unified-agent'},{headers:{...CORS,...NOCACHE}});
     if(url.pathname==='/api/projects'){
       try {
         const sql = "SELECT id, project_name AS name, category, status, live_url AS url, github_url AS github, tech_stack AS tech, description AS desc, key_features AS features, next_action AS next, progress_pct AS progress, scale_notes AS scale, detail_md AS detail, notes, last_updated, sort_order, domains, revenue_y1 AS y1, revenue_y2 AS y2, revenue_y3 AS y3, revenue_category, income_priority AS priority, cost_monthly AS cost, cost_notes FROM products ORDER BY sort_order, id";
@@ -937,9 +938,9 @@ upBtn.onclick=async()=>{
             queue.push({ id: cmdId, action, input });
             await env.ASSETS.put('browser:queue', JSON.stringify(queue));
             // poll for result up to 25s
-            const deadline = Date.now() + 25000;
+            const deadline = Date.now() + 45000;
             while (Date.now() < deadline) {
-              await new Promise(r => setTimeout(r, 700));
+              await new Promise(r => setTimeout(r, 400));
               const res = await env.ASSETS.get('browser:result:'+cmdId);
               if (res) {
                 await env.ASSETS.delete('browser:result:'+cmdId);
