@@ -424,6 +424,7 @@ const HTML = `<!doctype html>
 html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text)}
 .layout{display:grid;grid-template-columns:220px 1fr 360px;height:100vh;overflow:hidden}
 .layout-home{grid-template-columns:220px 1fr}
+#claude-static-indicator-container,[id*="claude-static-indicator"]{display:none!important;visibility:hidden!important}
 @media(max-width:1100px){.layout{grid-template-columns:200px 1fr}.chat-pane{display:none}}
 @media(max-width:720px){
   .layout{grid-template-columns:1fr;grid-template-rows:1fr 56px;height:100vh;height:100dvh}
@@ -2318,6 +2319,3 @@ upBtn.onclick=async()=>{
       } catch (e) {
         return Response.json({ error:'Agent failure', detail: String(e).substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
       }
-    }
-
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...N
