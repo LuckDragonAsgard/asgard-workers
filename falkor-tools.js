@@ -634,10 +634,12 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
           }
           if (name === 'drive_list_recent') {
             try {
-              const r = await fetch('https://asgard-ai.luckdragon.io/drive/search?q=&recent=1&max='+(parseInt(input.max_results)||20), { headers:{'X-Pin': env.AGENT_PIN} });
+              const max = parseInt(input.max_results) || 20;
+              const r = await fetch('https://asgard-ai.luckdragon.io/drive/search?q='+encodeURIComponent('trashed=false')+'&orderBy=modifiedTime+desc&pageSize='+max, { headers:{'X-Pin': env.AGENT_PIN} });
               const d = await r.json();
-              if (!d.ok) return { error: d.error || 'drive recent failed', needs_oauth: String(d.error||'').includes('token') };
-              return { ok:true, files: d.files || d.results || [] };
+              if (d.error) return { error: d.error, detail: d.detail||'', needs_oauth: String(d.error||'').includes('token') };
+              const files = d.files || d.results || [];
+              return { ok:true, count: files.length, files: files.slice(0, max).map(f => ({ id: f.id, name: f.name, mimeType: f.mimeType, modifiedTime: f.modifiedTime, link: f.webViewLink })) };
             } catch(e) { return { error: 'drive list: '+String(e).substring(0,200) }; }
           }
           if (name === 'write_file') {
