@@ -38,6 +38,27 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 | https://ct-access.luckdragon.io | CT paywall worker (validate / create / stripe-webhook / admin/codes) | ✅ Live (PIN-gated) |
 | https://carnival-results.pgallivan.workers.dev | D1 API for published results | ✅ Live (no /health route) |
 
+### Paddy's own school / district / division portals (on SSP)
+
+Live at `ssp-portal` worker — these are the real WPS / Williamstown / Hobsons Bay pages on schoolsportportal.com.au:
+
+| Level | URL | Title |
+|---|---|---|
+| **School** | https://schoolsportportal.com.au/williamstownprimary | Williamstown Primary School — School Sport Portal |
+|  | https://schoolsportportal.com.au/williamstownps (alias) | same as above |
+| **District** | https://schoolsportportal.com.au/williamstowndistrict | Williamstown District Sport |
+| **Division** | https://schoolsportportal.com.au/hobsonsbay | Hobsons Bay Division — School Sport Portal |
+|  | https://schoolsportportal.com.au/hobsonsbaydivision (alias) | same as above |
+
+Public-facing product demo ladder (also on `ssp-portal`):
+
+| Level | URL | Demo subject |
+|---|---|---|
+| School | https://schoolsportportal.com.au/demo-school | Riverside Primary School |
+| District | https://schoolsportportal.com.au/demo-district | Riverside District |
+| Division | https://schoolsportportal.com.au/demo-division | Eastbay Division |
+| Region | https://schoolsportportal.com.au/demo-region | Central Coast Region |
+
 ### Per-district / per-school pages
 
 | URL | What it is | Status |
@@ -100,18 +121,4 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 11. **VIC DET Privacy Impact Assessment** kick-off — MEDIUM
 
 ### Medium-term (post-XC carnival)
-- **Wire CT XC bib lookup to Google Sheet** (district draw) — currently uses Firebase. Paddy has a master Google Sheet with all schools / runners / bibs that we have NOT seen the contents of. Do NOT use Firebase for district data going forward. Worker already has `/api/draw`, `/api/results`, `/api/sheet` endpoints ready — just needs `GSHEET_ID` env var set.
-- **Make `/wd26` data-driven** — currently hard-coded HTML. Refactor to pull from the same Google Sheet so other districts can be added as `/wd-<code>` paths.
-- **Add a "Try it with your district" form** on the demo page — collect district name + email and route to SSP signup.
-- **CT Phase 1 roadmap items:**
-  - Event program builder (pre-load schedule, "Next Event" button)
-  - House points tally (HOUSES array, PTS = [8,6,5,4,3,2,1])
-  - DNS / DNF options
-  - False-start RECALL clears all splits (with confirmation)
-  - PWA / installable app (manifest + service worker)
-  - Photo finish zoom (tap thumbnail for full-size)
-  - Full-day export (all results one CSV/PDF)
-  - Qualifier board (across heats toward finals)
-
-### Vision (the actual product)
-"**Enter student data once, automate across all sports**" — SSP becomes the source-of-
+- **Wire CT XC bib lookup to Google Sheet** (district d
