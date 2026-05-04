@@ -2266,6 +2266,16 @@ upBtn.onclick=async()=>{
       }
     }
 
+    if(url.pathname==='/api/weather'){
+      try {
+        const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-37.86&longitude=144.9&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=Australia/Melbourne&forecast_days=3");
+        const d = await r.json();
+        return Response.json(d, {headers:{...CORS,...NOCACHE}});
+      } catch(e){
+        return Response.json({error:String(e)},{status:500,headers:{...CORS,...NOCACHE}});
+      }
+    }
+
     if(url.pathname==='/api/briefing'){
       try {
         // Synthesize a daily summary from D1 data + tools
