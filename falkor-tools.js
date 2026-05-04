@@ -3262,22 +3262,31 @@ upBtn.onclick=async()=>{
       try {
         const workers = ["falkor-agent","falkor-kbt","falkor-workflows","falkor-school","falkor-sport","falkor-telegram","asgard-ai","falkor-brain","falkor-web","falkor-code","falkor-push","falkor-dashboard","falkor-widget"];
         // Self (falkor-tools) is reported separately as we can't fetch our own URL (CF returns 530)
-        async function probe(w) {
-          for (let attempt=0; attempt<3; attempt++) {
-            try {
-              const r = await fetch('https://'+w+'.luckdragon.io/health', { signal: AbortSignal.timeout(5000) });
-              if (r.status === 522 || r.status === 530) {
-                if (attempt < 2) { await new Promise(rs=>setTimeout(rs, 500*(attempt+1))); continue; }
-                return { name:w, status:'down', http:r.status };
-              }
-              if (!r.ok) return { name:w, status:'down', http:r.status };
-              const d = await r.json();
-              return { name:w, status:'ok', version: d.version || d.status || 'ok' };
-            } catch(e) {
-              if (attempt < 2) { await new Promise(rs=>setTimeout(rs, 500*(attempt+1))); continue; }
-              return { name:w, status:'down', error: String(e).substring(0,60) };
-            }
+        async function probeOnce(host, w) {
+          try {
+            const r = await fetch('https://'+host+'/health', { signal: AbortSignal.timeout(5000) });
+            // 404 still means worker alive (just no /health route) — treat as ok
+            if (r.status === 404) return { ok:true, version:'alive(404)' };
+            if (r.status === 522 || r.status === 530) return { transient:true, http:r.status };
+            if (!r.ok) return { ok:false, http:r.status };
+            try { const d = await r.json(); return { ok:true, version: d.version || d.status || 'ok' }; }
+            catch(e) { return { ok:true, version:'alive(no-json)' }; }
+          } catch(e) {
+            return { transient:true, error: String(e).substring(0,60) };
           }
+        }
+        async function probe(w) {
+          // Try custom domain with 2 retries on transient
+          for (let attempt=0; attempt<2; attempt++) {
+            const res = await probeOnce(w+'.luckdragon.io', w);
+            if (res.ok) return { name:w, status:'ok', version: res.version };
+            if (!res.transient) return { name:w, status:'down', http: res.http };
+            if (attempt < 1) await new Promise(rs=>setTimeout(rs, 700));
+          }
+          // Fall back to workers.dev (worker-to-worker via custom domains hits CF 522 quirk)
+          const fb = await probeOnce(w+'.pgallivan.workers.dev', w);
+          if (fb.ok) return { name:w, status:'ok', version: fb.version, via:'workers.dev' };
+          return { name:w, status:'down', http: fb.http || fb.error };
         }
         const results = await Promise.all(workers.map(probe));
         // Self-status: we know we're alive because we're serving this response
