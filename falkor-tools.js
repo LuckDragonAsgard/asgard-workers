@@ -1066,9 +1066,6 @@ const _initActive=_loadActive();
 const _initCtx=_loadCtx();
 window.STATE={user:null,agentPin:null,projects:[],q:"",cat:"all",status:"active-only",sort:"priority",view:"home",threads:_initThreads,activeThread:_initActive,threadList:[],chatContext:_initCtx};
 // chat property as a live alias to the active thread array
-Object.defineProperty(window.STATE,"chat",{get(){return this.threads[this.activeThread]||[]},set(v){this.threads[this.activeThread]=v}});
-// Load chat for active thread
-setTimeout(()=>loadChat(),100);
 Object.defineProperty(window.STATE,"chat",{
   get:function(){
     if(!this.threads||typeof this.threads!=="object")this.threads={};
