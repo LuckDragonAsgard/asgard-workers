@@ -381,6 +381,45 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               if (!dd.success) return { error: 'deploy failed', detail: JSON.stringify(dd.errors||[]).substring(0,400) };
               // Wait for CF edge propagation so subsequent verify_endpoint isn't racing the deploy
               await new Promise(r => setTimeout(r, 6000));
+              // POST-DEPLOY SYNTAX GUARD: only for falkor-tools — fetch served HTML, basic balance check on inline JS
+              if (wname === 'falkor-tools') {
+                try {
+                  const sr = await fetch('https://falkor-tools.pgallivan.workers.dev/', { signal: AbortSignal.timeout(8000) });
+                  const html = await sr.text();
+                  // Count <script>...</script>
+                  const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+                  if (scriptMatch) {
+                    const js = scriptMatch[1];
+                    // Crude balance check
+                    let p=0, b=0, br=0;
+                    for (let i=0; i<js.length; i++) {
+                      const c = js[i];
+                      if (c === '(') p++; else if (c === ')') p--;
+                      if (c === '{') b++; else if (c === '}') b--;
+                      if (c === '[') br++; else if (c === ']') br--;
+                    }
+                    if (p !== 0 || b !== 0 || br !== 0) {
+                      // Auto-rollback: revert to previous commit
+                      const ghr = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/commits?path=falkor-tools.js&per_page=2', { headers: ghHeaders });
+                      const commits = await ghr.json();
+                      const prevSha = commits?.[1]?.sha;
+                      if (prevSha) {
+                        // Get file at prev sha
+                        const fileR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js?ref='+prevSha, { headers: ghHeaders });
+                        const fileD = await fileR.json();
+                        // Re-PUT the content as a new commit
+                        const curR = await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', { headers: ghHeaders });
+                        const curD = await curR.json();
+                        await fetch('https://api.github.com/repos/LuckDragonAsgard/asgard-workers/contents/'+wname+'.js', {
+                          method:'PUT', headers:{...ghHeaders,'Content-Type':'application/json'},
+                          body: JSON.stringify({ message:'AUTO-ROLLBACK: balance-check failed (parens/braces unbalanced)', content: fileD.content, sha: curD.sha, branch:'main' })
+                        });
+                        return { ok:false, error:'auto-rollback fired — balance check failed', balance: {parens:p, braces:b, brackets:br}, rolled_back_to: prevSha.substring(0,7) };
+                      }
+                    }
+                  }
+                } catch(e) { /* if check fails, deploy stands */ }
+              }
               return { ok:true, worker: wname, deployment_id: dd.result?.deployment_id, source_sha: ghd.sha, propagation_wait_ms: 6000 };
             } catch(e) { return { error: 'deploy failed: '+String(e).substring(0,200) }; }
           }
@@ -1298,7 +1337,7 @@ function renderHome(m){
   if(chatArea)setTimeout(()=>{chatArea.scrollTop=chatArea.scrollHeight},50);
   processQueue();
   inp.focus();
- });
+ };
  form.addEventListener("submit",async(e)=>{
   e.preventDefault();
   const text=inp.value.trim();if(!text)return;
