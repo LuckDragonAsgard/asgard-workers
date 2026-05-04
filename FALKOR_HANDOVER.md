@@ -9,7 +9,7 @@
 > 2. Cloudflare D1 — for structured data (run_d1_query)
 > 3. CF KV (env.ASSETS) — for session state, audit logs
 > 4. CF Vectorize via falkor-brain — for semantic memory
-> 5. User Drive `G:\My Drive\Luck Dragon\` — ONLY when Paddy explicitly asks for an Office file (docx/pptx/xlsx/pdf)
+> 5. Office files (docx/pptx/xlsx/pdf) — ONLY when Paddy explicitly asks. Hand back via `present_files` / file links so Paddy picks the save location. NEVER hardcode a drive letter — paths vary per machine.
 >
 > **NEVER ALLOWED:** AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path. Lost forever next chat.
 
