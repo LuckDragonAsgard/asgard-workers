@@ -3343,13 +3343,13 @@ upBtn.onclick=async()=>{
         await run('d1_query', async () => {
           const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
             method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
-            body: JSON.stringify({sql:'SELECT COUNT(*) as c FROM project_hub'}),
+            body: JSON.stringify({sql:'SELECT COUNT(*) as c FROM falkor_memory'}),
             signal: AbortSignal.timeout(10000)
           });
           const d = await r.json();
           if (!d.success) throw new Error(JSON.stringify(d.errors||[]).substring(0,100));
           const c = d.result?.[0]?.results?.[0]?.c;
-          return (c||0)+' projects';
+          return (c||0)+' memories';
         });
         // 3) KV reachable
         await run('kv_rw', async () => {
