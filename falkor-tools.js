@@ -4,6 +4,8 @@ const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
 
 const AGENT_TOOLS = [
+          { name:'grep_file', description:'Search a file for a regex pattern. Returns matching line numbers with context. Use this to navigate large files instead of paging through chunks. flags=i for case-insensitive.',
+            input_schema:{ type:'object', properties:{ path:{type:'string'}, pattern:{type:'string'}, flags:{type:'string'}, context:{type:'integer',description:'lines of context around each match (default 2)'} }, required:['path','pattern'] } },
           { name:'list_files', description:'List files in the project repo at a given path. Returns names + types (file/dir).',
             input_schema:{ type:'object', properties:{ path:{ type:'string', description:'Path within repo, empty string for root' } }, required:[] } },
           { name:'read_file', description:'Read a file from the project repo. Large files (>180KB) auto-fall to git blobs API. Pass start_line/end_line for chunked reading of huge files.',
@@ -100,7 +102,7 @@ const UPSTREAM_CHAT = 'https://asgard-ai.luckdragon.io/chat/smart';
 
 
 async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
-          const needRepo = ['list_files','read_file','write_file','cf_deploy_worker'].includes(name);
+          const needRepo = ['list_files','read_file','grep_file','write_file','cf_deploy_worker'].includes(name);
           if (needRepo && !owner && name !== 'cf_deploy_worker') {
             // cf_deploy_worker pulls from a fixed repo, others need project repo
             return { error:'No GitHub repo bound to this project — cannot run '+name+'.' };
@@ -112,6 +114,37 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             const d = await r.json();
             if (!Array.isArray(d)) return { error:'Path is a file, not a directory' };
             return { files: d.map(f => ({ name:f.name, type:f.type, size:f.size })) };
+          }
+          if (name === 'grep_file') {
+            const p = (input.path||'').replace(/^\//,'');
+            const pat = input.pattern || '';
+            if (!pat) return { error:'pattern required' };
+            // Fetch via blobs API for large files
+            let r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
+            if (!r.ok) return { error:'grep HTTP '+r.status };
+            let d = await r.json();
+            let decoded = '';
+            if (d.content) decoded = atob(d.content.replace(/\n/g,''));
+            else if (d.size && d.sha) {
+              const br = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/git/blobs/"+d.sha, {headers: ghHeaders});
+              if (br.ok) { const bd = await br.json(); if (bd.content) decoded = atob(bd.content.replace(/\n/g,'')); }
+            }
+            if (!decoded) return { error:'No content' };
+            const lines = decoded.split(String.fromCharCode(10));
+            const ctx = parseInt(input.context)||2;
+            let regex;
+            try { regex = new RegExp(pat, input.flags||'i'); }
+            catch(e) { return { error:'bad regex: '+e.message }; }
+            const matches = [];
+            for (let i=0;i<lines.length;i++) {
+              if (regex.test(lines[i])) {
+                const lo = Math.max(0,i-ctx), hi = Math.min(lines.length-1,i+ctx);
+                const slice = lines.slice(lo,hi+1).map((l,j)=>(lo+j+1)+':'+l).join(String.fromCharCode(10));
+                matches.push({ line: i+1, snippet: slice });
+                if (matches.length >= 30) break;
+              }
+            }
+            return { path:p, total_lines: lines.length, match_count: matches.length, matches };
           }
           if (name === 'read_file') {
             const p = (input.path||'').replace(/^\//,'');
@@ -2313,7 +2346,7 @@ upBtn.onclick=async()=>{
             const messages = [...priorTurns, ...history, { role:'user', content: userMsg }];
             const toolResults = [];
             let iterations = 0;
-            const maxIter = 6;
+            const maxIter = 15;
             let finalText = '';
 
             while (iterations < maxIter) {
@@ -2569,44 +2602,4 @@ upBtn.onclick=async()=>{
             const lastD = await lastR.json();
             const transcript = (lastD.result?.[0]?.results || []).reverse().map(r => r.role+': '+r.content.substring(0,500)).join(String.fromCharCode(10));
             const exReq = await fetch('https://api.anthropic.com/v1/messages', {
-              method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},
-              body: JSON.stringify({
-                model:'claude-haiku-4-5-20251001', max_tokens: 800,
-                system:'Extract 0-3 NEW memorable facts about Paddy or his platform from the transcript. Return JSON array of {category, fact, importance(1-10)}. Skip if nothing new. Do NOT save things you already know (login PINs, the no-Drive rule, no-hard-refresh, his style, his profile). Only NEW concrete facts. Output ONLY valid JSON array, no prose.',
-                messages:[{role:'user',content:'Recent conversation:'+String.fromCharCode(10)+transcript}],
-              }),
-            });
-            const exD = await exReq.json();
-            const exText = (exD.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
-            try {
-              const arr = JSON.parse(exText.replace(/^[^\[]*/,'').replace(/[^\]]*$/,''));
-              if (Array.isArray(arr)) {
-                for (const f of arr) {
-                  if (!f.fact) continue;
-                  await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
-                    method:'POST', headers:{ 'Authorization':'Bearer '+env.CF_API_TOKEN, 'Content-Type':'application/json' },
-                    body: JSON.stringify({ sql:"INSERT INTO falkor_memory (user_id, category, fact, source, importance) VALUES (?,?,?,?,?)",
-                      params:["paddy", f.category||"auto-extracted", String(f.fact).substring(0,500), "auto-haiku-every-5-turns", Math.min(10, Math.max(1, f.importance||5))] }),
-                  });
-                }
-              }
-            } catch(e){}
-          }
-        } catch(e){}
-
-        return Response.json({
-          ok:true,
-          reply: finalText || '(no text response)',
-          tool_calls: toolResults,
-          iterations,
-        }, { headers:{...CORS,...NOCACHE} });
-
-      } catch (e) {
-        return Response.json({ error:'Agent failure', detail: String(e).substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
-      }
-    }
-
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
-  },
-};
-                       
+              method:'POST', headers:{'x-api-key':env.ANTHROPIC_API_KEY,'an
