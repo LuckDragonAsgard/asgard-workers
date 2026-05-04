@@ -23,7 +23,7 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 |---|---|---|---|---|
 | **School Sport Portal (SSP)** | https://schoolsportportal.com.au | ✅ 200 OK | `ssp-portal`, `ssp-contact`, `email-logger`, `inbox-api` | Commercial SaaS landing page. $1/student/year. Stripe live. Schools sign up here. |
 | **Carnival Timing (CT)** | https://carnivaltiming.com | ✅ 200 OK | `carnival-timing-html` (HTML), `carnival-timing-ws` (WebSockets/DO), `ct-access` (paywall), `carnival-results` (D1) | Race-day timing app — Race Control / Starter / Lane Timer / Video Finish / Spectator. Paywall: $49 single, $149 annual, free for SSP schools. v8.5.2. |
-| **SportCarnival** | https://sportcarnival.com.au | ✅ 200 OK | `sportcarnival-hub` | Public district draw + results page. Currently displays **Williamstown District Cross Country 2026** (page title confirms). |
+| **SportCarnival** | https://sportcarnival.com.au | ✅ 200 OK | `sportcarnival-hub` v3.0.0 | Public commercial demo — fictional "Demo Valley District XC 2026". Real WPS/Williamstown district data moved to `/wd26` (noindex). |
 
 ### Auxiliary domains / sub-products
 
@@ -38,13 +38,15 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 | https://ct-access.luckdragon.io | CT paywall worker (validate / create / stripe-webhook / admin/codes) | ✅ Live (PIN-gated) |
 | https://carnival-results.pgallivan.workers.dev | D1 API for published results | ✅ Live (no /health route) |
 
-### Per-school + district pages
+### Per-district / per-school pages
 
-| URL | What it should be | Current status |
+| URL | What it is | Status |
 |---|---|---|
-| https://sportcarnival.com.au/williamstownps/crosscountry | WPS-only XC page (24 runners, Firebase results filtered, qualifiers tab) | ⚠️ **404** — was live per memory (2026-05-03), now gone. Investigate worker redeploy. |
-| https://sportcarnival.com.au/ (root) | District draw — 192 runners, 6 races, ✓ Qual badges, 🎖️ Divisional Qualifiers section, team scores | ✅ Live (page title: "Williamstown District Cross Country 2026") |
-| CT carnival code **WD26** | District XC live results — sportcarnival auto-connects | Code reserved — must match on race day |
+| https://sportcarnival.com.au/ | Public commercial demo — Demo Valley District XC 2026, 8 fictional schools, simulated live results, CTAs to SSP + CT | ✅ Live (deployed 2026-05-04) |
+| https://sportcarnival.com.au/wd26 | Real Williamstown District XC 2026 page — 192 runners, 8 schools, all 6 races, WS auto-connects to WD26 | ✅ Live, `x-robots-tag: noindex`, `Disallow` in robots.txt |
+| https://sportcarnival.com.au/williamstown | Alias for /wd26 | ✅ Live |
+| https://sportcarnival.com.au/williamstownps/crosscountry | WPS-only XC sub-page (24 runners, qualifiers tab) | ⚠️ Files exist on GitHub but worker doesn't route them — falls through to 404. Restore by adding route handler if needed. |
+| CT carnival code **WD26** | District XC live results — `/wd26` page auto-connects | Code reserved — must match on race day |
 
 ### Stripe / payments
 - **CT $49 single:** https://buy.stripe.com/8x26oGgux9IT3wQckm9IQ05 (ct_type=single)
@@ -78,10 +80,11 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 ## ⏳ Sport Portal — what's NEXT
 
 ### Immediate (this week)
-1. **Fix WPS XC sub-page 404** — `sportcarnival.com.au/williamstownps/crosscountry` is currently returning 404. Memory says it was live on 2026-05-03 with all 24 WPS runners + qualifiers tab. Check `sportcarnival-hub` worker source on GitHub vs deployed.
+1. **Bookmark `/wd26`** for the race-day team — that's the real Williamstown district page now (root is the public commercial demo). Aliases: `/williamstown`, `/williamstown-2026`.
 2. **Confirm WD26 carnival code** is created in CT for Thursday's race (district XC carnival is **Thursday 7 May 2026**).
 3. **Run the Thursday checklist** (`thursday_checklist.html` saved in Drive 2026-05-03).
 4. **Sport Portal architecture push** — prior chat (earlier today) created an architecture doc + cost-tracking dashboard locally. **GitHub push is still pending** — was waiting on a 6-digit verification code from email when chat ended. If continuing: get the code from his email, confirm target repo (likely `sportportal` or `schoolsportportal`, NOT asgard-workers), complete push.
+5. (Optional) **Restore `/williamstownps/crosscountry`** sub-page if Paddy still wants it. Files exist in `sportcarnival-hub` repo but worker isn't routing them — add a handler in `_innerFetch`.
 
 ### Short-term (May 2026 audit — outstanding criticals)
 1. **Cyber Liability + Professional Indemnity insurance** (BizCover.com.au) — CRITICAL
@@ -97,8 +100,9 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
 11. **VIC DET Privacy Impact Assessment** kick-off — MEDIUM
 
 ### Medium-term (post-XC carnival)
-- **Wire CT XC bib lookup to Google Sheet** (district draw) — currently uses Firebase. Paddy has a master Google Sheet with all schools / runners / bibs that we have NOT seen the contents of. Do NOT use Firebase for district data going forward.
-- **Build sportcarnival.com.au as a generic district draw/results template** — currently hard-coded to Williamstown XC 2026. Should accept `?district=...&event=...` and pull from the relevant sheet.
+- **Wire CT XC bib lookup to Google Sheet** (district draw) — currently uses Firebase. Paddy has a master Google Sheet with all schools / runners / bibs that we have NOT seen the contents of. Do NOT use Firebase for district data going forward. Worker already has `/api/draw`, `/api/results`, `/api/sheet` endpoints ready — just needs `GSHEET_ID` env var set.
+- **Make `/wd26` data-driven** — currently hard-coded HTML. Refactor to pull from the same Google Sheet so other districts can be added as `/wd-<code>` paths.
+- **Add a "Try it with your district" form** on the demo page — collect district name + email and route to SSP signup.
 - **CT Phase 1 roadmap items:**
   - Event program builder (pre-load schedule, "Next Event" button)
   - House points tally (HOUSES array, PTS = [8,6,5,4,3,2,1])
@@ -110,15 +114,4 @@ The "Sport Portal" ecosystem is **3 public products + 1 school-specific page + 1
   - Qualifier board (across heats toward finals)
 
 ### Vision (the actual product)
-"**Enter student data once, automate across all sports**" — SSP becomes the source-of-truth roster that feeds CT, SportCarnival, district draws, swimming, athletics. No re-keying, no wrong age groups, no double-handling. This is Paddy's commercial pitch. When working on any sport tool, frame it through this lens.
-
----
-
-## 🏃 WPS / District context (for reference)
-
-**District:** Williamstown District / Hobsons Bay Division. **District XC carnival: Thursday 7 May 2026.**
-
-### WPS qualifiers (top 4 from school finals → district)
-| Age/Gender | 1st | 2nd | 3rd | 4th |
-|---|---|---|---|---|
-| 10 Boys | Elias D'Souza (#61, 8:06) | Thomas Reid (#62, 8:15) | Luca Galle (#63, 8:22) | William Galle (#64
+"**Enter student data once, automate across all sports**" — SSP becomes the source-of-truth roster that feeds CT, Sp
