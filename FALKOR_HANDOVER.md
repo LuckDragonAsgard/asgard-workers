@@ -228,6 +228,21 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+**SLY auth-hole sweep + 5 endpoints gated (2026-05-05 evening):**
+- Found 5 unauthenticated PATCH endpoints during deep-test of login + PIN flow:
+  - PATCH /api/coaches/:id (anyone could rename teams, change avatars/colors/emails)
+  - PATCH /api/players/:id (anyone could rename/recolor players)
+  - PATCH /api/payments/:id (anyone could mark coaches paid/unpaid + adjust gold_balance + autopick_paid → financial fraud risk)
+  - PATCH /api/trades/:id (anyone could approve/reject any trade)
+  - PATCH /api/sly-fixtures/:id (anyone could rename matches)
+- All 5 patched: requireCoachAuth(self) for /coaches/:id, requireAdmin for the rest. Now 401/403 without proper headers.
+- Verified accidentally-mutated rows reverted (Josh "Once Bitten" + paid=0).
+- Repo: superleague-yeah-v4 commit 8027ac78 → CF deploy success.
+- Login (POST /api/coaches/login) was already auth-correct: empty body 400, invalid PIN 401, valid → token.
+- PIN-change (PATCH /api/coaches/:id/pin) properly requires current_pin and validates length>=4.
+- All 16 coaches on custom PINs (none on default 1234 anymore).
+- SPA confirms theme toggle (themeToggle, toggleTheme) + service worker unregister logic + body.light-mode #pageChat fix all present in delivered HTML.
+
 **SLY data normalization (2026-05-05 afternoon):**
 - 11 players had `position='MID'` instead of canonical `MIDFIELDER` — would not have matched scoring formula `M=4M` or Pick-tab slot filter. UPDATEd to MIDFIELDER. Two were drafted in Andy's squad (Milan Murdock, Tom Blamires).
 - 12 players had AFL short-code team names (WCE/NM/PA/CARL/FRE/HAW/MELB/RICH/WB) mixed with full names (43 of 18 AFL clubs). UPDATEd via single CASE statement. Final: 18 distinct teams, 0 short codes. Same Andy-squad players also affected — both team values now correct.
@@ -772,3 +787,4 @@ Paddy: "we need all that fixed". Knocked through the entire 27-item gap list.
 10. Separate production CF account
 11. SEO + LinkedIn presence
 12. Decide invoicing schedule
+
