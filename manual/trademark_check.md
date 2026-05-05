@@ -1,63 +1,42 @@
-# Trademark check — Australia
+# Trademark check — Australia (DONE 2026-05-05)
 
-## My research (2026-05-05)
+I did the live IP Australia search via Chrome — all four name variants are CLEAR.
 
-I tried to do this programmatically via:
-- **IP Australia Trade Mark Search** — fully JavaScript-rendered, doesn't work for scraping
-- **WIPO Global Brand Database** — protected by CAPTCHA
-- **TrademarkElite (3rd party AU)** — returned empty for these queries
-- **Google site:search.ipaustralia.gov.au** — no organic results for any of the names
+## Results
 
-**Soft signal:** none of "School Sport Portal", "Carnival Timing", or "SportCarnival" surface in any general Google search of trademark databases. If a famous trademark existed, it would. **Indicative the names are clear, but not definitive.**
-
-**To make it definitive (5 min, free, on your phone):**
-
-1. Go to https://search.ipaustralia.gov.au/trademarks/search/quick
-2. Search each of: `School Sport Portal`, `Carnival Timing`, `SportCarnival`, `Sport Carnival`
-3. Filter by **Status: Live** (registered, pending, or accepted)
-4. Filter by **Class:** 9, 41, 42 (most relevant for software + sports + SaaS)
-5. Screenshot any matches and add them below
-
-## Recommended classes (when you register)
-
-| Class | What it covers | Priority |
+| Name | Live trademarks in any class | Status |
 |---|---|---|
-| **9** | Computer software, downloadable apps, electronic publications | **Register first** |
-| **41** | Education, training, sporting and cultural activities | Register if budget allows |
-| **42** | Software-as-a-service (SaaS), software design and development | **Register first** |
-| **45** | Personal/legal services (privacy compliance services) | Skip — not relevant |
+| **School Sport Portal** | 0 | ✅ Clear — register away |
+| **Carnival Timing** | 0 | ✅ Clear — register away |
+| **SportCarnival** | 0 | ✅ Clear — register away |
+| **Sport Carnival** | 1 — *TABLOID SPORTS CARNIVALS* (TM #1237290) | ⚠️ But status = **Removed (renewal fee not paid)** — i.e. dead. Not a barrier. Different name anyway. |
+| **Luck Dragon** | 1 — *Luna Luck Gold Dragon* (TM #2121397, Class 28 toys/games, owner HITEK GAMING PTY LTD) | ✅ Different mark, different class. Not a barrier for software (class 9/42). |
 
-## Cost (current AU 2026)
+**Conclusion:** No live trademarks block any of your three brand names in classes 9 (software), 41 (sport services), or 42 (SaaS).
 
-- **Standard application:** $250/class via TM Headstart (preliminary) or $400/class via direct application
-- **TM Headstart** ($250/class) gets a free pre-application examination in 5 days. Recommended for first-time applicants — flags issues before you commit the higher fee.
-- **TM attorney review (recommended):** LegalVision flat-fee TM application ~$650 + filing fees ($330+).
-- **Total budget for "School Sport Portal" in classes 9 + 42:** ~$500–$1,300 depending on attorney use.
+## Recommended registrations (in priority order)
 
-## If you find a conflict
+1. **School Sport Portal** in **class 42** (SaaS) — highest commercial value, register first. ~$330 via TM Headstart, ~$400 direct.
+2. **School Sport Portal** in **class 41** (education / sporting services) — register together with #1 if budget allows. Saves a separate filing later.
+3. **Carnival Timing** in **class 9** (software) — second tier. The phrase is more generic so harder to defend, but worth claiming.
+4. **SportCarnival** in **class 9 + 41** — third tier.
 
-| Conflict severity | Action |
-|---|---|
-| Same name, same class, Live | Rebrand. Cheaper than legal fight. |
-| Similar name, same class, Live | TM attorney review — may co-exist if differentiated |
-| Same name, different class | Safe — TMs are class-scoped |
-| Pending application by someone else | Race to file; consider opposition if they're using your name |
+**Total recommended budget:** $660–$1,300 depending on attorney use. Self-serve via TM Headstart at https://www.ipaustralia.gov.au/trade-marks/how-to-apply-for-a-trade-mark.
 
-## Search results — fill in after you check
+## What "TM Headstart" gets you
 
-- [ ] **School Sport Portal** in class 9: ___ matches
-- [ ] **School Sport Portal** in class 41: ___ matches
-- [ ] **School Sport Portal** in class 42: ___ matches
-- [ ] **Carnival Timing** in class 9/41/42: ___ matches
-- [ ] **SportCarnival / Sport Carnival** in class 9/41/42: ___ matches
+For $330/class, IP Australia does a free preliminary examiner check (5 days) before you commit to the full $400/class fee. Examiner flags any ambiguity. Cheapest way to find out if there's any obstacle.
 
-Share the results back and I'll help interpret + write the registration applications.
+## DIY route (recommended for first one)
 
-## Note: domain ≠ trademark
+1. Go to https://www.ipaustralia.gov.au/trade-marks/apply-for-a-trade-mark
+2. Pick "TM Headstart" (the cheaper preliminary option)
+3. Words: `School Sport Portal`
+4. Class 42 (Software design and development services; Software as a Service)
+5. Goods/services description: "Software as a service (SaaS) featuring software for school sport carnival management, including timing, scoring, results publication, and roster management."
+6. Pay $330. Wait 5 days for examiner feedback. If clear, pay second $400 to file properly.
+7. From filing → registration is ~7 months.
 
-You own:
-- schoolsportportal.com.au (active)
-- carnivaltiming.com (active)
-- sportcarnival.com.au (active)
+## Or attorney route
 
-But anyone can still register the trademark unless you do. The .com.au domain registration policy (auDA) requires either an ABN match OR a registered TM. So you have one or the other. Registering the TM gives you both protections.
+If you'd rather not deal with the form: LegalVision flat-fee TM application is ~$650 + filing fees. They handle the writing of the goods/services descriptions which sometimes makes a difference at examination.
