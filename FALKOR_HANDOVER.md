@@ -1153,3 +1153,27 @@ Paddy: "All wrapped up so I can fully completely continue from new claude accoun
 - 18 memory files mirrored (user_identity, feedback_*, project_*, lessonlab_*, sly_*, wd26_*, paddy_jacky_finance, asgard_bootstrap, MEMORY.md, reference_cf_token redacted)
 - All vault secrets reachable via X-Pin: 535554
 - FALKOR_HANDOVER + manual/ + commercial/ + snapshots/ + knowledge/ all in same repo, all pushable, all readable from any URL with PAT
+
+
+---
+
+## 2026-05-06 — My Betting HQ (Punt Tracker) session
+
+**Project:** My Betting HQ (a.k.a. "Monitor Your Punting" / Punt Tracker)
+**D1 id:** 43
+**Domain:** mybettinghq.com (owned, registered in CF)
+**Status:** Idea stage — 0% progress, no code, no repo yet
+**Description:** Universal betting bankroll manager. Sport-agnostic — tracks horses, AFL, NRL, casino sessions. Shows P+L + ROI by sport/bookmaker. Planned $9/mo Stripe subscription.
+**Revenue forecast:** Y1 $6k, Y2 $15k, Y3 $30k
+**Tech plan:** Next.js on Vercel + CF D1 for session records
+
+**Session summary:**
+- Paddy asked about punt tracker — found it already existed in D1 as "My Betting HQ" (id=43)
+- Domain mybettinghq.com confirmed owned
+- D1 notes updated with alias
+- Auto-memory updated
+- No code or infra changes this session
+
+**Next action:** Confirm final product name (My Betting HQ vs Monitor Your Punting), then scaffold repo + worker skeleton.
+
+**Compliance note:** Check Australian gambling advertising laws before launch.
