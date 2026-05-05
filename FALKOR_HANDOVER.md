@@ -218,6 +218,16 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
 
+**carnival-timing-html v8.7.1 (2026-05-04 evening) — XC Marshal name picker:**
+- Added `📋 Pick` button next to `🔍 Auto` OCR in XC Marshal bib pad → opens full-screen name picker overlay with search.
+- Filters BIB_LOOKUP to bibs in the active race (xcState.age + xcState.gender). 8 schools colour-coded, taken bibs greyed out.
+- Tap a name → sets `bibValue` + auto-runs `bibConfirm()` → next finisher.
+- BIB_LOOKUP for WD26 (192 runners) re-injected — v8.7.0 had stripped it; restored in v8.7.1.
+- Resolves the "no physical bibs" Thursday gap: marshal can identify each finisher by tapping name, no typing/no bib reading.
+- Repo `LuckDragonAsgard/sport-carnival` synced to live worker (commit `7ff40df9`).
+- Try it: carnivaltiming.com → access code `WPS-2026` → create carnival `WD26TEST` → XC → Marshal → tap finisher → tap `📋 Pick`.
+
+
 **WD26 race-day prep (2026-05-04 afternoon):**
 - Generated print-and-pin bib PDF + finish-line roster + Tuesday dry-run plan → `LuckDragonAsgard/asgard-workers/wd26/` (GitHub, NOT Drive — Drive deprecated). Resolves "no physical bibs" gap.
 - Corrected 11 Boys WPS bib numbers: handover had 124–127, /wd26 has them at 125–128 (page is source of truth — bib 124 = Banjo Kane WNPS, *not* WPS).
