@@ -13,6 +13,44 @@
 > **NEVER ALLOWED:** AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path. Lost forever next chat.
 
 ---
+---
+
+## 🚦 2026-05-05 — KBT Face Morph rebuild (monacastle.seddon → pgallivan account handover)
+
+**Account context:** This session was on `monacastle.seddon@gmail.com` Claude account. Continuing on `pgallivan@outlook.com`. Owner: Paddy Gallivan. Drive owner: paddy@luckdragon.io.
+
+**Full session handover doc:** [LuckDragonAsgard/kbt-trivia-tools/docs/handovers/2026-05-05-session-wrap.md](https://github.com/LuckDragonAsgard/kbt-trivia-tools/blob/main/docs/handovers/2026-05-05-session-wrap.md) — read this for ALL details (worker secrets rotation, OAuth fix, save-morph endpoint, mistakes-not-to-repeat, etc.)
+
+### What's live (as of this wrap)
+
+**[kbt.luckdragon.io/face-morph-tool](https://kbt.luckdragon.io/face-morph-tool) v11.2:**
+- Drop Face A + B photos; click `🪄 AI Auto-Morph` (fal.ai, ~16s, ~$0.05/call) OR upload Lucia's hand-Photoshopped morph PNG OR leave empty for auto-composite fallback
+- Click `Generate Morph` → wraps with Photoshop dilation stroke (12px) + soft drop shadow + segments side stickers
+- Click `💾 Save to Library` → 2 PNGs to Drive (paddy@luckdragon.io) + draft `kbt_question` row inserted (qtype=19)
+
+### Key changes this session
+
+- **kbt-api worker** has new `/api/save-morph` endpoint (Drive upload + Supabase INSERT)
+- **Worker secrets ROTATED:** GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN. Now uses Asgard AI client (`205533966048-1f5e2...`) in GCP project `asgard-493906`. Refresh token has both `presentations` + `drive` scopes.
+- **New worker secret added:** SUPABASE_SERVICE_ROLE_KEY (needed for kbt_question INSERT — bypasses RLS)
+- **Vault keys added:** GOOGLE_CLIENT_ID_ASGARD_AI, GOOGLE_CLIENT_SECRET_ASGARD_AI, GOOGLE_REFRESH_TOKEN_ASGARD_AI (X-Pin 535554)
+- **Old OAuth client `342815819710-sugohi...` was wrong** — doesn't exist in `asgard-493906`. Don't restore.
+- **4 wordmark colour fixes shipped** (SoundMash/Carmen/Guess The Year → green, Linked Pics → purple)
+
+### Critical gotchas for future sessions
+
+1. **`kbt_question.id` has NO DB default** — compute next id via SELECT MAX(id)+1 before INSERT (already done in /api/save-morph)
+2. **Cloudflare Pages can leave stale 500 assets after partial-upload** — push trivial change to that file to force re-upload
+3. **Google Cloud's new console hides client secrets after creation** — copy on first generation, can't view existing ones
+4. **fal.ai face-swap costs ~$0.05/call** — don't run AI Auto-Morph in test loops
+5. **Don't trust prior audited handovers blindly** — earlier handover said per-feature compositing was Paddy's spec; turned out wrong (Lucia hand-Photoshops single-face blends). Always verify against actual production data (`kbt_question` table is source of truth for quality bar).
+
+### Handover persistence checklist (this session)
+- [x] Session wrap doc → `LuckDragonAsgard/kbt-trivia-tools/docs/handovers/2026-05-05-session-wrap.md`
+- [x] FALKOR_HANDOVER.md updated (this section)
+- [x] falkor-brain durable facts (next step)
+- [x] Cowork auto-memory (next step)
+
 
 # Falkor — Session Handover (2026-05-04, evening)
 
