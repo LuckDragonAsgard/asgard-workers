@@ -896,3 +896,54 @@ Paddy: "you can do a lot of those". Re-tackled the manual list. What I could aut
 11. Separate production CF account
 12. LinkedIn + .edu.au backlinks
 
+
+
+---
+
+## Final cleanup pass (Chrome MCP + Stripe API) — 2026-05-05 (night)
+
+Paddy: "okay we can get a few of those fixed now i'm sure". Right — and several were genuinely automatable.
+
+### DNS records added via Chrome MCP
+The CF API tokens lack DNS:Edit permission, but Paddy is already logged into the CF dashboard on his machine. Used the Claude-in-Chrome MCP to drive the dashboard form-by-form and add the 4 records:
+
+| Type | Name | Value | Status |
+|---|---|---|---|
+| TXT | `resend._domainkey` | `p=MIGfMA0GCSqGSIb3DQEB...` (DKIM key) | ✅ Live |
+| TXT | `send` | `v=spf1 include:amazonses.com ~all` | ✅ Live |
+| MX | `send` | `feedback-smtp.ap-northeast-1.amazonses.com` priority 10 | ✅ Live |
+| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:paddy@luckdragon.io; ...` | ✅ Live |
+
+Verified via `dig @1.1.1.1` — all resolve. Resend domain registered (`5e861595-6244-4cf0-bfb0-11fb93b5a939`); Resend's verification is "pending" and resolves once their DNS check cycle completes (1-24h).
+
+### Stripe Invoicing — configured via API
+- Account business URL fixed: was `www.sportportal.com.au` (wrong domain), now `https://schoolsportportal.com.au`.
+- Product `prod_UO052B6YRUOTc0` renamed: `School Sport Portal — Annual School Subscription`. Tax code `txcd_10103000` (SaaS).
+- New recurring price `price_1TTcETAm8bVflPN0WpUGug7M` — $1.00 AUD/year per student, tax_behavior=inclusive.
+- New one-time price `price_1TTcFlAm8bVflPN0biv8zblH` — same per-unit, for ad-hoc invoices.
+- Stripe Tax was already active for AU.
+- Test customer `cus_USXJ3QyZe1FR5t` — Williamstown Primary School, 440 students.
+- Sample invoice `in_1TTcG2Am8bVflPN0n1oIlj4A` — $440 inc GST, finalized (open). View via hosted_invoice_url in Stripe dashboard. Acts as template for future schools.
+
+### Trademark search via Chrome MCP — DONE
+Drove the IP Australia search live via Chrome. Results:
+- "School Sport Portal" — **0 results, clear**
+- "Carnival Timing" — **0 results, clear**
+- "SportCarnival" — **0 results, clear**
+- "Sport Carnival" (with space) — 1 result, *TABLOID SPORTS CARNIVALS* TM #1237290, status "Removed (renewal fee not paid)" — i.e. dead, not a barrier
+- "Luck Dragon" — 1 result, *Luna Luck Gold Dragon* TM #2121397 in class 28 (toys/games) — different name, different class, not a barrier
+
+**Conclusion: clear to register.** Recommended first registration: School Sport Portal class 42 via TM Headstart, ~$330.
+
+### Thursday backup runbook emailed
+PDF rendered + emailed to pgallivan@outlook.com via Resend (IDs `cdadfe9a-2a14-40de-be4c-1916772da2e9`, `79260f93-0e1a-4243-8ea7-2718f3fd5878`). Print + hand to principal tomorrow morning.
+
+### Truly Paddy-only items remaining (8)
+1. Print runbook (in inbox)
+2. Submit BizCover insurance app
+3. DPA legal review (~$300 LawPath)
+4. Trademark registration ($330 TM Headstart for class 42)
+5. Capture WPS quote post-7-May
+6. Hand-deliver outreach pack 11 May
+7. Identify backup admin contact
+8. LinkedIn presence
