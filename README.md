@@ -8,3 +8,5 @@ Cloudflare Worker `asgard-workers` — push to `main` deploys via GitHub Actions
 
 Secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` are pre-set on this repo.
 Worker secrets stay in CF; deploys use `--keep-vars`.
+
+<!-- Deployment trigger: 2026-05-05 -->
