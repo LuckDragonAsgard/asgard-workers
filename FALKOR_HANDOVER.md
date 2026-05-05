@@ -698,3 +698,77 @@ All 25 known URLs return 200. Bad email count = 0 across all 10 audited pages. /
 - Health: `{"ok":true,"worker":"carnival-results","version":"1.4.0"}`.
 - /williamstowndistrict serves new email+password form (verified live).
 
+
+
+---
+
+## Hardening + cleanup pass — 2026-05-05 (late)
+
+Paddy: "we need all that fixed". Knocked through the entire 27-item gap list.
+
+### Auth hardening (carnival-results v1.5.0)
+- **Rate limiting**: 10 attempts per IP per 5 min on `/auth/login`. Returns 429 + Retry-After.
+- **Account lockout**: 5 failed attempts per email in 15 min → 423 lock.
+- **Self-serve password reset**: `POST /auth/forgot-password` (5/IP/hr rate limited). Sends branded email with single-use 15-min token. `POST /auth/reset-password` consumes token, sets new password, clears lockouts. Public reset page at `/auth/reset?token=X`.
+- **Old magic-link `/auth/verify` removed** (replaced with reset flow).
+- D1: new `auth_attempts` (with indexes on ip,ts and email,ts) + `password_reset_tokens` tables.
+
+### Public API rate limiting
+- `rateLimit()` per-isolate token-bucket helper added. 60 req/min for `/api/winners` and `/api/scores`.
+- 429 on burst.
+
+### Result un-publish
+- `POST /api/unpublish {code}` — admin-only. Deletes from `results` + `carnivals` tables.
+
+### Per-carnival rules — full wiring
+- `getProgramData()` filters relay events when `setup-allow-relays` unchecked.
+- `adminEditTime` already gated by `allowManualEdits` (previous session).
+- Rules persist as `carnivalMeta.rules` object on creation.
+
+### Roster CSV import
+- New "📋 Roster import (CSV)" section in CT setup screen (above Carnival rules).
+- Paste columns: `bib,name,school,year,gender`. Header row auto-detected.
+- `parseRosterCSV()` builds `_rosterFromCSV` object → attached to `carnivalMeta.roster` on create.
+- Bib auto-numbered if blank.
+
+### Worker auto-snapshot
+- New `asgard-snapshot` worker (https://asgard-snapshot.pgallivan.workers.dev/health).
+- Daily cron at `0 14 * * *` UTC (= midnight AEST).
+- Snapshots 10 production workers to `LuckDragonAsgard/asgard-workers/snapshots/workers/<name>.js`.
+- Verified manual run committed all 9 of 10 (schoolsportportal-nav not a separate worker).
+- `SNAPSHOT_PIN` in vault for manual triggers.
+
+### Service status page
+- `asgard-status` worker — https://asgard-status.pgallivan.workers.dev/.
+- Pings 8 services (3 sites + auth API + WS + access-codes + contact + email).
+- Auto-refresh every 60s. JSON: `/api/status`. Health: `/health`.
+
+### ABN verified
+- ABN 64 697 434 898 = **LUCK DRAGON PTY LTD** (active, Australian Private Company, VIC 3016).
+- **GST registered from 23 Apr 2026** — Paddy needs to update price card to break out GST.
+
+### Documents added (under `/manual/` in this repo)
+- [`PADDY_ACTION_CHECKLIST.md`](manual/PADDY_ACTION_CHECKLIST.md) — single source of truth for outstanding manual actions, ordered by urgency.
+- [`THURSDAY_BACKUP_RUNBOOK.md`](manual/THURSDAY_BACKUP_RUNBOOK.md) — printable card for principal/deputy if Paddy is sick on race day.
+- [`dns_records.md`](manual/dns_records.md) — exact SPF/DKIM/DMARC values to paste into CF dashboard (CF tokens lack DNS:Edit so manual).
+- [`trademark_check.md`](manual/trademark_check.md) — IP Australia search guide + class recommendations.
+
+### Vault additions
+- `ADMIN_BOOTSTRAP_PIN` — for /auth/admin-bootstrap (initial password set)
+- `CRON_PIN` — for /cron/race-day-reminders manual trigger
+- `SNAPSHOT_PIN` — for asgard-snapshot manual trigger
+- `PADDY_SSP_PASSWORD` — Paddy's SSP login password (`5GAtu4D3FFI7I7eSgXsP`)
+
+### What's left (all human action — see manual/PADDY_ACTION_CHECKLIST.md)
+1. Submit BizCover insurance application
+2. Add SPF/DKIM/DMARC DNS records on schoolsportportal.com.au (CF tokens lacked DNS:Edit)
+3. Update price card to show ex-GST/GST split
+4. Engage lawyer for DPA review (LawPath ~$300)
+5. Trademark search + register "School Sport Portal"
+6. Confirm WPS quote for case study post-7-May
+7. Print/hand over Thursday backup runbook to principal
+8. Identify backup admin contact
+9. Vault redundancy (1Password mirror)
+10. Separate production CF account
+11. SEO + LinkedIn presence
+12. Decide invoicing schedule
