@@ -14,7 +14,7 @@
 
 ---
 
-# Falkor — Session Handover (2026-05-04, evening)
+# Falkor — Session Handover (2026-05-05)
 
 ## Who you are talking to
 Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer Trivia (KBT), developer of the Falkor AI assistant and luckdragon.io platform. Emails: pgallivan@outlook.com / pat_gallivan@hotmail.com. Casual, delegates fully. AFL fan (Bulldogs).
@@ -217,6 +217,14 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+**sly-api /api/rounds clip fix (2026-05-05):**
+- `/api/rounds` was filtering with `round_number<=current+1` — clipped to 11 rows even though D1 has all 25 (R0–R24, with R12–R16 `HS` and R21–R24 `Final`).
+- Patched: filter removed, endpoint returns all 25 rounds. SPA can render HS + Final banners as designed.
+- Deployed to sly-api worker (multipart PUT, keep_bindings preserved D1 + 6 secrets).
+- Verified live: 25 rounds (16 H2H + 5 HS + 4 Final), bindings intact, R9 row unchanged, auth gates still 401/403.
+- Repo: `LuckDragonAsgard/superleague-yeah-v4` commit `356c6153` on main.
+- R9 lock Thu 7 May 8:30 UTC unaffected — drift was display-only.
+
 
 **carnival-timing-html v8.7.1 (2026-05-04 evening) — XC Marshal name picker:**
 - Added `📋 Pick` button next to `🔍 Auto` OCR in XC Marshal bib pad → opens full-screen name picker overlay with search.
@@ -556,3 +564,4 @@ Real figures captured this session.
 - https://paddy-finance.pgallivan.workers.dev
 - IP ownership selector defaults to Jacky
 - Refi-plan banner with ATO purpose-test warning
+
