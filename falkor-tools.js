@@ -1,4 +1,4 @@
-// falkor-tools v2.1.0 — Asgard-style project hub with Finance, sorting, all info per project
+h// falkor-tools v2.1.0 — Asgard-style project hub with Finance, sorting, all info per project
 const PROJECTS_API = 'https://falkor-dashboard.luckdragon.io/api/projects';
 const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
@@ -1051,7 +1051,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 .fk-lg{width:96px;height:96px}
 .fk-md{width:48px;height:48px}
 .fk-sm{width:32px;height:32px}
-.fk-xs{width:24px;height:24px}
+.fk-sm{width:24px;height:24px}
 @keyframes fk-pulse{0%,100%{opacity:.45}50%{opacity:1;transform:scale(1.08)}}
 @keyframes fk-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 </style></head>
@@ -1364,7 +1364,7 @@ function renderHome(m){
  const greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
  const PIN=STATE.agentPin||"";
 
- const wrap=el("div",{style:"display:flex;flex-direction:column;height:100%;max-width:780px;margin:0 auto;padding:0 16px;width:100%"});
+ const wrap=el("div",{style:"display:flex;flex-direction:column;height:100%;max-width:1200px;margin:0 auto;padding:0 16px;width:100%"});
 
  // Compact briefing strip with mascot
  const strip=el("div",{style:"display:flex;align-items:flex-start;gap:12px;padding:14px 4px 10px;border-bottom:1px solid var(--border)"});
@@ -1730,9 +1730,9 @@ function renderChatPane(){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
     let mascotClass="fk-smile";
     if(m.pending) mascotClass="fk-think";
-    else if(m.resultMood==="success") mascotClass="fk-celebrate";
+    else if(m.resultMood==="success") mascotClass="fk-cheer";
     else if(m.resultMood==="error") mascotClass="fk-confused";
-    wrap.appendChild(el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"+(m.pending?";animation:fk-pulse 1.2s ease-in-out infinite":"")}));
+    wrap.appendChild(el("div",{class:"fk "+mascotClass+" fk-sm",style:"flex:0 0 auto;margin-top:2px"+(m.pending?";animation:fk-pulse 1.2s ease-in-out infinite":"")}));
     const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
     bubbleCol.appendChild(el("div",{class:"msg assistant",style:"align-self:flex-start;max-width:100%"},m.content));
     if(m.images&&m.images.length){
@@ -1913,9 +1913,9 @@ function refreshChat(){
     const wrap=el("div",{style:"display:flex;gap:8px;align-self:flex-start;max-width:95%"});
     let mascotClass="fk-smile";
     if(m.pending) mascotClass="fk-think";
-    else if(m.resultMood==="success") mascotClass="fk-celebrate";
+    else if(m.resultMood==="success") mascotClass="fk-cheer";
     else if(m.resultMood==="error") mascotClass="fk-confused";
-    const mascot=el("div",{class:"fk "+mascotClass+" fk-xs",style:"flex:0 0 auto;margin-top:2px"});
+    const mascot=el("div",{class:"fk "+mascotClass+" fk-sm",style:"flex:0 0 auto;margin-top:2px"});
     if(m.pending)mascot.style.animation="fk-spin 0.8s linear infinite";
     wrap.appendChild(mascot);
     const bubbleCol=el("div",{style:"display:flex;flex-direction:column;gap:6px;align-self:flex-start;max-width:100%"});
@@ -2153,7 +2153,7 @@ function renderRevenue(m){
 }
 function renderGuide(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Guide"));m.appendChild(top);
- const wrap=el("div",{style:"padding:20px;display:grid;gap:18px;max-width:780px"});
+ const wrap=el("div",{style:"padding:20px;display:grid;gap:18px;max-width:1200px"});
  const intro=el("div",{style:"background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:center"});
  intro.appendChild(el("div",{class:"fk fk-help-book fk-md"}));
  intro.appendChild(el("div",{},
