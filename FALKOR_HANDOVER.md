@@ -1027,3 +1027,50 @@ Paddy: "i cannot miss anyhin here. what do i need on all my sites?". Audited eac
 ### Cookie banner — not auto-injected
 
 I defined a small banner script but didn't auto-inject. The Cookie Policy clearly states we use only 1 essential session cookie + no tracking, no advertising. Under AU privacy framework that's sufficient — explicit consent banner is GDPR-strict territory and we're not GDPR-required (no EU customers). Available to enable later if needed.
+
+
+---
+
+## Final fix-all pass — 2026-05-05 (deep-night)
+
+Paddy: "okay let sfix all issues". Knocked through the last batch.
+
+### New pages live on all 3 sites
+- **/about** — Founder bio, why we exist, how we work
+- **/changelog** — Plain-English release notes
+- **/modern-slavery** — Voluntary statement under Modern Slavery Act 2018 (Cth)
+- **/.well-known/security.txt** + `/security.txt` (legacy) — RFC 9116 vulnerability disclosure
+
+### Auto-injected legal footer strip
+- Response transform on SSP + SC: any HTML response without a `/security` link gets a tiny "Luck Dragon Pty Ltd · ABN ... · About · Privacy · Terms · ..." strip injected before `</body>`.
+- Visible on /williamstownprimary, /demo-school, /demo-district, /demo-division, /demo-region, /wd26, /williamstownps/* — anywhere users might land.
+- Hobsons Bay HTML is missing closing `</body>` so the strip doesn't inject (cosmetic, not a blocker).
+
+### CT favicon route
+- Added `/favicon.svg` route to CT (was missing — main page used inline data: URI but no separate file).
+
+### WD26 race-day cron now wired
+- D1 carnivals table: WD26 row with `event_date='2026-05-07'`. Cron fired manually as a test — sent 2 reminder emails (to pgallivan@outlook.com + paddy@luckdragon.io). `reminder_sent_at` populated so it won't double-fire on the scheduled run tonight at 22:00 UTC.
+
+### Final E2E sanity test results
+**66 / 66 PASS** including:
+- All public pages on all 3 sites: 200
+- All legal pages on all 3 sites: 200
+- Login: works
+- Wrong password: 401
+- Forgot password: works
+- Access code validation (WPS-2026 + WD26TEST): valid; bad code: invalid
+- Stripe checkout pages (both buy links): 200
+- Status page: 8/8 services healthy
+- Branded 404 on all 3 sites: 404
+- /api/list, /api/results, /health, /favicon.svg, /og-image.svg, /sitemap.xml, /robots.txt: all 200
+
+### Versions now live
+- carnival-results: v1.5.0 (auth + reset + rate limit + lockout + unpublish)
+- carnival-timing-html: includes per-carnival rules, CSV import, manual edit gate, /favicon.svg, all legal pages, branded 404, buy buttons, GST language
+- ssp-portal: includes contact form, JSON-LD + og:image + favicon, all legal pages, branded 404, GST split pricing, footer-strip injector
+- sportcarnival-hub: includes /williamstownps/* fixed, all legal pages, footer-strip injector
+- ct-access: branded welcome email
+- ssp-contact: auto-reply via luckdragon.io
+- asgard-snapshot: daily worker snapshots
+- asgard-status: 8-service public status page
