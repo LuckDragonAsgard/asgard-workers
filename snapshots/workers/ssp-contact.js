@@ -131,7 +131,8 @@ async function handleRequest(request) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: 'Paddy at School Sport Portal <hello@schoolsportportal.com.au>',
+      from: 'Paddy at School Sport Portal <noreply@luckdragon.io>',
+      reply_to: 'hello@schoolsportportal.com.au',
       to: [safeEmail],
       subject: 'Got your demo request — School Sport Portal',
       html: autoReplyHtml,
