@@ -624,3 +624,30 @@ Salaries Paddy $118k, Jacky $220k. Loans NR $702,615 @ 6.02%, Osborne $508,110 @
 - /tmp/build_pj_extras.py — builder for 3 interactive pages
 - /tmp/pj_hub_v4.js — final deployed worker (84,728 bytes)
 
+
+
+---
+
+## Full system audit + fixes — 2026-05-05 (afternoon)
+
+Comprehensive audit across SSP/CT/SC: HTTP, branding, integrations, emails, demos, per-carnival rules. All P0 + P1 issues fixed.
+
+### Fixed
+1. **Wrong email everywhere** — `info@sportportal.com.au` (broken domain — was bouncing) replaced with `hello@schoolsportportal.com.au` in 10 places across `carnival-timing-html` (3x in embedded Privacy/Terms), `sportcarnival-hub` (2x in DEMO_H base64 footer), `ssp-portal` (5x in PRIVACY_HTML_SSP).
+2. **`/williamstownps/{crosscountry|athletics|swimming}`** were serving a generic "Log in" lock page with broken `sportportal.com.au` URL. Replaced with proper noindex sub-pages: crosscountry redirects to `/wd26`, athletics + swimming show "coming soon" with correct CTAs.
+3. **Magic-link login email** in `carnival-results` was bare-bones `<p>Hi,</p><p>Click here</p>`. Replaced with branded HTML matching ssp-contact auto-reply quality (logo, button, copy/paste fallback link, ABN footer).
+4. **SSP homepage now has a working contact form** — POSTs to `ssp-contact.pgallivan.workers.dev`, triggers internal notification + branded auto-reply. Honeypot + validation. Form submits async, success/error inline.
+5. **Per-carnival rules engine** — CT setup now has expandable "⚙️ Carnival rules" section with: max events per student, max relays per student, allow relays toggle, allow manual time edits, allow position swaps, strict age enforcement, publish results publicly. Persisted to `carnivalMeta.rules`.
+6. **`/williamstowndistrict` placeholder emails** — `coordinator@example.com` → `coordinator@school.edu.au`; `you@school.vic.edu.au` → `you@school.edu.au` (AU-wide, was VIC-only).
+7. **Favicon** — SVG runner-on-navy added at `/favicon.svg` on SSP and SC (was 404 / inherited browser default).
+8. **Meta description** — added to Hobsons Bay page; existing on SSP/SC homepages and WSD verified.
+9. **Demo pages now show integration callout** — `/demo-school`, `/demo-district`, `/demo-division`, `/demo-region` now have an injected banner: "✨ Demo X — fictional data" + buttons "▶ See live integration demo" (→ sportcarnival.com.au) + "Set up your school". Implemented via `injectDemoBanner(html, kind)` response transform — no const editing required.
+
+### Verified clean post-fix
+All 25 known URLs return 200. Bad email count = 0 across all 10 audited pages. /favicon.svg serves on SSP and SC. /api/list returns 12 published carnivals. /health green. ct-access /validate POST returns school name. ws endpoint upgrade-required (correct).
+
+### Deferred (not blocking)
+- Welcome email after Stripe checkout completes (needs webhook integration).
+- Race-day reminder cron.
+- Per-carnival rule **enforcement** (UI present, persists to meta — entry-time validation hooks not yet wired; manual edit toggle is wired via existing `adminEditTime`).
+- Footer redesign — pages have footers but vary in style; existing shared-nav script handles top nav; bottom footer left as is.
