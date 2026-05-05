@@ -1112,3 +1112,44 @@ Paddy: "okay let sfix all issues". Knocked through the last batch.
 - ssp-contact: auto-reply via luckdragon.io
 - asgard-snapshot: daily worker snapshots
 - asgard-status: 8-service public status page
+
+
+---
+
+## Continuity layer — survives switching Claude accounts/machines — 2026-05-05
+
+Paddy: "All wrapped up so I can fully completely continue from new claude account?". Now: yes.
+
+### Where the canonical state lives (no Cowork-account dependency)
+
+| Layer | URL | What | Auth |
+|---|---|---|---|
+| **GitHub `knowledge/` folder** | `LuckDragonAsgard/asgard-workers/knowledge/` | All Cowork auto-memory mirrored: user identity, feedback rules, project states (Sport Portal, KBT, LessonLab, SLY, WD26, Family Finance), Asgard bootstrap, CF token reference (redacted) | `GITHUB_TOKEN` from vault |
+| **GitHub `knowledge/NEW_CHAT_BOOTSTRAP.md`** | https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/knowledge/NEW_CHAT_BOOTSTRAP.md | Single doc — any new Claude on any account reads this first to fully resume. Covers: who Paddy is, all projects, persistence layers, pending items, vault keys, working norms. | none (public via raw GH) |
+| **GitHub `FALKOR_HANDOVER.md`** | this file | Full chronicle of all major decisions/deploys | none (public) |
+| **GitHub `manual/`** | `LuckDragonAsgard/asgard-workers/manual/` | Paddy's action checklist, Thursday runbook PDF, DNS records guide, trademark check, invoicing guide, legal review pack | none (public) |
+| **GitHub `commercial/`** | same | PIA, DPA, parental consent, WPS case study, sales pack, outreach list, insurance app sheet | none (public) |
+| **GitHub `snapshots/workers/`** | same | Daily snapshots of all 9 production worker source files | none (public) |
+| **Falkor brain** | https://falkor-brain.luckdragon.io | Durable facts (POST /remember). Augmentation, not canonical. | `X-Pin: JilSS1zLn3Rl7mWrM6fOJc69` |
+| **Asgard vault** | https://asgard-vault.pgallivan.workers.dev | All secrets | `X-Pin: 535554` |
+
+### How a new Claude session bootstraps (procedure)
+
+```
+1. curl https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/knowledge/NEW_CHAT_BOOTSTRAP.md
+2. Read it — covers the user, all projects, working norms, pending items, vault keys.
+3. curl https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md
+4. Read the chronicle if needed.
+5. Open with a short brief, then wait for Paddy's instruction.
+```
+
+### Mirroring policy
+
+**Cowork auto-memory is local to one account.** When making material updates to memory files, mirror to `knowledge/` on GitHub the same session. The `knowledge/` folder IS the canonical version for cross-account continuity.
+
+### Verified continuity test
+
+- `curl https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/knowledge/NEW_CHAT_BOOTSTRAP.md` returns 200 with full bootstrap doc
+- 18 memory files mirrored (user_identity, feedback_*, project_*, lessonlab_*, sly_*, wd26_*, paddy_jacky_finance, asgard_bootstrap, MEMORY.md, reference_cf_token redacted)
+- All vault secrets reachable via X-Pin: 535554
+- FALKOR_HANDOVER + manual/ + commercial/ + snapshots/ + knowledge/ all in same repo, all pushable, all readable from any URL with PAT
