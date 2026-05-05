@@ -228,6 +228,13 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+**SLY data normalization (2026-05-05 afternoon):**
+- 11 players had `position='MID'` instead of canonical `MIDFIELDER` — would not have matched scoring formula `M=4M` or Pick-tab slot filter. UPDATEd to MIDFIELDER. Two were drafted in Andy's squad (Milan Murdock, Tom Blamires).
+- 12 players had AFL short-code team names (WCE/NM/PA/CARL/FRE/HAW/MELB/RICH/WB) mixed with full names (43 of 18 AFL clubs). UPDATEd via single CASE statement. Final: 18 distinct teams, 0 short codes. Same Andy-squad players also affected — both team values now correct.
+- Injury entry "Samuel Cumming" had `player_id=null` — patched in injuries JSON config blob to UUID e99b8dfb-... (matches "Sam Cumming" in players, RIC, MIDFIELDER).
+- Seeded `auto_pick_enabled=1` global config row — was missing, /api/config?key=auto_pick_enabled returned null. SPA now sees explicit gate value.
+- Net: 0 NULL player_ids in injuries, 0 short-code teams, 0 non-canonical positions, all 4 config rows present. R9 Pick UI for Andy now resolves Milan + Tom into the M slot correctly.
+
 **Whole-system bug check + fixes (2026-05-05 noon):**
 - Created `WD26TEST` access code in ct-access (POST /create with PIN, type=ssp) — required for today's Tuesday dry-run before Thursday's race day. Verified validates and listed in /admin/codes.
 - Cleaned sly D1 orphans: deleted 1 sentinel score row (id=1510, coach_id/round_id=99999 test data) + 15 R0 orphan picks (player_id stored as name string instead of UUID, pre-migration legacy). Final counts: 128 scores, 1389 picks, 0 orphans.
@@ -690,3 +697,4 @@ All 25 known URLs return 200. Bad email count = 0 across all 10 audited pages. /
 - Cron endpoint manual run: `{ok:true, sent:0, failed:0, scanned:0}` (no carnivals with event_date set yet — expected).
 - Health: `{"ok":true,"worker":"carnival-results","version":"1.4.0"}`.
 - /williamstowndistrict serves new email+password form (verified live).
+
