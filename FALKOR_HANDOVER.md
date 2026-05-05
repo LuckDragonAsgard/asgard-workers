@@ -218,6 +218,13 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
 
+**sportcarnival-hub v3.3.0 (2026-05-04 evening) — XC scoring fix + qualifiers print:**
+- /wd26 team-scores now uses **standard SSV cross-country scoring**: top 4 finishers per school per race, sum places, lowest aggregate wins. Was: inverted points (1st=field-size, high score wins) — non-standard.
+- Schools with <4 finishers in a race contribute nothing for that race (still get individual points).
+- New **🎖️ Divisional Qualifiers** card under team scores: top 10 from each race in one panel, with **🖨️ Print** button. `@media print` CSS hides everything else for a clean printout.
+- Repo `LuckDragonAsgard/sportcarnival-hub` worker.js committed.
+
+
 **Link/button audit + sportcarnival-hub v3.2.1 (2026-05-04 evening):**
 - Found and fixed JS comma-operator regression I introduced in v3.2.0 — `if (p === '/api/list','/williamstownps/crosscountry' || ...)` evaluated to `if ('/williamstownps/crosscountry' || ...)` which is always truthy, so EVERY URL on sportcarnival.com.au was returning the lock page. Fixed in v3.2.1.
 - `schoolsportportal-nav.js` was 404 returning HTML — half the pages embedded `<script src="/schoolsportportal-nav.js">` and silently failed. Added handler in `ssp-portal` worker that serves real JS with shared top nav + footer (Home/Help/Privacy/Terms/Contact). Pages that depend on it (WPS, Hobsons) now have working nav.
