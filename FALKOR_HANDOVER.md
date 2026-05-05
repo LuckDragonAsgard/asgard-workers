@@ -14,7 +14,7 @@
 
 ---
 
-# Falkor — Session Handover (2026-05-05)
+# Falkor — Session Handover (2026-05-04, evening)
 
 ## Who you are talking to
 Paddy Gallivan — PE teacher at Williamstown Primary School, runs Kow Brainer Trivia (KBT), developer of the Falkor AI assistant and luckdragon.io platform. Emails: pgallivan@outlook.com / pat_gallivan@hotmail.com. Casual, delegates fully. AFL fan (Bulldogs).
@@ -115,25 +115,36 @@ Public product demo ladder (also `ssp-portal`):
 
 ## Sport Portal — what's NEXT
 
-### Immediate (this week)
-1. **Bookmark `sportcarnival.com.au/wd26`** for race day. Aliases: `/williamstown`, `/williamstown-2026`.
-2. **Confirm WD26 carnival code** is created in CT for **Thursday 7 May 2026** (district XC).
-3. **Run the Thursday checklist** (`thursday_checklist.html` saved in Drive 2026-05-03).
-4. ~~**Sport Portal architecture push**~~ — DONE 2026-05-04. Pushed to `asgard-workers/docs/`: [`SPORT_PORTAL_ARCHITECTURE.md`](docs/SPORT_PORTAL_ARCHITECTURE.md) + [`COST_TRACKING_DASHBOARD.md`](docs/COST_TRACKING_DASHBOARD.md). Source markdowns remain in Drive.
-5. (Optional) **Restore `/williamstownps/crosscountry`** sub-page. Files exist in `sportcarnival-hub` repo but worker isn't routing them — add a handler in `_innerFetch`.
+### Immediate (RACE DAY: Thu 7 May 2026 — 2 days away)
+1. **Race-day path 100% verified ready** — sportcarnival.com.au/wd26 (200, 23 KB), CT app loads, ct-access `WPS-2026` validates, carnival-timing-ws DO ponging, falkor-ct-ai healthy, D1 archive auto-populated by carnival-timing-ws on first publish (Firebase mirror removed entirely — D1 is sole archive). WD26 carnival code is typed into CT app on race morning per the checklist (it's not a pre-created entity).
+2. **Bib + roster artefacts** in `LuckDragonAsgard/asgard-workers/wd26/` (NOT Drive — Drive deprecated): print-and-pin bib PDF, finish-line roster, Tuesday dry-run plan. Bib numbers: 11 Boys WPS = 125–128 (page is source of truth, NOT 124–127).
+3. **No-bibs fallback live**: carnival-timing-html v8.7.1 XC Marshal bib pad has `📋 Pick` button — taps full-screen name picker overlay filtered to active race (8 schools colour-coded). Marshal can identify each finisher by tapping name if bibs aren't worn.
 
-### Short-term (May 2026 audit — outstanding criticals)
-1. **Cyber Liability + Professional Indemnity insurance** (BizCover.com.au) — CRITICAL
-2. **Host Privacy Policy** at `schoolsportportal.com.au/privacy` (currently mis-hosted on `sportcarnival.com.au/legal.html`) — CRITICAL
-3. **Finalise Terms of Service** — remove "Draft" status — CRITICAL
-4. **Add security headers** to `ssp-portal` Worker — HIGH
-5. **Restrict CORS** on `ssp-contact` to own domain — HIGH
-6. **Fix copyright year** 2025 → 2026 — HIGH
-7. **Change footer email** to info@schoolsportportal.com.au — HIGH
-8. **Clarify "SSV compliant" wording** — SSV = School Sport Victoria event body, not a data standard — HIGH
-9. **Migrate ssp-contact** from pgallivan domain to luckdragon.io — MEDIUM
-10. **Parental consent template** — MEDIUM
-11. **VIC DET Privacy Impact Assessment** kick-off — MEDIUM
+### Short-term — COMMERCIAL READINESS (all engineering criticals DONE 2026-05-04)
+**Engineering audit items COMPLETE**: ~~Privacy Policy hosted~~ ~~Terms not Draft~~ ~~Security headers~~ ~~CORS restricted~~ ~~Copyright 2026~~ ~~Footer email info@~~ ~~SSV wording clarified~~ ~~ssp-contact migrated to luckdragon.io~~. Email Obfuscation toggled OFF (CF dashboard) so contact links work.
+
+**Commercial pack v1.0 DRAFTED 2026-05-05** — `LuckDragonAsgard/asgard-workers/commercial/` (8 files, see [README](commercial/README.md)). All 6 commercial-readiness items now have a v1.0 draft on GitHub. Australia-wide framing (APPs base + VIC/NSW/QLD/WA state addenda + Catholic/independent notes).
+
+**REMAINING blockers to first paying school (priority order):**
+1. ~~**Cyber Liability + Professional Indemnity insurance**~~ — DRAFT READY. Pre-filled BizCover application at [`commercial/INSURANCE_APPLICATION.md`](commercial/INSURANCE_APPLICATION.md). **PADDY ACTION:** submit at bizcover.com.au, save certificate of currency to repo as PDF when issued.
+2. ~~**Privacy Impact Assessment**~~ — DRAFTED v1.0 at [`commercial/PRIVACY_IMPACT_ASSESSMENT.md`](commercial/PRIVACY_IMPACT_ASSESSMENT.md). Covers APPs + VIC/NSW/QLD/WA/SA/TAS/ACT/NT addenda + Catholic/independent notes. Send to first interested school's privacy officer for feedback.
+3. ~~**Parental consent template**~~ — DRAFTED v1.0 at [`commercial/PARENTAL_CONSENT.md`](commercial/PARENTAL_CONSENT.md). Letter + signed-form versions. Pilot at next WPS carnival.
+4. ~~**DPA template**~~ — DRAFTED v1.0 at [`commercial/DATA_PROCESSING_AGREEMENT.md`](commercial/DATA_PROCESSING_AGREEMENT.md). Controller/processor structure, sub-processors disclosed, AU residency, NDB 72h. **PADDY ACTION:** one legal-counsel review before first signature.
+5. ~~**Reference customer story**~~ — DRAFTED v1.0 at [`commercial/WPS_CASE_STUDY.md`](commercial/WPS_CASE_STUDY.md). Quote slot pending — to confirm with himself post-7 May carnival with real numbers.
+6. ~~**Sales one-pager + outreach**~~ — DRAFTED v1.0 at [`commercial/SALES_ONE_PAGER.md`](commercial/SALES_ONE_PAGER.md) + [`commercial/OUTREACH_LIST.md`](commercial/OUTREACH_LIST.md). 6-ring concentric plan, Ring 1 = 8 Hobsons Bay schools to hand-deliver at 11 May divisional debrief.
+
+**Active blockers now reduced to:**
+- (a) Paddy submits BizCover application
+- (b) Legal-counsel review of DPA
+- (c) WPS quote captured post-race-day
+- (d) Render one-pager + case study to PDF for emailing
+
+
+**Product gaps that won't block first sale but reduce churn:**
+- Roster CSV import (paste from school SIS)
+- Self-serve coach provisioning (works in new dashboard, only WPS wired)
+- End-of-season report PDF (one per school council per year)
+- Multi-year history view
 
 ### Medium-term (post-XC carnival)
 - ~~**Wire CT XC bib lookup to Google Sheet**~~ — SUPERSEDED 2026-05-04 by `carnival-results` D1 migration. `sportcarnival-hub` v3.2.0 now reads from D1 (`/api/results?carnival=CODE`, `/api/list`). `/api/sheet` returns 410. CT app still double-writes to both Firebase and D1; Firebase reads no longer required.
@@ -217,13 +228,25 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
-**sly-api /api/rounds clip fix (2026-05-05):**
-- `/api/rounds` was filtering with `round_number<=current+1` — clipped to 11 rows even though D1 has all 25 (R0–R24, with R12–R16 `HS` and R21–R24 `Final`).
-- Patched: filter removed, endpoint returns all 25 rounds. SPA can render HS + Final banners as designed.
-- Deployed to sly-api worker (multipart PUT, keep_bindings preserved D1 + 6 secrets).
-- Verified live: 25 rounds (16 H2H + 5 HS + 4 Final), bindings intact, R9 row unchanged, auth gates still 401/403.
-- Repo: `LuckDragonAsgard/superleague-yeah-v4` commit `356c6153` on main.
-- R9 lock Thu 7 May 8:30 UTC unaffected — drift was display-only.
+
+**sportcarnival-hub v3.3.0 (2026-05-04 evening) — XC scoring fix + qualifiers print:**
+- /wd26 team-scores now uses **standard SSV cross-country scoring**: top 4 finishers per school per race, sum places, lowest aggregate wins. Was: inverted points (1st=field-size, high score wins) — non-standard.
+- Schools with <4 finishers in a race contribute nothing for that race (still get individual points).
+- New **🎖️ Divisional Qualifiers** card under team scores: top 10 from each race in one panel, with **🖨️ Print** button. `@media print` CSS hides everything else for a clean printout.
+- Repo `LuckDragonAsgard/sportcarnival-hub` worker.js committed.
+
+
+**Link/button audit + sportcarnival-hub v3.2.1 (2026-05-04 evening):**
+- Found and fixed JS comma-operator regression I introduced in v3.2.0 — `if (p === '/api/list','/williamstownps/crosscountry' || ...)` evaluated to `if ('/williamstownps/crosscountry' || ...)` which is always truthy, so EVERY URL on sportcarnival.com.au was returning the lock page. Fixed in v3.2.1.
+- `schoolsportportal-nav.js` was 404 returning HTML — half the pages embedded `<script src="/schoolsportportal-nav.js">` and silently failed. Added handler in `ssp-portal` worker that serves real JS with shared top nav + footer (Home/Help/Privacy/Terms/Contact). Pages that depend on it (WPS, Hobsons) now have working nav.
+- Added `/terms` link to `carnival-timing-html` bottom sticky bar (was Privacy-only).
+- Added Privacy/Terms/Help footer links to `/williamstowndistrict` page.
+- Final link audit: 38/39 resources HTTP 200; the 1 fail (`/cdn-cgi/l/email-protection`) was CF Pages email obfuscation — root-cause-fixed by toggling Email Address Obfuscation OFF in CF dashboard for `sportportal.com.au` zone (verified live: cdn-cgi=0, mailto=2 served clean).
+
+**Vault additions (2026-05-04):**
+- `STAFF_SESSION_SECRET` — HMAC key for /williamstowndistrict bearer-token sessions (carnival-results v1.2.0)
+- `CF_FULLOPS_TOKEN` — new CF API token `asgard-fullops-2026-05-04` with Account scopes (Workers Scripts, Cloudflare Pages, D1, Workers KV) + Zone scopes (Zone Settings, Config Rules, Workers Routes, Cache Purge). Means future zone-level dashboard tweaks (toggle obfuscation, deploy Pages, etc.) can be done by API instead of driving the browser.
+
 
 
 **carnival-timing-html v8.7.1 (2026-05-04 evening) — XC Marshal name picker:**
@@ -564,4 +587,3 @@ Real figures captured this session.
 - https://paddy-finance.pgallivan.workers.dev
 - IP ownership selector defaults to Jacky
 - Refi-plan banner with ATO purpose-test warning
-
