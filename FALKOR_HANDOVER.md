@@ -1177,3 +1177,21 @@ Paddy: "All wrapped up so I can fully completely continue from new claude accoun
 **Next action:** Confirm final product name (My Betting HQ vs Monitor Your Punting), then scaffold repo + worker skeleton.
 
 **Compliance note:** Check Australian gambling advertising laws before launch.
+
+---
+
+## Falkor-brain AGENT_PIN now configured (2026-05-04)
+
+Set up so future Claude sessions can write durable facts to `/remember`.
+
+- AGENT_PIN stored in vault: `https://asgard-vault.pgallivan.workers.dev/secret/AGENT_PIN` (X-Pin: 535554 to retrieve)
+- Same value bound as secret_text on falkor-brain worker
+- Write endpoint: `POST https://falkor-brain.luckdragon.io/remember` with X-Pin header set to the AGENT_PIN value
+- Body: `{"text":"...", "tags":["..."]}`
+- Returns: `{"ok":true,"id":"<id>","category":"general","chars":N}`
+- Search/retrieval endpoints not publicly exposed (writes only via /remember; retrieval likely via separate workers or MCP)
+- /health endpoint returns worker status
+
+7 durable facts pushed at setup (Cecil purchase, loan structure, cashflow truth, vault auth, Cecil repairs, Osborne CGT valuation, calculator URLs).
+
+Update old memory entry: "falkor-brain has no AGENT_PIN currently" is now stale — AGENT_PIN is set.
