@@ -218,6 +218,19 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
 
+**Link/button audit + sportcarnival-hub v3.2.1 (2026-05-04 evening):**
+- Found and fixed JS comma-operator regression I introduced in v3.2.0 — `if (p === '/api/list','/williamstownps/crosscountry' || ...)` evaluated to `if ('/williamstownps/crosscountry' || ...)` which is always truthy, so EVERY URL on sportcarnival.com.au was returning the lock page. Fixed in v3.2.1.
+- `schoolsportportal-nav.js` was 404 returning HTML — half the pages embedded `<script src="/schoolsportportal-nav.js">` and silently failed. Added handler in `ssp-portal` worker that serves real JS with shared top nav + footer (Home/Help/Privacy/Terms/Contact). Pages that depend on it (WPS, Hobsons) now have working nav.
+- Added `/terms` link to `carnival-timing-html` bottom sticky bar (was Privacy-only).
+- Added Privacy/Terms/Help footer links to `/williamstowndistrict` page.
+- Final link audit: 38/39 resources HTTP 200; the 1 fail (`/cdn-cgi/l/email-protection`) was CF Pages email obfuscation — root-cause-fixed by toggling Email Address Obfuscation OFF in CF dashboard for `sportportal.com.au` zone (verified live: cdn-cgi=0, mailto=2 served clean).
+
+**Vault additions (2026-05-04):**
+- `STAFF_SESSION_SECRET` — HMAC key for /williamstowndistrict bearer-token sessions (carnival-results v1.2.0)
+- `CF_FULLOPS_TOKEN` — new CF API token `asgard-fullops-2026-05-04` with Account scopes (Workers Scripts, Cloudflare Pages, D1, Workers KV) + Zone scopes (Zone Settings, Config Rules, Workers Routes, Cache Purge). Means future zone-level dashboard tweaks (toggle obfuscation, deploy Pages, etc.) can be done by API instead of driving the browser.
+
+
+
 **carnival-timing-html v8.7.1 (2026-05-04 evening) — XC Marshal name picker:**
 - Added `📋 Pick` button next to `🔍 Auto` OCR in XC Marshal bib pad → opens full-screen name picker overlay with search.
 - Filters BIB_LOOKUP to bibs in the active race (xcState.age + xcState.gender). 8 schools colour-coded, taken bibs greyed out.
