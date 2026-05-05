@@ -788,3 +788,45 @@ Paddy: "we need all that fixed". Knocked through the entire 27-item gap list.
 11. SEO + LinkedIn presence
 12. Decide invoicing schedule
 
+
+---
+
+## Paddy & Jacky FINAL refi plan (2026-05-04 evening)
+
+Broker Matt at Macquarie came back with valuations. Osborne valued $719k — way under our $1.1M assumption. Plan revised to **80/80/80 LVR (no LMI)**.
+
+### Macquarie's valuations
+- North Rd Newport: **$1,206,000**
+- Osborne St Williamstown: **$719,000** (the surprise — much lower than estimated)
+- Cecil St (purchase): **$1,102,000**
+
+### Final structure — all loans at exactly 80% LVR (NO LMI)
+| Loan | Amount | Rate | Repayment |
+|---|---|---|---|
+| North Rd refi | $964,800 (drawing $261,800) | 6.02% | $5,797/mo |
+| Osborne refi | $575,200 (drawing $73,200) | 6.25% (IP rate) | $3,542/mo |
+| Cecil St new | $881,600 | 5.5% (PPOR) | $5,006/mo |
+| **Total funds** | **$1,216,600** | | |
+| **Total needed** | $1,170,000 (purchase $1.105M + stamp $65k) | | |
+| **Surplus** | **+$46,600** for settlement costs | | |
+
+### Why 80/80/80 not Matt's 75/75/60
+Matt's first proposal had IPs at 75% LVR + Cecil at 60% LVR = $899k funds vs $1,170k need = $270k short. Pushing all to 80% LVR (still no LMI) closes the gap with $46k buffer.
+
+### ATO purpose test (CRITICAL — discussed extensively this session)
+Loading up IPs does NOT save tax. Equity drawn for Cecil deposit ($335k) is non-deductible PPOR debt. The actual tax saving from the move comes from **Osborne flipping OO→IP** — its $502k interest becomes deductible. Macquarie to set up split-loan structure so the deductible IP-purpose portions (NR $703k + Osborne $502k = $1,205k) are clearly separated from the non-deductible Cecil-deposit portions ($335k of IP equity + $881.6k Cecil = $1,216.6k).
+
+### Cashflow impact
+- Move costs ~$967/wk in surplus (current $1,755/wk → post $788/wk)
+- = ~$50k/yr less cash savings
+- BUT Cecil capital growth at 6%/yr × $1.1M = $66k/yr CGT-exempt (PPOR)
+- Net wealth gain: ~+$31k/yr more than not moving
+
+### Pages updated
+- `paddy-finance.pgallivan.workers.dev` — defaults updated to 80/80/80, deductible-portion inputs added, refi banner shows final plan
+- `pj-budget.pgallivan.workers.dev/PJ_Net_Worth.html` — values + loan balances updated
+- `pj-budget.pgallivan.workers.dev/PJ_Affordability.html` — stress test recalc with new loans
+- `pj-budget.pgallivan.workers.dev/PJ_Scorecard.html` — KPIs use new totals
+
+### Memory
+`paddy_jacky_finance.md` updated with final figures and ATO purpose-test warning.
