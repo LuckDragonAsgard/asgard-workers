@@ -651,3 +651,42 @@ All 25 known URLs return 200. Bad email count = 0 across all 10 audited pages. /
 - Race-day reminder cron.
 - Per-carnival rule **enforcement** (UI present, persists to meta — entry-time validation hooks not yet wired; manual edit toggle is wired via existing `adminEditTime`).
 - Footer redesign — pages have footers but vary in style; existing shared-nav script handles top nav; bottom footer left as is.
+
+
+---
+
+## Email+password auth + P2 fixes — 2026-05-05 (evening)
+
+### Auth: email+password (replaces magic-link)
+- **`carnival-results` v1.4.0** — new endpoints:
+  - `POST /auth/login {email, password}` → returns `{ok, email, role, session, expiry}`. PBKDF2-SHA256 100k iterations (CF Workers cap), per-user 16-byte salt.
+  - `POST /auth/set-password {email, currentPassword?, newPassword}` — self-service if signed in (currentPassword required) or admin override.
+  - `POST /auth/admin-bootstrap {email, password, role, displayName}` (header `X-Admin-Pin`) — initial password setup, PIN-protected.
+- D1 `users` table got `password_hash` + `password_salt` columns.
+- **Paddy bootstrapped** on `pgallivan@outlook.com` and `paddy@luckdragon.io`. Password in vault key `PADDY_SSP_PASSWORD`. `ADMIN_BOOTSTRAP_PIN` in vault.
+- `/williamstowndistrict` login UI replaced — email + password fields, "Forgot password?" details, calls `/auth/login` with both, stores session in localStorage. Old magic-link endpoint deprecated (still exists if needed but UI no longer uses it).
+- **CF Workers PBKDF2 cap gotcha**: max iterations is 100,000 (not 200,000). Higher counts throw `NotSupportedError`.
+
+### P2a — Stripe checkout welcome email (DONE)
+- `ct-access` `sendCodeEmail()` rewritten as full branded welcome HTML: hero card, big yellow code on navy gradient, 4-step "next steps" list, big CTA button to /help, ABN footer. Different subject + framing for SSP vs single vs annual.
+- Already wired into the Stripe webhook handler — fires on `checkout.session.completed`.
+
+### P2b — Per-carnival rule enforcement (partial wiring)
+- `adminEditTime` now gates on `carnivalMeta.rules.allowManualEdits` — toasts "Manual time edits are disabled" if false.
+- Tap-to-edit handler on time cells respects same rule.
+- Added `filterEventsByRules(events)` helper — filters relays from event lists when `allowRelays === false`.
+- **NOT YET WIRED**: `maxEventsPerStudent`, `maxRelaysPerStudent`, `strictAge`, `allowPositionSwap`. UI in setup screen captures them; enforcement at entry-time TBD next session.
+
+### P2c — Race-day reminder cron (DONE)
+- `carnival-results` v1.4.0: `POST /cron/race-day-reminders` — scans `carnivals.event_date` for tomorrow + day-after, emails all admin/coach/committee users a branded checklist email.
+- D1 `carnivals` table got `event_date` (TEXT, ISO date) + `reminder_sent_at` (INTEGER ms). Once a reminder fires for a carnival, it's marked sent.
+- CF Cron Trigger: `0 22 * * *` UTC (= 8am AEST). Calls `scheduled()` handler in worker, which fetches `/cron/race-day-reminders` with `cf-cron: true`.
+- `CRON_PIN` in vault for manual triggers (PIN passed via `X-Cron-Pin` header).
+- **CT app TODO**: when creating a carnival, write `event_date` to D1 (currently null on existing carnivals — reminder is no-op until populated).
+
+### Verified
+- Login: `POST /auth/login {pgallivan@outlook.com, ${vault.PADDY_SSP_PASSWORD}}` returns 200 with session token.
+- Wrong password returns 401 cleanly (constant-time compare).
+- Cron endpoint manual run: `{ok:true, sent:0, failed:0, scanned:0}` (no carnivals with event_date set yet — expected).
+- Health: `{"ok":true,"worker":"carnival-results","version":"1.4.0"}`.
+- /williamstowndistrict serves new email+password form (verified live).
