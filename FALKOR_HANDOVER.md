@@ -115,25 +115,27 @@ Public product demo ladder (also `ssp-portal`):
 
 ## Sport Portal — what's NEXT
 
-### Immediate (this week)
-1. **Bookmark `sportcarnival.com.au/wd26`** for race day. Aliases: `/williamstown`, `/williamstown-2026`.
-2. **Confirm WD26 carnival code** is created in CT for **Thursday 7 May 2026** (district XC).
-3. **Run the Thursday checklist** (`thursday_checklist.html` saved in Drive 2026-05-03).
-4. ~~**Sport Portal architecture push**~~ — DONE 2026-05-04. Pushed to `asgard-workers/docs/`: [`SPORT_PORTAL_ARCHITECTURE.md`](docs/SPORT_PORTAL_ARCHITECTURE.md) + [`COST_TRACKING_DASHBOARD.md`](docs/COST_TRACKING_DASHBOARD.md). Source markdowns remain in Drive.
-5. (Optional) **Restore `/williamstownps/crosscountry`** sub-page. Files exist in `sportcarnival-hub` repo but worker isn't routing them — add a handler in `_innerFetch`.
+### Immediate (RACE DAY: Thu 7 May 2026 — 2 days away)
+1. **Race-day path 100% verified ready** — sportcarnival.com.au/wd26 (200, 23 KB), CT app loads, ct-access `WPS-2026` validates, carnival-timing-ws DO ponging, falkor-ct-ai healthy, D1 archive auto-populated by carnival-timing-ws on first publish (Firebase mirror removed entirely — D1 is sole archive). WD26 carnival code is typed into CT app on race morning per the checklist (it's not a pre-created entity).
+2. **Bib + roster artefacts** in `LuckDragonAsgard/asgard-workers/wd26/` (NOT Drive — Drive deprecated): print-and-pin bib PDF, finish-line roster, Tuesday dry-run plan. Bib numbers: 11 Boys WPS = 125–128 (page is source of truth, NOT 124–127).
+3. **No-bibs fallback live**: carnival-timing-html v8.7.1 XC Marshal bib pad has `📋 Pick` button — taps full-screen name picker overlay filtered to active race (8 schools colour-coded). Marshal can identify each finisher by tapping name if bibs aren't worn.
 
-### Short-term (May 2026 audit — outstanding criticals)
-1. **Cyber Liability + Professional Indemnity insurance** (BizCover.com.au) — CRITICAL
-2. **Host Privacy Policy** at `schoolsportportal.com.au/privacy` (currently mis-hosted on `sportcarnival.com.au/legal.html`) — CRITICAL
-3. **Finalise Terms of Service** — remove "Draft" status — CRITICAL
-4. **Add security headers** to `ssp-portal` Worker — HIGH
-5. **Restrict CORS** on `ssp-contact` to own domain — HIGH
-6. **Fix copyright year** 2025 → 2026 — HIGH
-7. **Change footer email** to info@schoolsportportal.com.au — HIGH
-8. **Clarify "SSV compliant" wording** — SSV = School Sport Victoria event body, not a data standard — HIGH
-9. **Migrate ssp-contact** from pgallivan domain to luckdragon.io — MEDIUM
-10. **Parental consent template** — MEDIUM
-11. **VIC DET Privacy Impact Assessment** kick-off — MEDIUM
+### Short-term — COMMERCIAL READINESS (all engineering criticals DONE 2026-05-04)
+**Engineering audit items COMPLETE**: ~~Privacy Policy hosted~~ ~~Terms not Draft~~ ~~Security headers~~ ~~CORS restricted~~ ~~Copyright 2026~~ ~~Footer email info@~~ ~~SSV wording clarified~~ ~~ssp-contact migrated to luckdragon.io~~. Email Obfuscation toggled OFF (CF dashboard) so contact links work.
+
+**REMAINING blockers to first paying school (priority order):**
+1. **Cyber Liability + Professional Indemnity insurance** (BizCover.com.au, ~$1k–2k/yr) — CRITICAL. School business managers ask before signing. Without certificate of currency, no school council approval.
+2. **VIC DET Privacy Impact Assessment** — schools storing student data in third-party SaaS need a PIA on file. Template on DET website. ~half-day.
+3. **Parental consent template** — for schools to send home before publishing student names/times publicly. ~30 min.
+4. **Data Processing Agreement (DPA)** template — counterparty to ToS, schools sign on behalf of parents. ~1 hr with AI lawyer pass.
+5. **Reference customer story** — WPS as case study + screenshots + quote. One-pager, not a deck.
+6. **Sales one-pager / outreach list** — emailable PDF, problem/solution/$1-per-student/social proof. Start with 8 Hobsons Bay districts (Paddy already coordinates there).
+
+**Product gaps that won't block first sale but reduce churn:**
+- Roster CSV import (paste from school SIS)
+- Self-serve coach provisioning (works in new dashboard, only WPS wired)
+- End-of-season report PDF (one per school council per year)
+- Multi-year history view
 
 ### Medium-term (post-XC carnival)
 - ~~**Wire CT XC bib lookup to Google Sheet**~~ — SUPERSEDED 2026-05-04 by `carnival-results` D1 migration. `sportcarnival-hub` v3.2.0 now reads from D1 (`/api/results?carnival=CODE`, `/api/list`). `/api/sheet` returns 410. CT app still double-writes to both Firebase and D1; Firebase reads no longer required.
