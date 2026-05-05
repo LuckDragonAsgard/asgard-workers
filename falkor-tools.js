@@ -4316,6 +4316,7 @@ upBtn.onclick=async()=>{
             return Response.json({ error:'Anthropic API '+aReq.status, detail: err.substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
           }
           const a = await aReq.json();
+          await env.ASSETS.put('cost:sentinel:agent-chat', String(Date.now()));
         if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-294785'});
           // Append assistant message
           messages.push({ role:'assistant', content: a.content });
