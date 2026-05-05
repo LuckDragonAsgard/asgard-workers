@@ -947,3 +947,44 @@ PDF rendered + emailed to pgallivan@outlook.com via Resend (IDs `cdadfe9a-2a14-4
 6. Hand-deliver outreach pack 11 May
 7. Identify backup admin contact
 8. LinkedIn presence
+
+---
+
+## Cecil St ALREADY PURCHASED — 30-day settlement (May 2026)
+
+Paddy disclosed mid-session that Cecil is already under contract with 30-day settlement. This is now an execution problem, not a decision problem.
+
+### Cash needs near-term
+- Cecil pre-move repairs (termite/mould/repairs): $15k
+- Settlement extras + insurance: $5k
+- Osborne tenant-prep: $7k
+- Move costs: $7k
+- Jacky tax bill (TBC): $50-100k
+- QS reports: $1.4k
+- Total: $85-135k against $170k available
+
+### Cash deployment strategy
+- All $170k → Cecil offset day 1 (saves 5.5% tax-free vs ~2.5% net in saver)
+- Use offset as operating account, drain as expenses hit
+- Surplus cashflow ($1k/wk) replenishes
+- Trajectory: $170k → ~$36k worst case → recovers $140k+ by year 2
+
+### Best loan structure (Option D — to confirm with Macquarie)
+- NR refi $964,800 split: $703k IO (ded) + $261.8k P&I (non-ded)
+- Osborne refi $528,600 split: $502k IO (ded) + $26.6k P&I (non-ded)
+- Cecil $881,600 P&I + offset
+- IO on deductible portions saves ~$271/wk vs all P&I
+- Same total non-LMI funding, exactly covers $1,170k needed
+
+### Cashflow truth
+- Now: $1,755/wk surplus
+- Post-move with Plan B (IO on deductibles): $1,059/wk surplus
+- Drop: -$696/wk = $36k/yr less savings
+- Wealth gain offsets: Cecil 6% growth × $1.1M = +$66k/yr CGT-exempt PPOR
+- Net: +$31k/yr more wealth despite less cash
+
+### Insurance — added to Advice page
+3 high-impact cards added to https://pj-budget.pgallivan.workers.dev/PJ_Advice.html:
+1. Income protection on Jacky (she's 65% of household income)
+2. Life insurance review (~$2.5-3M each, via super often cheapest)
+3. Cecil home + contents (settlement-day essential)
