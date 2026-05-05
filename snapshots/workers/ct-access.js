@@ -75,7 +75,8 @@ async function sendCodeEmail(env, to, code, type, school) {
 </body></html>`;
 
   const body = {
-    from: isSSP ? "Paddy at School Sport Portal <hello@schoolsportportal.com.au>" : "Carnival Timing <hello@carnivaltiming.com>",
+    from: "School Sport Portal <noreply@luckdragon.io>",
+    reply_to: "hello@schoolsportportal.com.au",
     to: [to],
     subject,
     html,
