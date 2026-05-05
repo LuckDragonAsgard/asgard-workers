@@ -1,10 +1,43 @@
 ---
-name: Sport Portal current state (post 2026-05-05 commercial pack v1.0)
-description: Current commercial + engineering state of Sport Portal — engineering fully shipped, commercial pack v1.0 drafted, only insurance + legal review remain before first sale
+name: Sport Portal current state (post 2026-05-05 full fix-all pass)
+description: Sport Portal — engineering complete, commercial pack complete, legal pages complete, 8 Paddy-only items remain before first paying school
 type: project
 originSessionId: 3038c038-7dc9-4f99-ae36-168dc1987649
 ---
-# Sport Portal — state as of 2026-05-05
+# Sport Portal — state as of 2026-05-05 (deep-night)
+
+## Status: ENGINEERING + COMMERCIAL + LEGAL PAGES ALL COMPLETE
+
+Race day Thursday 7 May verified ready. WD26 cron wired (event_date in D1, test reminder fired OK). All 11 legal/trust pages on each of SSP/CT/SC. Branded 404. Buy buttons on all 3 sites. GST split shown. Stripe sample invoice templated. Trademark search confirmed clear.
+
+## What's pending — Paddy actions only (8)
+
+1. WD26TEST dry-run today (Tue 5 May)
+2. Print Thursday backup runbook (in inbox), hand to principal
+3. Submit BizCover insurance app
+4. Send legal review pack (manual/legal/SchoolSportPortal_Legal_Review_Pack.zip) to LawPath/LegalVision/Sprintlaw
+5. Register "School Sport Portal" trademark class 42 (~$330 TM Headstart)
+6. Capture WPS quote post-7-May
+7. Hand-deliver outreach pack at Hobsons Bay debrief 11 May
+8. LinkedIn presence
+
+See manual/PADDY_ACTION_CHECKLIST.md for full canonical list. Everything else is done.
+
+## Live infra (all green)
+
+- 4 sites — SSP, CT, SC, falkor.luckdragon.io
+- 8 production workers — carnival-results v1.5.0 (auth+reset+ratelimit+lockout+unpublish), carnival-timing-html (rules+CSV+manual-edit gate+favicon+11 legal pages), carnival-timing-ws (D1 sole archive), ssp-portal (form+JSONLD+og+favicon+legal+404+GST+footer-strip), sportcarnival-hub (WPS routes+legal+footer-strip), ct-access (welcome email), ssp-contact (auto-reply via luckdragon.io), asgard-snapshot (daily worker→GitHub backup), asgard-status (8/8 services public)
+- Vault keys: ADMIN_BOOTSTRAP_PIN, CRON_PIN, SNAPSHOT_PIN, PADDY_SSP_PASSWORD, all CF + GH + Stripe + Resend tokens
+- D1 carnival-results: users, sessions, auth_tokens, password_reset_tokens, auth_attempts, scores, division_winners, carnivals (with event_date+reminder_sent_at), results
+- Stripe: configured business URL (was wrong), recurring + one-time prices, test customer cus_USXJ3QyZe1FR5t (Williamstown Primary 440 students), sample invoice in_1TTcG2Am0 ($440 inc = $400 ex + $40 GST)
+
+## Where the canonical state lives
+
+- LuckDragonAsgard/asgard-workers/FALKOR_HANDOVER.md — full chronicle
+- LuckDragonAsgard/asgard-workers/manual/ — all Paddy-action docs (checklist, runbook, DNS, trademark, invoicing, legal review pack)
+- LuckDragonAsgard/asgard-workers/commercial/ — PIA, DPA, parental consent, sales pack, case study, insurance app, outreach list
+- LuckDragonAsgard/asgard-workers/knowledge/ — mirrored Cowork auto-memory + NEW_CHAT_BOOTSTRAP.md (any Claude can read this to resume)
+- LuckDragonAsgard/asgard-workers/snapshots/workers/ — daily code snapshots of all 9 production workers
 
 ## Engineering: 100% off Firebase, all audit criticals shipped
 
@@ -14,40 +47,4 @@ originSessionId: 3038c038-7dc9-4f99-ae36-168dc1987649
 - carnival-timing-ws Firebase mirror removed (D1 sole archive); WD26 results auto-land in D1 on publish
 - ssp-portal serves /schoolsportportal-nav.js (was 404 returning HTML — broke shared nav on WPS+Hobsons pages)
 - sportcarnival-hub v3.2.1 fixed comma-operator bug that was making EVERY URL on sportcarnival.com.au return the lock page
-- CF Email Obfuscation toggled OFF on sportportal.com.au zone (contact links work)
-
-## Vault additions
-
-- `STAFF_SESSION_SECRET` — HMAC for /williamstowndistrict bearer-token sessions
-- `CF_FULLOPS_TOKEN` — `asgard-fullops-2026-05-04`, scopes: Account (Workers Scripts/Pages/D1/KV) + Zone (Settings/Config Rules/Workers Routes/Cache Purge). Means future zone-level dashboard tweaks doable by API, no browser driving.
-
-## Commercial readiness — pack v1.0 DRAFTED 2026-05-05
-
-All 6 commercial-readiness items now have a v1.0 draft on GitHub at `LuckDragonAsgard/asgard-workers/commercial/` (8 files):
-
-1. ~~Cyber Liability + PI insurance~~ — pre-filled BizCover application sheet ready (`INSURANCE_APPLICATION.md`). PADDY ACTION: submit at bizcover.com.au.
-2. ~~PIA~~ — `PRIVACY_IMPACT_ASSESSMENT.md`. Australia-wide: APPs base + state addenda (VIC/NSW/QLD/WA/SA/TAS/ACT/NT) + Catholic/independent notes.
-3. ~~Parental consent~~ — `PARENTAL_CONSENT.md`. Letter + signed-form. Pilot at next WPS carnival.
-4. ~~DPA~~ — `DATA_PROCESSING_AGREEMENT.md`. Controller/processor structure, sub-processors disclosed, AU residency, NDB 72h. PADDY ACTION: legal-counsel review.
-5. ~~WPS case study~~ — `WPS_CASE_STUDY.md`. Quote slot pending, real numbers post-7 May.
-6. ~~Sales one-pager + outreach~~ — `SALES_ONE_PAGER.md` + `OUTREACH_LIST.md`. 6-ring concentric plan, Ring 1 = 8 Hobsons Bay schools, hand-deliver at 11 May divisional debrief.
-
-**Active blockers reduced to 4:** (a) BizCover submission, (b) DPA legal review, (c) WPS quote post-race-day, (d) render to PDF for emailing.
-
-Code is done. Commercial pack v1.0 is done. Outstanding work is human (apply for insurance, get legal eyes, capture quote, hit send on outreach).
-
-## Race day infra (Thu 7 May 2026 — district XC)
-
-100% green:
-- sportcarnival.com.au/wd26 live (23 KB, no Firebase, footer Privacy/Terms)
-- carnival-timing-html v8.7.1 has 📋 Pick name picker (no-bibs fallback)
-- ct-access WPS-2026 validates as ssp/WPS
-- carnival-timing-ws DO ponging
-- D1 archive auto-populated by carnival-timing-ws on publish
-- Bib PDF + roster + dry-run plan in `LuckDragonAsgard/asgard-workers/wd26/`
-
-WD26 carnival code is typed into CT app on race morning per checklist — not a pre-created entity.
-
-## Why: how to use this state
-
-When Paddy opens a new chat about Sport Portal, the bootstrap pulls FALKOR_HANDOVER.md which has all this in `## Sport Portal — what's NEXT`. This memory is a faster lookup for "what state is the product in right now" without reading the full handover.
+- CF Ema
