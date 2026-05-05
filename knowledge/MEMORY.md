@@ -1,0 +1,14 @@
+- [User identity](user_identity.md) — user is Paddy Gallivan (pgallivan@outlook.com), not Mona; always address as Paddy
+- [Asgard bootstrap](asgard_bootstrap.md) — fetch this URL on every new chat for portfolio state
+- [LessonLab v11 state](lessonlab_v11_state.md) — current state + open follow-ups for the LessonLab project
+- [LessonLab infra](lessonlab_infra.md) — DNS/hosting architecture: zone is PENDING, Pages serves www, Worker serves luckdragon.io
+- [GitHub-first storage rule](feedback_storage_first.md) — Drive deprecated; everything lives in GitHub + CF
+- [Cloudflare API token](reference_cf_token.md) — asgard-fullops token in vault, used for CF automation
+- [Sport Portal current state](project_sport_portal_state.md) — engineering all done; insurance + DPA + parental consent are blockers to first sale
+- [Family Hub deploy rule](feedback_family_hub_deploy.md) — always include D1 binding (DB, abcbe15d) in CF PUT metadata or env.DB silently disappears
+- [File sharing via Drive](feedback_file_sharing.md) — always upload files to Google Drive (pgallivan@outlook.com), never use present_files from local session path
+- [SLY outstanding requests](sly_outstanding_requests.md) — full backlog for SLY Fantasy AFL app; read at start of every SLY session
+- [Per-chat scope locks](feedback_chat_scope.md) — when Paddy says "this chat is only for X", stay in X; "whole-system" means within X, not the portfolio
+- [Root-cause before patching](feedback_root_cause_first.md) — never patch a symptom without finding root cause; verify the effect of every deploy, not just the 200 status
+- [WD26 District XC state](wd26_state.md) — race day Thu 7 May 2026; bibs PDF in Drive; /wd26 R{} is bib-name source of truth
+- [Paddy & Jacky finances](paddy_jacky_finance.md) — real loans, salaries, refi plan; do not ask Paddy these — read this first
