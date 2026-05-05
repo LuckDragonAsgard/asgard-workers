@@ -587,3 +587,33 @@ Real figures captured this session.
 - https://paddy-finance.pgallivan.workers.dev
 - IP ownership selector defaults to Jacky
 - Refi-plan banner with ATO purpose-test warning
+
+---
+
+## PJ Finance budget app — COMPLETE (2026-05-04)
+
+The hub at `pj-budget.pgallivan.workers.dev` was a landing page with dead links. Now a real multi-page app with all 7 detail pages working, routing handled in the worker (PAGES dict by pathname).
+
+### Pages
+- `/` — hub
+- `/PJ_Net_Worth.html` — assets/liabilities/equity, $2.79M assets / $1.58M net worth / 58% LVR; Now/Post-Cecil toggle.
+- `/PJ_Dashboard.html` — weekly cashflow: $5,442 in / $3,567 out / +$1,875 surplus / 34% savings rate. Editable. Now/Post-Cecil toggle.
+- `/PJ_Affordability.html` — stress test at +2% (8.5% APRA buffer), max comfortable purchase, repayment shock table.
+- `/PJ_Scorecard.html` — KPIs (savings rate, DTI, LVR, emergency fund, property concentration, deductible debt ratio) vs benchmarks.
+- `/PJ_Budget_Monitor.html` — bank account list with watch/low thresholds. localStorage. Export/import JSON.
+- `/PJ_Advice.html` — 10 hardcoded suggestions ranked high/med/low impact. Top 3: split-loan refi (ATO purpose test), QS depreciation reports, IPs in Jacky's name.
+- `/PJ_Claims.html` — tax deduction log. Categories pre-set. localStorage. CSV export for accountant.
+
+### Architecture
+- Single Cloudflare worker (`pj-budget`) handling all routes via PAGES dict lookup by url.pathname.
+- Worker 84KB. All pages inline with own CSS, mobile-friendly.
+- localStorage on Accounts and Claims pages.
+- Dark teal theme consistent with hub.
+
+### Real defaults
+Salaries Paddy $118k, Jacky $220k. Loans NR $702,615 @ 6.02%, Osborne $508,110 @ 5.75%, Cecil St (planned) $660k @ 5.5% (60% LVR on $1.1M). Property values estimated $1.0M / $1.1M / $1.1M.
+
+### Build files
+- /tmp/build_pj.py — builder for 4 calc pages
+- /tmp/build_pj_extras.py — builder for 3 interactive pages
+- /tmp/pj_hub_v4.js — final deployed worker (84,728 bytes)
