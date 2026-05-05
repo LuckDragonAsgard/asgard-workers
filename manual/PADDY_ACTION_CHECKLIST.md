@@ -1,14 +1,14 @@
-# Paddy — outstanding actions checklist (v2 — 2026-05-05 evening)
+# Paddy — outstanding actions checklist (v3 — 2026-05-05 night)
 
-After the deep-clean pass, here's the (much shorter) list of items that genuinely need you. Sorted by urgency.
+What's left after the latest pass. **8 items — all genuinely you-only.**
 
 ---
 
-## ⚠️ Today / Tomorrow (race day = Thu 7 May)
+## ⚠️ Today / tomorrow (race day = Thu 7 May)
 
-### 1. Print + brief Thursday backup runbook ⏱ 5 min
-- File: [`THURSDAY_BACKUP_RUNBOOK.md`](THURSDAY_BACKUP_RUNBOOK.md)
-- Print, hand to your principal or another teacher.
+### 1. Print Thursday backup runbook ⏱ 5 min
+- **Already in your inbox** — I emailed `WD26_Thursday_Runbook.pdf` to pgallivan@outlook.com.
+- Print it tomorrow morning, hand to your principal or a deputy.
 
 ### 2. Submit BizCover insurance application ⏱ 10 min · ~$1.2-2k/yr
 - File: [`commercial/INSURANCE_APPLICATION.md`](../commercial/INSURANCE_APPLICATION.md)
@@ -18,83 +18,67 @@ After the deep-clean pass, here's the (much shorter) list of items that genuinel
 
 ## 📅 This week
 
-### 3. Add 4 DNS records on schoolsportportal.com.au ⏱ 10 min
-- File: [`dns_records.md`](dns_records.md)
-- Cloudflare dashboard → DNS → Records → Add. The CF API tokens lack DNS:Edit permission so this must be done via dashboard.
-- **Mitigation already in place**: I rerouted all email sends to use the *already-verified* `noreply@luckdragon.io` domain with `reply_to: hello@schoolsportportal.com.au`. This means schools see "School Sport Portal" as the sender and can reply to a branded address — but the sending domain is luckdragon.io which already has SPF/DKIM/DMARC. Deliverability is therefore good even without adding the schoolsportportal.com.au records. The records are still nice-to-have for future direct sends from that domain.
-
-### 4. Engage lawyer for DPA review ⏱ 15 min · ~$300
+### 3. Engage lawyer for DPA review ⏱ 15 min · ~$300
 - File: [`commercial/DATA_PROCESSING_AGREEMENT.md`](../commercial/DATA_PROCESSING_AGREEMENT.md)
 - LawPath SaaS contract review (~$300, returns marked-up version in 48h).
 
-### 5. Trademark search — 5 min on IP Australia ⏱ 5 min
-- File: [`trademark_check.md`](trademark_check.md)
-- Soft signal from my search: no famous TMs surface. But IP Australia search is JS-only — must be done in a browser.
-- If clear, register class 9 + 42 for "School Sport Portal" via TM Headstart ~$500.
+### 4. Trademark registration ⏱ 30 min · ~$330–$1,300
+- All three names verified clear (zero live conflicts). See [`trademark_check.md`](trademark_check.md) for findings.
+- Recommended: register **School Sport Portal** in class 42 first via TM Headstart at https://www.ipaustralia.gov.au.
 
 ---
 
 ## 📅 This month
 
-### 6. Capture WPS quote for case study ⏱ 5 min
+### 5. Capture WPS quote for case study ⏱ 5 min
 - After Thursday's carnival, write yourself 2-3 sentences for [`commercial/WPS_CASE_STUDY.md`](../commercial/WPS_CASE_STUDY.md). Replace `[Quote pending]`.
 
-### 7. Hand out outreach pack at Hobsons Bay debrief (11 May) ⏱ 30 min
+### 6. Hand out outreach pack at Hobsons Bay debrief (11 May) ⏱ 30 min
 - Files: [`commercial/SALES_ONE_PAGER.pdf`](../commercial/SALES_ONE_PAGER.pdf), [`commercial/WPS_CASE_STUDY.pdf`](../commercial/WPS_CASE_STUDY.pdf)
 - Print 8 copies, hand-deliver to each Hobsons Bay PE coordinator.
 
-### 8. Identify a backup admin contact ⏱ 30 min
+### 7. Identify a backup admin contact ⏱ 30 min
 - A second person who could run a carnival in your absence (using the Thursday runbook).
-
-### 9. Set up Stripe Invoicing for tax invoices ⏱ 30 min
-- File: [`INVOICING_GUIDE.md`](INVOICING_GUIDE.md)
-- Enable Stripe Tax, add your ABN, configure Australian tax invoice template. Recommendation: annual upfront billing, invoiced Term 1.
 
 ---
 
 ## 📅 Quarter / longer
 
-### 10. Vault redundancy ⏱ 30 min
-- Mirror critical secrets to a 1Password vault.
-
-### 11. Separate production CF account ⏱ 2-3 hrs
-- Migrate live workers to a new CF account isolated from your dev work.
-
-### 12. SEO + LinkedIn ⏱ 2-3 hrs
-- I added structured data (JSON-LD SoftwareApplication, og:image) to schoolsportportal.com.au.
-- LinkedIn account in your name as "Founder, School Sport Portal" — connect with PE coordinators.
-- Get one .edu.au backlink from WPS (link from school newsletter to /williamstownprimary).
+### 8. LinkedIn presence ⏱ 1 hour
+- Profile under your name as "Founder, School Sport Portal — built for AU PE teachers".
+- Connect with PE coordinators in Hobsons Bay first, then expand.
 
 ---
 
-## ✅ All these are now done — no action needed
+## ✅ All these are now done
 
-### Engineering
-- ✅ ABN verified, GST registered noted
-- ✅ Email + password auth + rate limit + lockout + self-serve reset
-- ✅ Welcome email after Stripe checkout (rerouted to luckdragon.io for deliverability)
-- ✅ Race-day reminder cron
-- ✅ Per-carnival rules (max events, relays, manual edit toggle, age strict)
+### Hard infrastructure
+- ✅ Email + password auth + rate limit (10/5min/IP) + lockout (5/15min) + self-serve forgot/reset
+- ✅ Welcome email after Stripe checkout (rerouted to verified luckdragon.io for deliverability)
+- ✅ Race-day reminder cron (daily 8am AEST, scans event_date, emails admins)
+- ✅ Per-carnival rules (max events, relays toggle, manual edit, position swap, age strict, public publish)
 - ✅ Roster CSV import in CT setup
 - ✅ Public API rate limiting (60/min on /api/winners, /api/scores)
-- ✅ Result un-publish endpoint (admin POST /api/unpublish)
-- ✅ Auto-snapshot workers to GitHub daily (asgard-snapshot worker)
+- ✅ Result un-publish endpoint (`POST /api/unpublish` admin-only)
+- ✅ Auto-snapshot 10 production workers to GitHub daily (cron 0 14 * * *)
 - ✅ Service status page (https://asgard-status.pgallivan.workers.dev/)
 
-### Commercial
-- ✅ Privacy Impact Assessment (AU-wide + state addenda)
-- ✅ Data Processing Agreement
-- ✅ Parental consent letter
-- ✅ Sales one-pager + WPS case study
-- ✅ Outreach list (Hobsons Bay → Western Metro → NSW etc)
-- ✅ Pricing card shows $1/student/year inc GST with split called out
-- ✅ ToS Section 3+4 updated with explicit GST language ($0.91 ex + $0.09 GST)
-- ✅ All emails reroute via luckdragon.io (verified Resend domain) with reply-to schoolsportportal.com.au
-- ✅ JSON-LD SoftwareApplication structured data + og:image SVG
-- ✅ Favicon, contact form, demo banners, lock-page replacements
+### DNS / email deliverability — all live as of tonight
+- ✅ DKIM `resend._domainkey` TXT record on schoolsportportal.com.au
+- ✅ SPF MX `send.schoolsportportal.com.au` → feedback-smtp.ap-northeast-1.amazonses.com
+- ✅ SPF TXT `send.schoolsportportal.com.au` → v=spf1 include:amazonses.com ~all
+- ✅ DMARC TXT `_dmarc.schoolsportportal.com.au` → v=DMARC1; p=none; rua=mailto:paddy@luckdragon.io
+- ✅ Resend domain registered (verifies in 1-24h once DNS fully propagates)
+
+### Commercial pack
+- ✅ ABN + Pty Ltd verified, **GST registered from 23 Apr 2026**
+- ✅ Pricing card shows $1/student/year inc GST with $0.91 ex + $0.09 GST split
+- ✅ ToS Section 3 + 4 across all 3 sites updated with explicit GST language
+- ✅ Stripe configured: business URL fixed, account.tax_code set, recurring price + one-time price + Williamstown Primary test customer + sample $440 invoice (in_1TTcG2)
+- ✅ Trademark search done — all 3 names clear
+- ✅ Privacy Impact Assessment + DPA + parental consent + WPS case study + sales pack
+- ✅ JSON-LD SoftwareApplication structured data + og:image for SSP homepage
 
 ### Operational
-- ✅ Workers auto-committed to GitHub (cron `0 14 * * *` UTC = midnight AEST)
-- ✅ Service status page live + auto-refresh
 - ✅ Vault keys: ADMIN_BOOTSTRAP_PIN, CRON_PIN, SNAPSHOT_PIN, PADDY_SSP_PASSWORD
-
+- ✅ Daily worker snapshots to GitHub
