@@ -228,6 +228,12 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+**Whole-system bug check + fixes (2026-05-05 noon):**
+- Created `WD26TEST` access code in ct-access (POST /create with PIN, type=ssp) — required for today's Tuesday dry-run before Thursday's race day. Verified validates and listed in /admin/codes.
+- Cleaned sly D1 orphans: deleted 1 sentinel score row (id=1510, coach_id/round_id=99999 test data) + 15 R0 orphan picks (player_id stored as name string instead of UUID, pre-migration legacy). Final counts: 128 scores, 1389 picks, 0 orphans.
+- Restored "Optimised defaults applied" banner wording on kelly-finance + monica-finance for parity with paddy-finance. Both deployed (HTTP/2 protocol error retried clean), live verified.
+- Whole-system sweep: 47/47 endpoints 200, all bindings + crons intact, all auth gates 401/403, all D1 row counts now sane.
+
 
 **sportcarnival-hub v3.3.0 (2026-05-04 evening) — XC scoring fix + qualifiers print:**
 - /wd26 team-scores now uses **standard SSV cross-country scoring**: top 4 finishers per school per race, sum places, lowest aggregate wins. Was: inverted points (1st=field-size, high score wins) — non-standard.
@@ -617,3 +623,4 @@ Salaries Paddy $118k, Jacky $220k. Loans NR $702,615 @ 6.02%, Osborne $508,110 @
 - /tmp/build_pj.py — builder for 4 calc pages
 - /tmp/build_pj_extras.py — builder for 3 interactive pages
 - /tmp/pj_hub_v4.js — final deployed worker (84,728 bytes)
+
