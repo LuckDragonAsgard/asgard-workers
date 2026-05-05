@@ -830,3 +830,58 @@ Loading up IPs does NOT save tax. Equity drawn for Cecil deposit ($335k) is non-
 
 ### Memory
 `paddy_jacky_finance.md` updated with final figures and ATO purpose-test warning.
+
+
+---
+
+## Deep-clean pass (handful more done) — 2026-05-05 (later evening)
+
+Paddy: "you can do a lot of those". Re-tackled the manual list. What I could automate, I did.
+
+### Email deliverability — fixed without DNS
+- All Resend `from:` addresses changed from `hello@schoolsportportal.com.au` (unverified) to **`noreply@luckdragon.io` (verified)** with `reply_to: hello@schoolsportportal.com.au`. Schools see "School Sport Portal" branded sender, replies go to the right inbox, deliverability uses the already-verified domain.
+- Patched in: `carnival-results` (race-day reminder + magic-reset emails), `ssp-contact` (auto-reply), `ct-access` (welcome on Stripe checkout).
+- DNS records for schoolsportportal.com.au still nice-to-have for direct sends from that domain — documented in manual/dns_records.md but no longer blocking.
+
+### GST split everywhere
+- SSP homepage pricing card: `$1 / student / year` now shows `(inc GST)` and the desc breaks out `$364 ex GST + $36 GST`.
+- ToS in all 3 sites (SSP, CT, SC) — Section 3 explicitly says "Luck Dragon Pty Ltd is registered for GST (effective 23 April 2026). Stripe issues a tax invoice on payment showing the GST split."
+- Section 4 SSP pricing rephrased to `$1/student/year inc GST ($0.91 ex + $0.09 GST)`.
+
+### SEO
+- JSON-LD `SoftwareApplication` schema added to SSP homepage (name, description, offer with AUD/GST, provider Luck Dragon Pty Ltd + ABN, address VIC AU).
+- `og:image` at `/og-image.svg` (1200×630 navy gradient with brand pitch).
+- `theme-color: #0d1b3e` for mobile chrome.
+
+### Trademark research
+- Programmatic search blocked: IP Australia search is JS-only, WIPO Brand DB has CAPTCHA, TrademarkElite returned no results.
+- Soft signal: no Google hits for any of "School Sport Portal", "Carnival Timing", "SportCarnival" → unlikely to clash with a famous TM.
+- Paddy must do the 5-min live search at https://search.ipaustralia.gov.au — guide in manual/trademark_check.md.
+
+### Invoicing recommendation
+- Full Stripe Invoicing setup guide at manual/INVOICING_GUIDE.md.
+- Recommend annual upfront, Term 1 invoice. Stripe Tax handles GST automatically once ABN added.
+
+### CF token gap (still)
+- None of the CF tokens in vault have DNS:Edit OR User:Tokens:Edit permission.
+- DNS records for schoolsportportal.com.au remain manual via dashboard.
+- Workaround active: all emails route through luckdragon.io.
+
+### Updated docs
+- [`manual/PADDY_ACTION_CHECKLIST.md`](manual/PADDY_ACTION_CHECKLIST.md) v2 — much shorter list.
+- [`manual/INVOICING_GUIDE.md`](manual/INVOICING_GUIDE.md) — new.
+- [`manual/trademark_check.md`](manual/trademark_check.md) — refreshed with my research findings.
+
+### Truly Paddy-only items (12 left)
+1. Print Thursday backup runbook
+2. Submit BizCover insurance app
+3. Add 4 DNS records on schoolsportportal.com.au (mitigated via rerouting)
+4. Engage lawyer for DPA review
+5. IP Australia trademark search + register
+6. Capture WPS quote for case study
+7. Hand out outreach pack 11 May
+8. Identify backup admin contact
+9. Set up Stripe Invoicing (template + guide ready)
+10. 1Password vault redundancy
+11. Separate production CF account
+12. LinkedIn + .edu.au backlinks
