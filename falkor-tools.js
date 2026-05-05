@@ -161,6 +161,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
             const r = await fetch("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+p,{headers:ghHeaders});
             if (!r.ok) return { error:'list_files HTTP '+r.status };
             const d = await r.json();
+        if (d.usage) logCost(env, {service:'anthropic', model: d.model||'claude-haiku-4-5', tokens_in: d.usage.input_tokens, tokens_out: d.usage.output_tokens, source: 'auto-18644'});
             if (!Array.isArray(d)) return { error:'Path is a file, not a directory' };
             return { files: d.map(f => ({ name:f.name, type:f.type, size:f.size })) };
           }
@@ -3008,6 +3009,7 @@ upBtn.onclick=async()=>{
           })
         });
         const aData = await aReq.json();
+        if (aData.usage) logCost(env, {service:'anthropic', model: aData.model||'claude-haiku-4-5', tokens_in: aData.usage.input_tokens, tokens_out: aData.usage.output_tokens, source: 'auto-210507'});
         const content = aData.content?.[0]?.text || '{}';
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         const pack = jsonMatch ? JSON.parse(jsonMatch[0]) : {pack:{theme,rounds:[]}};
@@ -3038,6 +3040,7 @@ upBtn.onclick=async()=>{
           }),
         });
         const a = await aReq.json();
+        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-212707'});
         const text = (a.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
         return Response.json({ ok:true, briefing: text, items_considered: items.length, generated_at: new Date().toISOString() }, { headers:{...CORS,...NOCACHE} });
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
@@ -3089,6 +3092,7 @@ upBtn.onclick=async()=>{
           if(!g) return Response.json({error:'no game'},{status:404,headers:{...CORS,...NOCACHE}});
           const aReq = await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','content-type':'application/json'},body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:600, system:'Punchy AFL match reports for SMS/Telegram. 4-6 sentences max. No filler.', messages:[{role:'user',content:'Match report: '+g.hteam+' '+g.hscore+' vs '+g.ateam+' '+g.ascore+' at '+g.venue+'. Round '+g.round+'. Include the storyline.'}]})});
           const a = await aReq.json();
+        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-216830'});
           const report = (a.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
           return Response.json({ok:true, game:{id:g.id,date:g.date,venue:g.venue,hteam:g.hteam,hscore:g.hscore,ateam:g.ateam,ascore:g.ascore,winner:g.winner,round:g.round}, report}, {headers:{...CORS,...NOCACHE}});
         }
@@ -3340,6 +3344,7 @@ upBtn.onclick=async()=>{
           });
           if (!aReq.ok) break;
           const a = await aReq.json();
+        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-233978'});
           messages.push({role:'assistant', content: a.content});
           if (a.stop_reason === 'tool_use') {
             const results = [];
@@ -3822,6 +3827,7 @@ upBtn.onclick=async()=>{
           });
           if (!r.ok) throw new Error('http '+r.status);
           const d = await r.json();
+        if (d.usage) logCost(env, {service:'anthropic', model: d.model||'claude-haiku-4-5', tokens_in: d.usage.input_tokens, tokens_out: d.usage.output_tokens, source: 'auto-263586'});
           const txt = d.content?.[0]?.text || '';
           if (!txt) throw new Error('no text');
           return txt.substring(0,30);
@@ -4310,6 +4316,7 @@ upBtn.onclick=async()=>{
             return Response.json({ error:'Anthropic API '+aReq.status, detail: err.substring(0,500) }, { status:500, headers:{...CORS,...NOCACHE} });
           }
           const a = await aReq.json();
+        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-294785'});
           // Append assistant message
           messages.push({ role:'assistant', content: a.content });
 
@@ -4382,6 +4389,7 @@ upBtn.onclick=async()=>{
               }),
             });
             const exD = await exReq.json();
+        if (exD.usage) logCost(env, {service:'anthropic', model: exD.model||'claude-haiku-4-5', tokens_in: exD.usage.input_tokens, tokens_out: exD.usage.output_tokens, source: 'auto-299500'});
             const exText = (exD.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
             try {
               const arr = JSON.parse(exText.replace(/^[^\[]*/,'').replace(/[^\]]*$/,''));
