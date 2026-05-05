@@ -138,6 +138,20 @@ async function logCost(env, opts) {
   } catch(e) {}
 }
 
+async function anthropicCall(env, fetchOpts, source) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', fetchOpts);
+  // Try to log cost from Anthropic's response body without consuming it twice — clone it
+  if (r.ok && !fetchOpts.body?.includes('"stream":true')) {
+    try {
+      const cloned = r.clone();
+      cloned.json().then(d => {
+        if (d.usage) logCost(env, { service:'anthropic', model: d.model||'claude-haiku-4-5-20251001', tokens_in: d.usage.input_tokens, tokens_out: d.usage.output_tokens, source: source||'unknown' });
+      }).catch(()=>{});
+    } catch(e){}
+  }
+  return r;
+}
+
 async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) {
           const needRepo = ['list_files','read_file','grep_file','edit_file','multi_edit','write_file','cf_deploy_worker'].includes(name);
           // Default to asgard-workers when no project repo is bound — most self-edits target this repo
