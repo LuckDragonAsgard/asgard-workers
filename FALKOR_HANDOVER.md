@@ -988,3 +988,6 @@ Paddy disclosed mid-session that Cecil is already under contract with 30-day set
 1. Income protection on Jacky (she's 65% of household income)
 2. Life insurance review (~$2.5-3M each, via super often cheapest)
 3. Cecil home + contents (settlement-day essential)
+
+
+<!-- Workflow trigger: 2026-05-05 11:30 UTC - KV sentinel deploy -->
