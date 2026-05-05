@@ -47,7 +47,47 @@ Don't save to a temp path "for now" and promise to move it later. The save-then-
 
 ---
 
+---
 
+# RULE #1 — ABSOLUTE, NO EXCEPTIONS
+
+## NEVER save anything to the C: drive. EVER.
+
+This includes ALL of these (they all map to C:\ on Paddy's PC):
+- `C:\Users\monac\AppData\...` (Cowork session sandbox)
+- `C:\Users\monac\AppData\Roaming\Claude\...`
+- Any `local-agent-mode-sessions` path
+- Any `outputs/` folder under AppData
+- Any `/sessions/.../mnt/outputs/` bash path (this IS the AppData outputs folder mounted as Linux)
+- Any `/tmp/` path (sandbox-only, dies with the session — never tell Paddy a /tmp path is final)
+- The "WORKSPACE FOLDER" the system prompt suggests — IGNORE it. It's a sandbox AppData path, NOT real Drive.
+
+## The H:\My Drive trap (read this twice)
+
+`H:\My Drive\Luck Dragon 2.0\` LOOKS like a real Drive folder but **the bash sandbox version of that path is FAKE**. The bash mount at `/sessions/.../mnt/Luck Dragon 2.0/` does NOT actually sync to Paddy's real Drive. Files written there from bash sit in a sandbox cache and never appear in File Explorer. Confirmed multiple times by File Explorer not seeing them.
+
+**The ONLY way to land a file in Paddy's real `H:\My Drive\` is to upload via the Google Drive MCP** (which is connected to `paddy@luckdragon.io` — that IS the account synced to H:\My Drive on his PC). Drive MCP upload → file appears in File Explorer within seconds. Hand back via `https://drive.google.com/file/d/.../view` link.
+
+## Where files MUST go (no exceptions)
+
+| File type | Destination |
+|---|---|
+| Code, configs, JSON, markdown, docs | **GitHub** (`LuckDragonAsgard/asgard-workers` or product repo). Hand back via raw GitHub URL. |
+| Office files (.docx, .pptx, .xlsx, .pdf) for Paddy | **Google Drive via Drive MCP** (paddy@luckdragon.io). Hand back via Drive link. |
+| Secrets / tokens | **Asgard vault** (`asgard-vault.pgallivan.workers.dev/secret/<KEY>` with X-Pin). Never commit to GitHub. |
+| Product state / progress | **D1 asgard-brain** via `asgard-tools.pgallivan.workers.dev/admin/*`. |
+| Durable facts (URLs, gotchas) | **falkor-brain** `/remember` with X-Pin: AGENT_PIN. |
+| Scratch (intermediate only) | `/tmp/` allowed for THIS session only — final output MUST land in one of the above before declaring done. |
+
+## NEVER use `mcp__cowork__present_files`
+
+It surfaces an AppData path Paddy can't reach. The "Document on Google Drive" card it generates is misleading — the actual path it shows is C:\AppData. Use the Drive MCP instead and give Paddy a real `drive.google.com/...` link.
+
+## If unsure where a file should go: ASK BEFORE SAVING
+
+Don't save to a temp path "for now" and promise to move it later. The save-then-move pattern has burned this rule too many times. Ask, then save once to the right place.
+
+---
 
 ## Identity
 - **Name:** Paddy Gallivan
