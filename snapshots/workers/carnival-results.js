@@ -147,7 +147,7 @@ export default {
               const r = await fetch('https://api.resend.com/emails', {
                 method:'POST',
                 headers:{'Authorization':'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},
-                body: JSON.stringify({from:'School Sport Portal <hello@schoolsportportal.com.au>', to, subject, html})
+                body: JSON.stringify({from:'School Sport Portal <noreply@luckdragon.io>', reply_to:'hello@schoolsportportal.com.au', to, subject, html})
               });
               if (r.ok) sent++; else failed++;
             } catch(e) { failed++; }
@@ -291,6 +291,7 @@ export default {
               headers:{'Authorization':'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},
               body: JSON.stringify({
                 from: 'School Sport Portal <noreply@luckdragon.io>',
+                reply_to: 'hello@schoolsportportal.com.au',
                 to: user.email,
                 subject: 'Reset your School Sport Portal password',
                 html: `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc"><div style="background:#fff;border-radius:14px;padding:36px;box-shadow:0 2px 12px rgba(0,0,0,.06)"><div style="text-align:center;margin-bottom:24px"><div style="font-size:2.2rem;line-height:1;margin-bottom:6px">🔑</div><h1 style="font-size:1.4rem;color:#0d1b3e;margin:0 0 4px">Reset your password</h1><p style="color:#64748b;font-size:.85rem;margin:0">School Sport Portal</p></div><p style="font-size:1rem;line-height:1.6;color:#334155">Hi,</p><p style="font-size:1rem;line-height:1.6;color:#334155">Tap the button below to set a new password. This link is single-use and expires in <strong>15 minutes</strong>.</p><div style="text-align:center;margin:28px 0"><a href="${link}" style="display:inline-block;background:#1a56db;color:#fff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700">Set new password</a></div><p style="font-size:.85rem;color:#64748b;line-height:1.6;margin:0">Or paste this link: <a href="${link}" style="color:#1a56db;word-break:break-all;font-size:.78rem">${link}</a></p><hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0 14px"><p style="font-size:.75rem;color:#94a3b8;margin:0">If you didn't request this, ignore this email.</p></div></body></html>`
