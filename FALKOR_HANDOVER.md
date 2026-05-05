@@ -228,6 +228,16 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 ---
 
 ## Recently shipped (2026-05-03 → 2026-05-04)
+**SLY hardening sweep — 6 batches (2026-05-05 evening):**
+1. **Cache-Control + CORS lock**: /api/rounds + /api/scores now send `Cache-Control: no-cache, must-revalidate`. CORS Allow-Origin restricted from `*` to allowlist (superleague.streamlinewebapps.com + sly-api.luckdragon.io + localhost dev). `Vary: Origin` set. sly-checks.py MUTATION_ENDPOINTS extended with the 5 new PATCH paths.
+2. **Cron observability**: New table `cron_runs`, new endpoints POST /api/cron/heartbeat (admin) + GET /api/cron/last-runs (public). All 4 crons (score/autopick/notify/backup) now POST a heartbeat at end of each run. Stale detection (>120s for score, >1200s for autopick) flagged in response.
+3. **Forgot-PIN flow**: New table `pin_reset_tokens`, endpoints POST /api/coaches/forgot-pin (sends Resend email with 30min reset link) + POST /api/coaches/reset-pin (consumes token, sets new pin). Constant-time response prevents email enumeration. NOTE: 0/16 coaches currently have email column populated — endpoint built but won't send until Paddy backfills emails.
+4. **HMAC-signed session tokens**: New SLY_SESSION_SECRET secret (vault + sly-api worker). Login now returns a signed token `base64url(coach_id:exp).base64url(hmac)` valid 7 days. requireCoachAuth accepts EITHER X-Coach-Id+X-Coach-Pin (legacy) OR Authorization: Bearer <token>.
+5. **PIN hashing migration**: New `pin_hash` column on coaches. HMAC-SHA256(SLY_SESSION_SECRET, pin) hex-encoded. POST /api/_admin/migrate-pins ran once → 16/16 coaches now have pin_hash. Login + pin-change + reset-pin all verify hash with plaintext fallback (so transition is non-breaking). Plaintext `pin` column still in DB during transition — drop later after verification.
+6. **D1 nightly backup**: New worker `sly-backup-cron` scheduled `0 16 * * *` (~2am AEST). Calls GET /api/_admin/d1-dump (admin-gated) → JSON dump of all 12 tables (3334 rows total, ~700KB) → committed to `LuckDragonAsgard/asgard-workers/sly-backups/sly-YYYY-MM-DD.json`. First backup committed: `sly-2026-05-05.json` (commit 09777712).
+
+Repo: `LuckDragonAsgard/superleague-yeah-v4` HEAD — multi-commit batch (34ee9ae7 → fe961be3 → a18c6ba3). Brain memory: 5 importance-7-10 entries.
+
 **SLY auth-hole sweep + 5 endpoints gated (2026-05-05 evening):**
 - Found 5 unauthenticated PATCH endpoints during deep-test of login + PIN flow:
   - PATCH /api/coaches/:id (anyone could rename teams, change avatars/colors/emails)
@@ -885,3 +895,4 @@ Paddy: "you can do a lot of those". Re-tackled the manual list. What I could aut
 10. 1Password vault redundancy
 11. Separate production CF account
 12. LinkedIn + .edu.au backlinks
+
