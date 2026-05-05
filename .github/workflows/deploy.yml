@@ -2,16 +2,16 @@ name: Deploy
 
 on:
   push:
-      branches: [main]
-    workflow_dispatch:
+    branches: [main]
+  workflow_dispatch:
 
-    jobs:
-      deploy:
-          runs-on: ubuntu-latest
-            steps:
-                    - uses: actions/checkout@v4
-                          - uses: actions/setup-node@v4
-                                - run: npx wrangler@4 deploy --keep-vars
-                                        env:
-                                                  CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN_LD }}
-                                                            CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npx wrangler@4 deploy --keep-vars
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_TOKEN_LD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
