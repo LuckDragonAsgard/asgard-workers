@@ -4317,7 +4317,7 @@ upBtn.onclick=async()=>{
           }
           const a = await aReq.json();
           await env.ASSETS.put('cost:sentinel:agent-chat', String(Date.now()));
-        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-294785'});
+  hh        if (a.usage) logCost(env, {service:'anthropic', model: a.model||'claude-haiku-4-5', tokens_in: a.usage.input_tokens, tokens_out: a.usage.output_tokens, source: 'auto-294785'});
           // Append assistant message
           messages.push({ role:'assistant', content: a.content });
 
