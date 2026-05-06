@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-05-06 — LessonLab — v11 generator follow-ups all shipped
+
+**Repo:** `LuckDragonAsgard/lessonlab` → auto-deploys to `www.lessonlab.com.au` on push to main.
+**Live verified:** size 1,122,141 bytes; `_v11LegacyMap` × 3, `_v11Enrich` × 7.
+
+Three open follow-ups from the 2026-04-30 v11 wiring session, all closed in one chat:
+
+| # | Change | Commit |
+|---|--------|--------|
+| 1 | **Multi-lesson v11 export** — `exportToWordV11()` now stitches every lesson in `state.lessons` into one combined `.docx`. Algorithm: load the per-subject blank once, peel off the body template (between `<w:body>` and the trailing `<w:sectPr>`), token-replace a fresh copy per lesson, separate consecutive lessons with a `<w:br w:type="page"/>` paragraph, reattach the original `<w:sectPr>...</w:body></w:document>` tail. Headers/footers/styles/rels untouched. | `69519084` |
+| 2 | **`_v11Enrich` helper** — augments lesson data with vocab tiers (subject-aware bank for all 11 subjects), sentence stems, metacog, EAL/D + Koorie + disability + disadvantage cohort prompts, worked example, week-keyed retrieval plan. `generateLesson()` is now a thin wrapper around the renamed `_generateLessonRaw()`. Cohort token rows in `_v11TokenMap()` rewired to read `d.eald[1-4]` / `d.koorie[1-4]` / `d.disability[1-4]` / `d.disadv[1-4]`. | `5db375f9` |
+| 3 | **`_v11LegacyMap` adapter** — runtime mapper for the 604 v2/v3 ai_lessons rows in `lessonlab-api` D1 (binding `DB`, id `295203f9-1f60-43f0-91f2-a6fd6b55d069`, table `ai_lessons`). Hoists `materials → equipment`, `cues → cue1/2/3`, `points → cue fallback`, `entry → entry1`, `entrySay → warmUpSay`, `teach → teach1`, `practice → practice1`, `game → app1`, `exit → packup1`, `ifWell → differentiation.extension`, `ifNot → differentiation.support`. `_v11TokenMap()` calls `_v11LegacyMap(d)` + `_v11Enrich(d, ...)` at the top, so any lesson — fresh, loaded, or imported — exports a fully populated v11 docx. End-to-end verified against ai_lessons id=212 (Handballing Helpers, v3): all PE narrative slots populated rather than defaulted. | `5a1fdc88` |
+
+**Defensive cleanup:** pre-existing `'👎 Noted. We'll improve this.'` syntax error in `rateLessonAI()` (literal ASCII apostrophe inside SQ string — Node `--check` rejected block #8) fixed at the same time by replacing with U+2019 `’`. Block #8 now parses cleanly.
+
+**Templates fetched from:** `https://raw.githubusercontent.com/LuckDragonAsgard/lessonlab/main/templates/` — the live `app.html` lives in `LuckDragonAsgard/lessonlab` (not `PaddyGallivan/lessonlab`; that fork is stale).
+
+**Detailed handover:** `LuckDragonAsgard/lessonlab/docs/HANDOVER.md` (commit `bcc2ae83`).
+
+---
+
 ## 2026-05-06 — Crack The Code: black bg + structured AI clues
 
 **Repo:** `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io/crack-the-code-tool`
