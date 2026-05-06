@@ -62,7 +62,7 @@ Please do these three things in order:
 3. Then run this sanity check and report green/red for each:
    - https://falkor.luckdragon.io/profile.md returns 200
    - https://sportcarnival.com.au/wd26 returns 200
-   - curl -s -H "X-Pin: 535554" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN returns a token starting with cfut_
+   - curl -s -H "X-Pin: <VAULT_PIN>" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN returns a token starting with cfut_
 
 After that, I'm Paddy Gallivan and we're picking up where the old account left off.
 ```
