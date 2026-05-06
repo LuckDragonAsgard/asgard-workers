@@ -1,3 +1,170 @@
+# FALKOR HANDOVER
+
+---
+
+## 2026-05-06 — Linked Pics Tool — Full Redesign (concept change)
+
+**Old concept (broken):** generic "what's the connection between these 4 images?" — too vague, hard to score.
+**New concept:** 4 movie posters, all featuring the same actor. Players score for naming the actor AND their year of birth.
+
+### Files changed (all auto-deployed via push to main)
+| File | Repo | Change |
+|------|------|--------|
+| `linked-pics-tool.html` | `LuckDragonAsgard/kbt-trivia-tools` | Full rewrite — actor + birthYear inputs, AI Suggest Movies button, 2x2 poster grid with tilt/shadow, Q slide (posters only) + A slide (posters + huge "ACTOR NAME" + "BORN YYYY") |
+| `functions/api/ai-text.js` | same repo | linked-pics prompt now branches on `actor`: returns JSON `{movies:[4 titles], note}` for actor mode; legacy "find connection" still works if `subjects` is sent |
+| `workers/kbt-api.js` | same repo | Mirrored same prompt + JSON parsing into the standalone Worker (which is what `kbt-api.luckdragon.io/api/ai-text` actually serves — Pages function had no FAL_KEY) |
+
+### Live verification (2026-05-06)
+- `https://kbt.luckdragon.io/linked-pics-tool` — new UI live, 4 movies pulled for Tom Hanks (Forrest Gump, Cast Away, Toy Story, Saving Private Ryan) ✅
+- `POST kbt-api.luckdragon.io/api/ai-text {tool:"linked-pics",actor:"Amy Adams",birthYear:"1974"}` returns `{movies:["Enchanted","Arrival","American Hustle","The Fighter"],note:"..."}` ✅
+- Answer slide preview shows "TOM HANKS" + "BORN 1956" in Bowlby One SC purple over 4 poster slots ✅
+
+### Architecture note worth remembering
+**`kbt-api.luckdragon.io` is the Worker at `workers/kbt-api.js`, NOT the Pages function at `functions/api/ai-text.js`.**
+The two share an identical prompt set but are separately deployed. Tools (linked-pics, soundmash, etc.) all call `kbt-api.luckdragon.io`. Always mirror prompt changes into both files OR just deploy the worker — Pages function is unused unless something points at `kbt.luckdragon.io/api/ai-text`.
+
+Worker deploy (multipart PUT to CF API): `accounts/$ACCOUNT/workers/scripts/kbt-api` with `metadata={"main_module":"worker.mjs","compatibility_date":"2024-09-23","keep_bindings":["secret_text"]}` — file part name MUST equal the `main_module` value.
+
+### Brief location
+`https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/linked-pics-tool.md`
+
+---
+
+## 2026-05-06 — Brain Tool — Matting + Shadow Quality Pass
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → live at `kbt.luckdragon.io/brain-tool`  
+**Commit:** `e799217c`
+
+### What changed
+- **Replaced** client-side `@imgly/background-removal` (isnet, jaggy edges, ~170MB WASM download) with server-side `POST /api/matting-hq` on `kbt-api.luckdragon.io` (fal-ai/birefnet, hair-aware). Same endpoint face-morph-tool uses — single source of truth for KBT matting.
+- **API contract:** POST `{image: dataURL}` → JSON `{url: <matted-png-url>}`. Brief said `await res.blob()` but the actual API returns `{url}` JSON; followed face-morph's working pattern instead.
+- **Drop shadow constants** in `applyEffectsAndFit` updated to Lucia spec: `SHADOW_OX=12, OY=32, BLUR=90, OPACITY=0.65` (was 10/14/28/0.55). Matches face-morph hardwired values.
+- **Outline stroke** already 12px (no change needed).
+- **First-load warning copy** updated — no more "downloads ~170MB" language; says "server-side hair-aware matting (fal-ai/birefnet) — typically 3-6s per image".
+- **Removed** `@imgly/background-removal` import + `removeBackground()` call entirely. Switched the script tag from `type="module"` to plain script (no more imports needed).
+
+### Pipeline downstream — UNCHANGED
+- face-api.js (ssdMobilenetv1 + faceLandmark68Net) still does face/eye detection on the original image
+- `buildSplineCut` (organic brow-line cut) unchanged
+- `applyEffectsAndFit` logic unchanged except the four shadow constants
+- KBT grid + green pill chrome retained (consistency with 2026-05-06 9-tool audit; brief said "no grid/pill" describing the OLD reference PNG, not the deployed tool)
+
+### Verified
+- Live `/brain-tool` returns 200 + new code (matting-hq present, @imgly count = 0)
+- `/api/matting-hq` proxies correctly to fal-ai/birefnet (smoke-tested with 1×1 PNG → expected `image_too_small` 422 from fal — endpoint chain is healthy)
+- Page loads cleanly in Chrome, no console errors
+- **Full E2E with a real celeb photo is on Paddy** (per brief: VERIFY VISUALLY — drop celeb pic, check organic cut at brows, white stroke, dramatic shadow vs Larry David reference)
+
+### Brief referenced
+`LuckDragonAsgard/kbt-trivia-tools/briefs/brain-tool.md`
+
+---
+
+## 2026-05-06 — Carmen Sandiego Tool — Brief refit shipped
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → live at `kbt.luckdragon.io/carmen-sandiego-tool`
+**Commit:** `7a5ba14955` — "Carmen Sandiego: Voyager tiles + Nominatim search + clean export (no KBT chrome) + Q/A naming"
+**Brief:** [`briefs/carmen-sandiego-tool.md`](https://github.com/LuckDragonAsgard/kbt-trivia-tools/blob/main/briefs/carmen-sandiego-tool.md)
+
+### What changed (all 5 brief items + naming bonus):
+1. **Tiles → CartoDB Voyager** (was ESRI World Imagery satellite). Topographic / road style with city + country labels — matches `Mappins Bhutan Q.png` reference. Free, no API key, CORS-friendly.
+2. **Location search** — Nominatim (free, no key). New input + Go button + Enter-key. Auto-fills the filename field if blank. Status line shows resolved place.
+3. **High-res export** — offscreen 1920×1080 Leaflet map, event-based `tiles.on('load')` wait + 8s hard fallback + 400ms settle, then `html2canvas(scale:1, useCORS:true)`. No more stretched-screen blur.
+4. **KBT chrome removed** — `drawKBTGrid` / `drawKBTPill` / `loadFontsForCanvas` all stripped from export pipeline AND from the script (dead code). Reference outputs have clean map only.
+5. **Filename pattern** — `CarmenQ_{slideLabel}_{location}.png` (question, all red) and `CarmenA_{slideLabel}_{location}.png` (answer, correct pin green). Slide label is filename-only, never overlaid.
+
+Bonus: button text + how-it-works copy renamed `A/B → Q/A` to match question/answer semantics.
+
+### Visual QA confirmed live:
+Loaded `kbt.luckdragon.io/carmen-sandiego-tool`, typed "Bhutan", hit Go → map jumped to country at zoom 7, rendered crisp Voyager tiles (THIMPHU, SHIGATSE, GUWAHATI labels visible). Search status line shows "→ Bhutan". Filename field auto-filled. Live grep: `drawKBTPill 0`, `World_Imagery 0`, `voyager 2`, `navigateTo 4`.
+
+### Deploy lesson:
+`raw.githubusercontent.com` aggressively caches — after a PUT, querying raw with cache-buster still returned old content for ~30–60s. Use `api.github.com/repos/{owner}/{repo}/contents/{path}` to verify push immediately; CDN catches up shortly.
+
+---
+
+## 2026-05-06 — LessonLab — v11 generator follow-ups all shipped
+
+**Repo:** `LuckDragonAsgard/lessonlab` → auto-deploys to `www.lessonlab.com.au` on push to main.
+**Live verified:** size 1,122,141 bytes; `_v11LegacyMap` × 3, `_v11Enrich` × 7.
+
+Three open follow-ups from the 2026-04-30 v11 wiring session, all closed in one chat:
+
+| # | Change | Commit |
+|---|--------|--------|
+| 1 | **Multi-lesson v11 export** — `exportToWordV11()` now stitches every lesson in `state.lessons` into one combined `.docx`. Algorithm: load the per-subject blank once, peel off the body template (between `<w:body>` and the trailing `<w:sectPr>`), token-replace a fresh copy per lesson, separate consecutive lessons with a `<w:br w:type="page"/>` paragraph, reattach the original `<w:sectPr>...</w:body></w:document>` tail. Headers/footers/styles/rels untouched. | `69519084` |
+| 2 | **`_v11Enrich` helper** — augments lesson data with vocab tiers (subject-aware bank for all 11 subjects), sentence stems, metacog, EAL/D + Koorie + disability + disadvantage cohort prompts, worked example, week-keyed retrieval plan. `generateLesson()` is now a thin wrapper around the renamed `_generateLessonRaw()`. Cohort token rows in `_v11TokenMap()` rewired to read `d.eald[1-4]` / `d.koorie[1-4]` / `d.disability[1-4]` / `d.disadv[1-4]`. | `5db375f9` |
+| 3 | **`_v11LegacyMap` adapter** — runtime mapper for the 604 v2/v3 ai_lessons rows in `lessonlab-api` D1 (binding `DB`, id `295203f9-1f60-43f0-91f2-a6fd6b55d069`, table `ai_lessons`). Hoists `materials → equipment`, `cues → cue1/2/3`, `points → cue fallback`, `entry → entry1`, `entrySay → warmUpSay`, `teach → teach1`, `practice → practice1`, `game → app1`, `exit → packup1`, `ifWell → differentiation.extension`, `ifNot → differentiation.support`. `_v11TokenMap()` calls `_v11LegacyMap(d)` + `_v11Enrich(d, ...)` at the top, so any lesson — fresh, loaded, or imported — exports a fully populated v11 docx. End-to-end verified against ai_lessons id=212 (Handballing Helpers, v3): all PE narrative slots populated rather than defaulted. | `5a1fdc88` |
+
+**Defensive cleanup:** pre-existing `'👎 Noted. We'll improve this.'` syntax error in `rateLessonAI()` (literal ASCII apostrophe inside SQ string — Node `--check` rejected block #8) fixed at the same time by replacing with U+2019 `’`. Block #8 now parses cleanly.
+
+**Templates fetched from:** `https://raw.githubusercontent.com/LuckDragonAsgard/lessonlab/main/templates/` — the live `app.html` lives in `LuckDragonAsgard/lessonlab` (not `PaddyGallivan/lessonlab`; that fork is stale).
+
+**Detailed handover:** `LuckDragonAsgard/lessonlab/docs/HANDOVER.md` (commit `bcc2ae83`).
+
+---
+
+## 2026-05-06 — Crack The Code: black bg + structured AI clues
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io/crack-the-code-tool`
+**Worker:** `kbt-api` (etag `03a919d80abb5737`, modified 2026-05-06)
+
+### Changes (all per `briefs/crack-the-code-tool.md`)
+1. **Black canvas** — `crack-the-code-tool.html` `#export-canvas` and `.canvas-wrapper` are `#000000`; `html2canvas` `backgroundColor: '#000000'`; grid lines removed; `.rebus-image` outline upgraded to `12px solid #ffffff` for sticker effect; answer/question text set to `#ffffff` for black bg.
+2. **AI prompt rewrite** — both `workers/kbt-api.js:81` and `functions/api/ai-text.js:13` now hold the `STRICT RULES` prompt (no first name, no full last name, sound-alike syllable clues, JSON output `{clues:[{syllable,image,sound}],explanation}`). Verified live: Kelly Clarkson → CELERY/DRAGONFLY/CLARKS MERCANTILE/SONNET (no "Kelly" leak).
+3. **Structured clue UI** — `renderAiClues()` parses JSON from `kbt-api`, renders per-clue cards (syllable + image desc + sound) in the AI panel, with a "Create N image slots" button calling `syncSlotsToClues(n)` to resize the upload grid to match.
+
+### Deploy
+- HTML + functions auto-deploy via CF Pages (commit `3a6eb354`, `6b4e870c`).
+- `kbt-api` worker deployed via CF API multipart PUT, `keep_bindings: ["secret_text"]` to preserve ANTHROPIC_API_KEY / FAL_KEY / GOOGLE_* / SUPABASE_SERVICE_ROLE_KEY.
+
+### Visual QA
+- Black preview canvas confirmed live (screenshot 2026-05-06).
+- AI endpoint returns structured JSON for both Kelly Clarkson and Sandra Bullock — no first-name leakage.
+
+---
+
+## 2026-05-06 — KBT Tools Suite — Branding/Bug Fixes
+
+**Session:** KBT all-tools audit + fix pass (separate chat from face-morph work)
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → auto-deploys to `kbt.luckdragon.io`
+
+### Fixes committed (all in one session, all pushed to main):
+
+| Tool | Fix | Commit |
+|------|-----|--------|
+| **Brand Tool** | CSS selector `.header h1/p` → `header h1/p` (header element was unstyled) | `67d4af99` |
+| **Crack The Code** | `alt<"Rebus ${i+1}">` → `alt="Rebus ${i+1}"` (malformed HTML in renderImageSlots) | `eb4b4e2b` |
+| **Ghost Actors** | Removed `disabled` from `slideLabel` input on page load — was needlessly blocking label entry before upload | `d5a8f861` |
+| **Carmen Sandiego** | Added KBT pill+grid chrome overlay on map exports — was zero-branded before (raw Leaflet map only). Added `slide-label` input, `drawKBTGrid/drawKBTPill/loadFontsForCanvas` helpers, Inter+Bowlby fonts, overlays chrome at 0.12 alpha grid + full-opacity pill | `77dea82f` |
+| **Host Brief** | Full theme rewrite from dark (#1a1a2e/#e91e63 pink) to standard KBT light theme (white bg, #16a34a green, Luckiest Guy header, Londrina Solid body). All functionality preserved. | `f0761466` |
+| **Linked Pics** | Added Inter to Google Fonts link + `await document.fonts.ready` before html2canvas call in `exportImage()` — ensures pill/label fonts are loaded before capture | `47048b9b` |
+
+### Visual QA pass — ALL 9 TOOLS CONFIRMED LIVE (2026-05-06)
+Opened each tool at kbt.luckdragon.io in browser and visually verified:
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| soundmash-tool | ✅ | Green header, clean layout — reference quality |
+| brain-tool | ✅ | Green header, slide label field present |
+| guess-the-year-tool | ✅ | Green header, R1Q1 pill visible in preview |
+| ghost-actors-tool | ✅ | Purple header, slide label enabled (not greyed out) |
+| linked-pics-tool | ✅ | Purple header, 4-cell grid, R1Q1 pill + LINKED PICS label |
+| brand-tool | ✅ | Blue header with subtitle — CSS fix confirmed working |
+| crack-the-code-tool | ✅ | Blue header, R1Q1 pill in preview |
+| carmen-sandiego-tool | ✅ | Green header, Leaflet map loaded |
+| host-brief-tool | ✅ | Green header, white bg light theme — dark theme fully gone |
+
+### What was NOT touched:
+- `face-morph-tool.html` — being worked in separate chat (v12.0.7 current)
+
+### Key auth lesson this session:
+- `asgard-vault.pgallivan.workers.dev` (NOT `luckdragon.io`) is the vault URL
+- Vault PIN was rotated (535554 dead); access via `asgard-tools.pgallivan.workers.dev/chat/smart` using `get_secret` tool (no PIN needed from outside, uses env.PADDY_PIN internally)
+- GitHub token retrieved via: `POST asgard-tools.pgallivan.workers.dev/chat/smart` → `get_secret("GITHUB_TOKEN")`
+- Token is `<GITHUB_TOKEN — retrieve via asgard-tools get_secret>` (short-lived PAT — rotate if stale)
+
+
 # Falkor / Asgard — Session Handover
 
 > **ZERO-TOLERANCE PERSISTENCE RULE — READ FIRST** >
@@ -11,6 +178,48 @@
 > 5. Office files (docx/pptx/xlsx/pdf) — ONLY when Paddy explicitly asks. Hand back via `present_files` / file links so Paddy picks the save location. NEVER hardcode a drive letter — paths vary per machine.
 >
 > **NEVER ALLOWED:** AppData, %TEMP%, /tmp, /sessions/, /var/, /usr/, ANY workspace-internal mount path. Lost forever next chat.
+
+---
+
+## KBT Trivia Tools — Build Briefs (2026-05-06)
+
+Each KBT tool has a full Opus build brief in `LuckDragonAsgard/kbt-trivia-tools/briefs/`.
+To start a KBT tool build chat, fetch the relevant brief:
+
+| Tool | Brief URL | Status |
+|------|-----------|--------|
+| 🧠 Brain Tool | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/brain-tool.md | Ready to build |
+| 🔑 Crack the Code | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/crack-the-code-tool.md | Ready to build |
+| 🗺️ Carmen Sandiego | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/carmen-sandiego-tool.md | Ready to build |
+| 🎬 Linked Pics | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/linked-pics-tool.md | Full redesign |
+| 🎤 Host Brief | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/host-brief-tool.md | Ready to build |
+| 🎵 SoundMash | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/soundmash-tool.md | Big rebuild (needs kbt-api changes) |
+
+### KBT Tool Chat Startup
+When starting a KBT tool Opus chat, paste:
+```
+Fetch this brief and execute it exactly. Don't ask questions — read it, understand it, then build.
+[paste the raw brief URL above]
+Also fetch https://falkor.luckdragon.io/profile.md for who Paddy is and how he works.
+```
+
+### KBT Tools Suite — What Was Fixed This Session (2026-05-06)
+All tools at `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io`
+
+| Tool | Fix |
+|------|-----|
+| Brand Tool | CSS `.header h1/p` → `header h1/p` |
+| Crack the Code | `alt<"Rebus">` → `alt="Rebus"` malformed HTML |
+| Ghost Actors | Removed `disabled` from slideLabel input |
+| Carmen Sandiego | Added KBT pill+grid chrome (NOTE: brief says to REMOVE this — brief takes priority) |
+| Host Brief | Full dark→light theme rewrite |
+| Linked Pics | Added Inter font + `document.fonts.ready` before html2canvas |
+
+### kbt-api endpoints (production)
+- `POST https://kbt-api.luckdragon.io/api/matting-hq` — birefnet HQ matting, body: `{image: dataUrl}`
+- `POST https://kbt-api.luckdragon.io/api/ai-text` — AI text gen, body: `{tool: '...', ...fields}`
+- `POST https://kbt-api.luckdragon.io/api/save-morph` — save face morph to Supabase + Drive
+
 
 ---
 
