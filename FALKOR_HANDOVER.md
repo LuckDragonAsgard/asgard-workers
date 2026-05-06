@@ -16,13 +16,25 @@
 | **Ghost Actors** | Removed `disabled` from `slideLabel` input on page load — was needlessly blocking label entry before upload | `d5a8f861` |
 | **Carmen Sandiego** | Added KBT pill+grid chrome overlay on map exports — was zero-branded before (raw Leaflet map only). Added `slide-label` input, `drawKBTGrid/drawKBTPill/loadFontsForCanvas` helpers, Inter+Bowlby fonts, overlays chrome at 0.12 alpha grid + full-opacity pill | `77dea82f` |
 | **Host Brief** | Full theme rewrite from dark (#1a1a2e/#e91e63 pink) to standard KBT light theme (white bg, #16a34a green, Luckiest Guy header, Londrina Solid body). All functionality preserved. | `f0761466` |
+| **Linked Pics** | Added Inter to Google Fonts link + `await document.fonts.ready` before html2canvas call in `exportImage()` — ensures pill/label fonts are loaded before capture | `47048b9b` |
 
-### What was NOT touched (in this chat):
-- `face-morph-tool.html` — being worked in separate chat (v12.0.6 current)
-- `soundmash-tool.html` — reference quality, no changes needed
-- `brain-tool.html` — solid, no issues found
-- `linked-pics-tool.html` — html2canvas less reliable than native canvas but functional, deferred
-- `guess-the-year-tool.html` — looks solid, no issues found
+### Visual QA pass — ALL 9 TOOLS CONFIRMED LIVE (2026-05-06)
+Opened each tool at kbt.luckdragon.io in browser and visually verified:
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| soundmash-tool | ✅ | Green header, clean layout — reference quality |
+| brain-tool | ✅ | Green header, slide label field present |
+| guess-the-year-tool | ✅ | Green header, R1Q1 pill visible in preview |
+| ghost-actors-tool | ✅ | Purple header, slide label enabled (not greyed out) |
+| linked-pics-tool | ✅ | Purple header, 4-cell grid, R1Q1 pill + LINKED PICS label |
+| brand-tool | ✅ | Blue header with subtitle — CSS fix confirmed working |
+| crack-the-code-tool | ✅ | Blue header, R1Q1 pill in preview |
+| carmen-sandiego-tool | ✅ | Green header, Leaflet map loaded |
+| host-brief-tool | ✅ | Green header, white bg light theme — dark theme fully gone |
+
+### What was NOT touched:
+- `face-morph-tool.html` — being worked in separate chat (v12.0.7 current)
 
 ### Key auth lesson this session:
 - `asgard-vault.pgallivan.workers.dev` (NOT `luckdragon.io`) is the vault URL
