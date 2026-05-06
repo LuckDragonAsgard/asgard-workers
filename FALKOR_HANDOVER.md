@@ -1,3 +1,39 @@
+# FALKOR HANDOVER
+
+---
+
+## 2026-05-06 — SoundMash Tool v2 — AI suggest + Deezer auto-fetch
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io/soundmash-tool`
+**Worker:** `kbt-api` (kbt-api.luckdragon.io) — 3 new endpoints
+
+### Shipped
+- `kbt-api` (commit `dc3198bb`) — added:
+  - `GET /api/deezer/search?q=` — Deezer search proxy, returns up to 8 tracks with 30s preview URLs.
+  - `GET /api/deezer/preview?url=` — MP3 byte-proxy (allow-list: `*.dzcdn.net | *.deezer.com | *.deezer.net`). Bypasses browser CORS for Deezer's signed preview URLs.
+  - `POST /api/ai-text` with `{tool:"soundmash-suggest"}` — song-pair generator returning JSON with `songA`, `songB`, `connection`, `clipAdvice` per song, `difficulty`. Prompt avoids chorus (where titles are sung).
+- `soundmash-tool.html` (commit `44e823e0`) — full rebuild:
+  - "AI Suggest Song Pair" button → renders connection + per-song clip advice → "Load Both Clips" auto-searches Deezer + auto-loads previews.
+  - Manual per-slot search also available.
+  - Waveform with draggable trim handles (start/end), numeric inputs, in-browser per-clip preview.
+  - Sequential or Overlap mash mode (overlap = crossfade with configurable overlap seconds).
+  - Q slide (decorative bars + KBT pill) + A slide (album covers + titles + artist + connection caption).
+  - WAV + Q/A PNG downloads.
+
+### Verified live
+- `/api/deezer/search?q=walking on sunshine` returns 8 results (top = Katrina & The Waves).
+- `/api/deezer/preview?url=...` returns 200 `audio/mpeg`, ~480 KB MP3.
+- `/api/ai-text` `{tool:soundmash-suggest}` returns valid JSON song pair.
+- `kbt.luckdragon.io/soundmash-tool` loads with the new UI.
+
+### Deploy gotcha — kbt-api transient auto-revert
+Between v43–v48 some external process overwrote my deploys (different etag each time, paddy@luckdragon.io, source: api). Pattern stopped after v49 (deploy at 12:07:16 UTC, stable 5+ min later). Sources checked and ruled out: `asgard-watchdog` (only auto-fixes `asgard`), `worker-watchdog` and `sentinel` (health-check only), `asgard-snapshot` (read-only, kbt-api not in target list). If revert recurs, fallback plan is to move Deezer + soundmash-suggest to a dedicated `kbt-soundmash` worker.
+
+### Worker module-name gotcha
+`kbt-api` deploys with `main_module: "kbt-api.js"` (NOT `worker.js`). Multipart field name must match: `-F "kbt-api.js=@..."`.
+
+---
+
 ---
 
 ## 2026-05-06 — Brain Tool — Matting + Shadow Quality Pass
