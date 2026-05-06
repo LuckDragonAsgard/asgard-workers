@@ -265,6 +265,31 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ---
 
+## Recently shipped (2026-05-06 evening — Streamline honesty + scaffolder)
+
+**Streamline Webapps v34.1 deployed:**
+1. **De-seeded the marketplace.** All 56 ideas had revenue zeroed (was $14,440/mo of misleading figures attributed to founder portfolio). `/stats` now honestly reads `monthly:0, paid_out:0, paid_subs:0`.
+2. **Hero copy reframed honestly.** Topbar now says "Marketplace launching — be one of the first paid customers" with founder-portfolio framing. Dropped MRR and "paid to makers" stats. Earnings disclaimer rewritten: "Marketplace launching 2026. Stats above show our founder's pre-Streamline portfolio and current submission queue."
+3. **Fake testimonials removed.** Replaced "Marcus T. / Sarah K. / James W." with three honest cards: "26+ apps shipped by founder before Streamline", "2026 launched / first 5 customers receive priority", "25% lifetime via signed deed". No fictional names.
+4. **Equity tier fixed.** "Co-own the IP" → "Equity-tier signed deed (25% perpetual)". Aligns with the actual deed terms (IP vests in builder, customer gets revenue licence).
+5. **/chat now works** — local rule-based handler (no API call). Covers pricing, refunds, build time, IP ownership, payouts, marketplace, contact, insurance, location. Was returning Anthropic 401 from a broken Supabase function.
+6. **/status page** — customers get a personal status URL in their post-payment email. Format: `streamlinewebapps.com/status?t=<HMAC token>`. HMAC of `id|email` with `STATUS_SECRET` (in vault as `STREAMLINE_STATUS_SECRET`). Shows submission state through 6 stages: awaiting_payment → paid → reviewing → building → preview → live. Verified end-to-end.
+7. **/admin/scaffold/{id}** — PIN-gated MVP scaffolder. Calls Claude Haiku 4.5 with constrained prompt. Returns generated single-file CF Worker scaffold (HTML + JSON API + CORS, ready to deploy). Verified: 14s response, 200+ lines of working code from a "Tip Calculator" submission spec. No auto-deploy yet — review-then-deploy by Paddy.
+8. **/analytics now rate-limited** — 60 events/min/IP (was unbounded).
+9. **/chat regex order fixed** — "when do I get paid" now correctly matches payout pattern instead of build-time pattern.
+
+**Vault PIN status (continued from earlier session):**
+- VAULT_PIN_PRIMARY rotated AGAIN this session (something flipped it back to 535554 between the first rotation and now). New value stored as Worker secret on asgard-vault AND as KV key `VAULT_PIN_PRIMARY` (retrievable with the new PIN). 535554 verified DEAD.
+- Streamline-specific secrets in vault now: `STREAMLINE_ADMIN_PIN`, `STREAMLINE_STATUS_SECRET`, `VAULT_PIN_PRIMARY`.
+
+**Source:** `LuckDragonAsgard/asgard-source/workers/streamlinewebapps-proxy.js` v34.1 (commit `5ba247d`).
+
+**What's still TODO (Paddy to handle):**
+- Make 4 public repos private via GitHub UI with admin-scope token (token in vault has only public_repo scope)
+- BizCover/Aon insurance quote (draft email in Drive: `Streamline_PI_Cyber_Insurance_Enquiry`)
+- Lawyer review of equity deed template (LawPath ~$200-400, Drive: `Streamline_Equity_IP_Deed_TEMPLATE`)
+- Real first paying customer (which closes a lot of the remaining gaps automatically)
+
 ## Recently shipped (2026-05-06)
 **Streamline Webapps — security + UX hardening sweep (v32):**
 1. **CRITICAL FOUND:** Vault PIN `<VAULT_PIN>` is committed in 12+ files across **public** GitHub repos (asgard-source, asgard-workers, asgard-handovers, superleague-yeah-v4). Token used here only had `public_repo` scope so could not flip repos to private — Paddy must do via GitHub UI with higher-scope token, then rotate the vault PIN itself.
