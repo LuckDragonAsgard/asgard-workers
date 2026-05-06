@@ -1793,7 +1793,7 @@ function renderChatPane(){
  upload2.addEventListener("click",e=>{if(e.target!==fileInp2)fileInp2.click();});
  fileInp2.addEventListener("change",async()=>{
    const f=fileInp2.files[0]; if(!f)return;
-   await window.attachFile(f, upload2);\n   if(STATE.pendingImages && STATE.pendingImages.length || STATE.pendingFiles && STATE.pendingFiles.length) {\n     upload2.style.background='var(--accent)';\n     upload2.style.color='white';\n   }
+   await window.attachFile(f, upload2);
    fileInp2.value="";
  });
  form.appendChild(upload2);
