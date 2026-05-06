@@ -16,7 +16,7 @@ The PROFILE has the full "how to work with Paddy" rules — common mistakes to a
 
 ### Quick reference auth
 
-The vault is at `https://asgard-vault.pgallivan.workers.dev`, header `X-Pin: 535554`.
+The vault is at `https://asgard-vault.pgallivan.workers.dev`, header `X-Pin: <VAULT_PIN>`.
 
 | Key | Path |
 |---|---|
