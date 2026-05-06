@@ -1,5 +1,4 @@
-const LEGAL_PAGES = {"cookies":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Cookie Policy — Luck Dragon</title>\n<meta name=\"description\" content=\"How we use cookies and similar technologies.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Cookie Policy</h1>\n<p>How we use cookies and similar technologies.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> We use one essential session cookie when you sign in to a private school portal. No advertising cookies, no third-party tracking, no analytics cookies. You don't need to consent to anything to use our public pages.</div>\n<div class=\"section\"><h2>1. What is a cookie?</h2><div class=\"card\"><p>A cookie is a small text file stored on your browser by a website. Cookies can remember preferences, keep you signed in, or track you across the web. We only use one type — an essential session cookie.</p></div></div>\n<div class=\"section\"><h2>2. Cookies we use</h2><div class=\"card\"><table style=\"width:100%;font-size:14px;border-collapse:collapse\"><thead><tr style=\"border-bottom:2px solid #e2e8f0\"><th style=\"text-align:left;padding:8px 4px;font-weight:700;color:#0d1b3e\">Cookie</th><th style=\"text-align:left;padding:8px 4px;font-weight:700;color:#0d1b3e\">Purpose</th><th style=\"text-align:left;padding:8px 4px;font-weight:700;color:#0d1b3e\">Lifetime</th><th style=\"text-align:left;padding:8px 4px;font-weight:700;color:#0d1b3e\">Type</th></tr></thead><tbody><tr style=\"border-bottom:1px solid #f1f5f9\"><td style=\"padding:8px 4px\"><code>ssp_session</code></td><td style=\"padding:8px 4px\">Keeps you signed in to your school portal. HMAC-signed bearer token.</td><td style=\"padding:8px 4px\">7 days</td><td style=\"padding:8px 4px\">Strictly necessary</td></tr></tbody></table></div></div>\n<div class=\"section\"><h2>3. Cookies we do NOT use</h2><div class=\"card\"><ul><li><strong>Advertising cookies</strong> — none. We never sell data and never run ads.</li><li><strong>Cross-site tracking</strong> — none.</li><li><strong>Google Analytics, Meta Pixel, etc.</strong> — none.</li><li><strong>Heatmap or session-replay tools</strong> — none.</li></ul></div></div>\n<div class=\"section\"><h2>4. Local storage</h2><div class=\"card\"><p>When you sign in to a private staff portal, we store a session token in your browser's localStorage (not a cookie). This expires after 7 days or when you log out. Clearing your browser data removes it.</p></div></div>\n<div class=\"section\"><h2>5. Third-party services</h2><div class=\"card\"><p>Some pages link to third-party services that may set their own cookies (Stripe Checkout for payments; Resend for email). We don't control those. Both Stripe and Resend are GDPR / SOC 2 compliant and don't track you back to us. See the <a href=\"/subprocessors\">Subprocessors</a> page.</p></div></div>\n<div class=\"section\"><h2>6. Your choices</h2><div class=\"card\"><p>You can block all cookies in your browser settings. Our public pages will continue to work; the private staff portals require the session cookie to keep you signed in.</p></div></div>\n<div class=\"section\"><h2>7. Changes</h2><div class=\"card\"><p>If we add any new cookie or tracking technology, we'll update this page and notify active subscribers by email at least 14 days in advance.</p></div></div>\n<div class=\"section\"><h2>8. Questions</h2><div class=\"card\"><p>Email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","subprocessors":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Subprocessors — Luck Dragon</title>\n<meta name=\"description\" content=\"Third parties we use to deliver our service.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Subprocessors</h1>\n<p>Third parties we use to deliver our service.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> We use four sub-processors. All are SOC 2 Type II or ISO 27001 certified. Customer student data stays in Australia (Cloudflare Sydney region).</div>\n<div class=\"section\"><h2>Current sub-processors</h2><div class=\"card\"><table style=\"width:100%;font-size:13px;border-collapse:collapse\"><thead><tr style=\"border-bottom:2px solid #e2e8f0;background:#f8fafc\"><th style=\"text-align:left;padding:10px 6px;font-weight:700;color:#0d1b3e\">Sub-processor</th><th style=\"text-align:left;padding:10px 6px;font-weight:700;color:#0d1b3e\">Service</th><th style=\"text-align:left;padding:10px 6px;font-weight:700;color:#0d1b3e\">Data residency</th><th style=\"text-align:left;padding:10px 6px;font-weight:700;color:#0d1b3e\">Compliance</th></tr></thead><tbody>\n<tr style=\"border-bottom:1px solid #f1f5f9\"><td style=\"padding:10px 6px\"><strong>Cloudflare Inc.</strong></td><td style=\"padding:10px 6px\">Hosting, D1 database, KV storage, R2 file storage, CDN, DDoS protection</td><td style=\"padding:10px 6px\">Sydney AU (primary). Replication to AU regions only.</td><td style=\"padding:10px 6px\">SOC 2 Type II, ISO 27001, GDPR DPA, FedRAMP, PCI DSS</td></tr>\n<tr style=\"border-bottom:1px solid #f1f5f9\"><td style=\"padding:10px 6px\"><strong>Stripe Australia Pty Ltd</strong></td><td style=\"padding:10px 6px\">Payment processing for Carnival Timing access codes and School Sport Portal subscriptions</td><td style=\"padding:10px 6px\">Australia + USA redundancy</td><td style=\"padding:10px 6px\">PCI DSS Level 1, SOC 2 Type II, GDPR DPA</td></tr>\n<tr style=\"border-bottom:1px solid #f1f5f9\"><td style=\"padding:10px 6px\"><strong>Resend Inc.</strong></td><td style=\"padding:10px 6px\">Transactional email delivery (login links, welcome emails, password resets, race-day reminders). <em>Adult email addresses only — never student data.</em></td><td style=\"padding:10px 6px\">USA (Tokyo region for our outbound)</td><td style=\"padding:10px 6px\">SOC 2 Type II, GDPR DPA</td></tr>\n<tr><td style=\"padding:10px 6px\"><strong>GitHub Inc. (Microsoft)</strong></td><td style=\"padding:10px 6px\">Source code repository — <em>no customer data</em>. Used to store our software, not your data.</td><td style=\"padding:10px 6px\">USA</td><td style=\"padding:10px 6px\">SOC 2 Type II, ISO 27001</td></tr>\n</tbody></table></div></div>\n<div class=\"section\"><h2>Notification of changes</h2><div class=\"card\"><p>If we add or replace a sub-processor, we'll notify all active subscribers by email at least <strong>30 days</strong> in advance. Schools may terminate without penalty within that window if they reasonably object.</p></div></div>\n<div class=\"section\"><h2>Sub-processor evidence on request</h2><div class=\"card\"><p>Most schools' privacy reviews ask for sub-processor SOC 2 / ISO 27001 reports. Email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> and we'll forward Cloudflare's, Stripe's, and Resend's compliance reports under NDA.</p></div></div>\n<div class=\"section\"><h2>Last reviewed</h2><div class=\"card\"><p>This list was last reviewed on 5 May 2026. Subscribe to changes by emailing <a href=\"mailto:hello@schoolsportportal.com.au?subject=Subscribe%20to%20subprocessor%20changes\">hello@schoolsportportal.com.au</a>.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","security":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Security overview — Luck Dragon</title>\n<meta name=\"description\" content=\"How we protect your school's data.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Security overview</h1>\n<p>How we protect your school's data.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> Australian-hosted, encrypted at rest and in transit, MFA-protected admin access, SOC 2 sub-processors, daily backups, 72-hour breach notification.</div>\n<div class=\"section\"><h2>1. Data residency</h2><div class=\"card\"><p>All student data is stored in <strong>Cloudflare's Sydney region</strong> on D1 (database) and KV (session storage). Replication is restricted to Australian regions. No student data leaves Australia.</p></div></div>\n<div class=\"section\"><h2>2. Encryption</h2><div class=\"card\"><ul><li><strong>At rest:</strong> All Cloudflare D1, KV, and R2 storage is encrypted by default with AES-256.</li><li><strong>In transit:</strong> TLS 1.2 minimum on all our domains. HSTS enforced. HTTPS only.</li><li><strong>Passwords:</strong> Hashed with PBKDF2-SHA256, 100,000 iterations, per-user 16-byte salt. Verified with constant-time comparison.</li></ul></div></div>\n<div class=\"section\"><h2>3. Authentication</h2><div class=\"card\"><ul><li><strong>School staff sign-in:</strong> Email + password (8+ characters minimum).</li><li><strong>Rate limiting:</strong> 10 login attempts per IP per 5 minutes; account lockout after 5 failed attempts in 15 minutes.</li><li><strong>Self-serve password reset:</strong> Single-use token via email, 15-minute expiry.</li><li><strong>Sessions:</strong> HMAC-signed bearer tokens with 7-day expiry. Stored in browser localStorage, never as third-party-readable cookies.</li><li><strong>Admin access:</strong> All Luck Dragon operational accounts (Cloudflare, Stripe, Resend, GitHub) protected by MFA.</li></ul></div></div>\n<div class=\"section\"><h2>4. Operational security</h2><div class=\"card\"><ul><li>Audit log of admin actions, 90-day retention.</li><li>Public API rate limiting (60 requests / minute / IP).</li><li>Content Security Policy, X-Frame-Options, X-Content-Type-Options headers on all pages.</li><li>Daily automated backup of source code to GitHub.</li><li>D1 point-in-time recovery (Cloudflare-managed, 30-day window).</li><li>Worker source code auto-snapshotted nightly to a private GitHub repo.</li></ul></div></div>\n<div class=\"section\"><h2>5. Sub-processors</h2><div class=\"card\"><p>Cloudflare (SOC 2 Type II), Stripe (PCI DSS Level 1), Resend (SOC 2 Type II), GitHub (SOC 2 Type II). Full list at <a href=\"/subprocessors\">/subprocessors</a>.</p></div></div>\n<div class=\"section\"><h2>6. Incident response</h2><div class=\"card\"><p>If a confirmed or reasonably suspected unauthorised access to school data occurs:</p><ol style=\"line-height:1.8\"><li>The school's nominated privacy contact is notified within <strong>72 hours</strong>.</li><li>The notification includes nature, scope, likely consequences, and measures taken.</li><li>We cooperate with the school's NDB scheme assessment.</li><li>Logs and forensic artefacts are preserved for at least 12 months.</li></ol></div></div>\n<div class=\"section\"><h2>7. Insurance</h2><div class=\"card\"><p>Cyber Liability $1,000,000 + Professional Indemnity $2,000,000 + Public Liability $20,000,000 (BizCover). Certificate of currency available on request.</p></div></div>\n<div class=\"section\"><h2>8. Audit access</h2><div class=\"card\"><p>School business managers may audit our compliance once per 12 months on 30 days' notice. We typically meet this with copies of our sub-processors' SOC 2 / ISO 27001 reports.</p></div></div>\n<div class=\"section\"><h2>9. Vulnerability disclosure</h2><div class=\"card\"><p>If you discover a security issue, please email <a href=\"mailto:security@schoolsportportal.com.au\">security@schoolsportportal.com.au</a> (or <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>). We'll respond within 48 hours, fix critical issues within 7 days, and credit responsible disclosers in our changelog.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","sla":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Service Level Agreement (SLA) — Luck Dragon</title>\n<meta name=\"description\" content=\"Our uptime commitment to paying customers.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Service Level Agreement (SLA)</h1>\n<p>Our uptime commitment to paying customers.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> 99.5% monthly uptime target. If we miss it, you get a pro-rata service credit. Race-day windows are explicitly monitored.</div>\n<div class=\"section\"><h2>1. Uptime commitment</h2><div class=\"card\"><p>Luck Dragon Pty Ltd commits to a <strong>99.5% monthly availability target</strong> for paid services (School Sport Portal subscriptions and Carnival Timing access codes).</p><p>Availability is measured on the public service status endpoints over a calendar month, excluding scheduled maintenance windows.</p></div></div>\n<div class=\"section\"><h2>2. Scheduled maintenance</h2><div class=\"card\"><p>We may perform scheduled maintenance with at least <strong>24 hours advance notice</strong>, communicated by email and on the status page. Scheduled maintenance is excluded from uptime calculations and typically lasts under 30 minutes.</p><p>We never schedule maintenance during the school day (8am–4pm AEST/AEDT, weekdays during school terms) or within 48 hours of an upcoming carnival you've notified us about.</p></div></div>\n<div class=\"section\"><h2>3. Race-day priority</h2><div class=\"card\"><p>Carnivals are time-critical events. If you let us know your carnival date <strong>at least 7 days in advance</strong> (via the platform or email), we'll:</p><ul><li>Pre-flight your carnival code 24 hours before.</li><li>Have a tech on standby reachable by phone during the carnival window.</li><li>Hold all non-critical deploys for 48 hours either side of your event.</li></ul></div></div>\n<div class=\"section\"><h2>4. Service credits</h2><div class=\"card\"><p>If we miss the 99.5% uptime target in a month, eligible paid customers receive a <strong>pro-rata service credit</strong>:</p><ul><li>99.0% – 99.49% uptime: 5% of monthly fee credited next invoice.</li><li>95.0% – 98.99% uptime: 10% credit.</li><li>Below 95.0% uptime: 25% credit.</li></ul><p>Credits are capped at 100% of the monthly fee. Service credits must be requested within 30 days of the affected month by emailing <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> with your school name.</p></div></div>\n<div class=\"section\"><h2>5. Race-day-specific guarantee</h2><div class=\"card\"><p>If a paid Carnival Timing service is unavailable on the day of your scheduled carnival due to our error, we will issue a <strong>full refund of that carnival's access code</strong> (or, for annual subscribers, a one-month service credit). Email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> within 7 days of the affected carnival.</p></div></div>\n<div class=\"section\"><h2>6. What's excluded</h2><div class=\"card\"><p>Service credits do not apply to outages caused by:</p><ul><li>Scheduled maintenance announced in advance.</li><li>Customer error (wrong access code, account misconfiguration).</li><li>Issues with the customer's internet connection or device.</li><li>Force majeure (natural disasters, ISP-wide outages, internet backbone events).</li></ul></div></div>\n<div class=\"section\"><h2>7. Status page</h2><div class=\"card\"><p>Live status: <a href=\"https://asgard-status.pgallivan.workers.dev/\">https://asgard-status.pgallivan.workers.dev/</a>. Updates every 60 seconds. Subscribe by emailing <a href=\"mailto:hello@schoolsportportal.com.au?subject=Subscribe%20to%20status%20alerts\">hello@schoolsportportal.com.au</a>.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","accessibility":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Accessibility Statement — Luck Dragon</title>\n<meta name=\"description\" content=\"Our commitment to making School Sport Portal usable by everyone.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Accessibility Statement</h1>\n<p>Our commitment to making School Sport Portal usable by everyone.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> We target WCAG 2.1 Level AA across all our products. We're not perfect — please tell us where we fall short.</div>\n<div class=\"section\"><h2>1. Standards we follow</h2><div class=\"card\"><p>We design and build to <strong>Web Content Accessibility Guidelines (WCAG) 2.1 Level AA</strong> as the minimum baseline. This is the standard required by the Australian Government's Digital Service Standard and by most state education departments.</p></div></div>\n<div class=\"section\"><h2>2. What's accessible today</h2><div class=\"card\"><ul><li>All text content meets WCAG 2.1 AA contrast ratios (4.5:1 minimum).</li><li>All interactive elements are keyboard-operable.</li><li>Form fields have associated labels for screen readers.</li><li>The Carnival Timing app works on any device — desktop, tablet, or phone.</li><li>Public results pages are machine-readable for assistive technology.</li><li>No reliance on colour alone to convey information.</li></ul></div></div>\n<div class=\"section\"><h2>3. Where we have gaps</h2><div class=\"card\"><p>We're a small team and we don't have a full third-party accessibility audit yet. Areas we're actively improving:</p><ul><li>Screen-reader live announcements during race-day timing flows.</li><li>Some legacy inline SVG icons may lack <code>aria-label</code> attributes.</li><li>Mobile-only views may need refinement for users with motor impairments.</li></ul></div></div>\n<div class=\"section\"><h2>4. Tell us if it doesn't work for you</h2><div class=\"card\"><p>If any part of our products doesn't work with your assistive technology, please email <a href=\"mailto:accessibility@schoolsportportal.com.au\">accessibility@schoolsportportal.com.au</a> (or <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>) describing:</p><ul><li>What you were trying to do.</li><li>What happened (or didn't happen).</li><li>Your assistive technology and browser.</li></ul><p>We'll respond within 5 business days and prioritise the fix in our next release.</p></div></div>\n<div class=\"section\"><h2>5. Alternative formats</h2><div class=\"card\"><p>If you need a result, report or document in an alternative format (large print, braille, plain text), email us and we'll provide it within 10 business days at no charge.</p></div></div>\n<div class=\"section\"><h2>6. Continuous improvement</h2><div class=\"card\"><p>We commit to a third-party WCAG 2.1 AA audit within the next 12 months. Findings will be published on this page along with our remediation timeline.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","child-safety":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Child Safety Statement — Luck Dragon</title>\n<meta name=\"description\" content=\"Our commitment to keeping children safe online.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Child Safety Statement</h1>\n<p>Our commitment to keeping children safe online.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> Our platforms are designed for school staff, not children. Students never create accounts and never directly interact with us. We support schools in meeting the Victorian Child Safe Standards and equivalent requirements in other states.</div>\n<div class=\"section\"><h2>1. Our role</h2><div class=\"card\"><p>School Sport Portal, Carnival Timing, and SportCarnival are tools for <strong>authorised school staff</strong> — PE coordinators, teachers, sport administrators. Students do not create accounts. Students do not log in. Students do not message anyone through our platforms.</p><p>All student data is entered by school staff under the school's data-controller responsibilities.</p></div></div>\n<div class=\"section\"><h2>2. What students see</h2><div class=\"card\"><p>The only place students might see our software is on a public results page (e.g., a carnival results page projected on a screen during the event, or shown to a parent later). On those public pages:</p><ul><li>Default display is <strong>\"first name + surname-initial\"</strong> (e.g., \"Henry F\").</li><li>Full surname is <strong>opt-in</strong> by school + parent for representative-level results only.</li><li>No date of birth is shown publicly.</li><li>No address, parent contact, or photograph is shown publicly.</li><li>No comment, message, or chat function exists for students or anyone else.</li></ul></div></div>\n<div class=\"section\"><h2>3. Compliance with the Victorian Child Safe Standards</h2><div class=\"card\"><p>The Victorian <em>Child Safe Standards</em> (effective from 1 July 2022) apply to organisations that work with children. While our software is operated by school staff and students don't directly interact with us, we recognise our role in supporting our school customers' child-safety responsibilities. Our commitments:</p><ul><li><strong>Standard 1 (Child safety culture):</strong> Our team treats child safety as paramount and explicitly designs against features that could enable abuse (no direct messaging, no public photos, no location sharing).</li><li><strong>Standard 2 (Roles & responsibilities):</strong> The director (Patrick Gallivan) holds ultimate accountability for child safety in the platform's design.</li><li><strong>Standard 6 (Recruitment):</strong> Anyone with administrative access to student data is required to hold a current Working with Children Check (WWC).</li><li><strong>Standard 7 (Complaints):</strong> Any concern can be raised at <a href=\"mailto:childsafety@schoolsportportal.com.au\">childsafety@schoolsportportal.com.au</a>. We commit to acknowledge within 24 hours.</li><li><strong>Standard 9 (Online safety):</strong> Public-facing content is designed to minimise identifying information (first name + initial only by default).</li></ul></div></div>\n<div class=\"section\"><h2>4. Other Australian states</h2><div class=\"card\"><ul><li><strong>NSW:</strong> Office of the Children's Guardian Child Safe Standards (compulsory for organisations from 1 February 2022).</li><li><strong>QLD:</strong> Blue Card system + Working with Children Check applies to anyone with administrative access.</li><li><strong>WA, SA, TAS, ACT, NT:</strong> Equivalent state-based child-safety requirements followed through the lens of National Principles for Child Safe Organisations.</li></ul></div></div>\n<div class=\"section\"><h2>5. Reportable Conduct Scheme (Victoria)</h2><div class=\"card\"><p>The Reportable Conduct Scheme requires certain organisations to notify the Commission for Children and Young People of any allegation of reportable conduct by their workers. While our software is not itself an \"in-scope organisation\", we cooperate with school customers in any investigation involving the school's use of our platform.</p></div></div>\n<div class=\"section\"><h2>6. Reporting a concern</h2><div class=\"card\"><p>If you are concerned that the use of our platform has resulted in harm to a child:</p><ol style=\"line-height:1.8\"><li><strong>Contact us immediately:</strong> <a href=\"mailto:childsafety@schoolsportportal.com.au\">childsafety@schoolsportportal.com.au</a> or <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>.</li><li><strong>If a child is in immediate danger:</strong> call 000.</li><li><strong>For non-urgent concerns about a child:</strong> in Victoria, contact the Child Protection Crisis Line on 13 12 78. In other states, refer to your local equivalent.</li><li><strong>Anonymous tip-offs:</strong> Crime Stoppers on 1800 333 000.</li></ol></div></div>\n<div class=\"section\"><h2>7. Our team</h2><div class=\"card\"><p>The platform is operated by <strong>Patrick Gallivan</strong>, a registered Victorian primary school teacher with a current Working with Children Check (WWC card holder). Direct any child-safety enquiry to <a href=\"mailto:childsafety@schoolsportportal.com.au\">childsafety@schoolsportportal.com.au</a>.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","404":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Page not found — Luck Dragon</title>\n<meta name=\"description\" content=\"We couldn't find the page you were looking for.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ntable{margin-top:6px}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Page not found</h1>\n<p>We couldn't find the page you were looking for.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>404 — Page not found.</strong></div>\n<div class=\"section\"><div class=\"card\"><p>The page you tried to load doesn't exist on this site. This might be because:</p><ul><li>The link you followed has a typo.</li><li>The page was moved or renamed.</li><li>You mistyped a URL by hand.</li></ul><p>Try the homepage or use one of the links below:</p><div style=\"display:flex;gap:10px;flex-wrap:wrap;margin-top:18px\"><a href=\"/\" style=\"background:#1a56db;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.9rem\">Home</a><a href=\"/help\" style=\"border:1.5px solid #cbd5e1;color:#0f172a;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem\">Help</a><a href=\"https://schoolsportportal.com.au\" style=\"border:1.5px solid #cbd5e1;color:#0f172a;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem\">School Sport Portal</a><a href=\"https://carnivaltiming.com\" style=\"border:1.5px solid #cbd5e1;color:#0f172a;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem\">Carnival Timing</a></div></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","about":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>About — Luck Dragon</title>\n<meta name=\"description\" content=\"Built by a PE teacher, for PE teachers.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\n.changelog-entry{border-left:3px solid #1a56db;padding-left:14px;margin-bottom:18px}\n.changelog-date{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}\n.changelog-title{font-size:15px;font-weight:700;color:#0d1b3e;margin-bottom:6px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>About</h1>\n<p>Built by a PE teacher, for PE teachers.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Short version:</strong> School Sport Portal is built by Patrick Gallivan, a Victorian primary-school PE teacher who got tired of doing carnival admin in spreadsheets.</div>\n<div class=\"section\"><h2>Who we are</h2><div class=\"card\"><p><strong>Luck Dragon Pty Ltd</strong> is an Australian Pty Ltd company (ABN 64 697 434 898), based in Williamstown VIC. We make software for school sport — that's it. Three products: School Sport Portal (schools' roster + calendar), Carnival Timing (race-day timing), and SportCarnival (public results).</p><p>We are <strong>not</strong> a venture-backed startup. We are not building toward an exit. We are building a platform that we ourselves use every term, run by a PE teacher who needed it to exist.</p></div></div>\n<div class=\"section\"><h2>Patrick Gallivan — founder</h2><div class=\"card\"><p>Paddy is a registered Victorian primary-school teacher with a current Working with Children Check. He runs the PE program at Williamstown Primary School and convenes carnival sport for the Williamstown District. He built the first version of Carnival Timing on a phone at McIvor Reserve during the 2024 cross-country, because the existing options were terrible.</p><p>If you sign up to School Sport Portal, you will email Paddy directly. He answers. There's no sales team, no support tier, no escalation path — just one PE teacher who built a thing and looks after it.</p></div></div>\n<div class=\"section\"><h2>Why we exist</h2><div class=\"card\"><p>Australian primary-school PE coordinators do their carnival admin in spreadsheets. Every sport, every term, every year — re-key students into a fresh sheet, hand-time on a stopwatch, transcribe results into a PDF that nobody reads. We thought we could do better.</p><p>School Sport Portal is the answer to: what if you entered student data once and the platform handled every sport for the rest of the year?</p></div></div>\n<div class=\"section\"><h2>How we work</h2><div class=\"card\"><ul><li><strong>Australian-only.</strong> Hosted in Australia (Cloudflare Sydney). Designed against AU privacy law and child-safety standards.</li><li><strong>Schools' interests first.</strong> No advertising. No data sales. No tracking. Schools own their data and can take it with them anytime.</li><li><strong>Quiet, useful, fair pricing.</strong> $1 per student per year (inc GST) for the full School Sport Portal. $49 per carnival or $149/yr for Carnival Timing alone. No hidden fees.</li><li><strong>Built where it's used.</strong> Every feature has been tested at a real Williamstown carnival. If it didn't work on the day, it doesn't ship.</li></ul></div></div>\n<div class=\"section\"><h2>Get in touch</h2><div class=\"card\"><p>Email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> — that's Paddy. Phone (during school terms): 0466 651 720.</p><p>Williamstown Primary School and Williamstown District Sport are real customers and we're happy to put you in touch with them as a reference.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/about\">About</a> · <a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · <a href=\"/changelog\">Changelog</a> · <a href=\"/modern-slavery\">Modern Slavery</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","changelog":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Changelog — Luck Dragon</title>\n<meta name=\"description\" content=\"What we've shipped lately.\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\n.changelog-entry{border-left:3px solid #1a56db;padding-left:14px;margin-bottom:18px}\n.changelog-date{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}\n.changelog-title{font-size:15px;font-weight:700;color:#0d1b3e;margin-bottom:6px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Changelog</h1>\n<p>What we've shipped lately.</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>What this is:</strong> Plain-English release notes for School Sport Portal, Carnival Timing, and SportCarnival. Latest at the top.</div>\n\n<div class=\"section\"><h2>2026</h2>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">5 May 2026 · Compliance + trust</div>\n<div class=\"changelog-title\">Six new policy + trust pages live across all sites</div>\n<p>Cookie Policy, Subprocessor list, Security Overview, Service Level Agreement, Accessibility Statement, and Child Safety Statement now live on schoolsportportal.com.au, carnivaltiming.com, and sportcarnival.com.au. Branded 404 page replaces the previous silent fall-through. SSP sitemap expanded to 14 URLs.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">5 May 2026 · Auth</div>\n<div class=\"changelog-title\">Email + password sign-in replaces magic link</div>\n<p>School coordinators sign in with an email + password (PBKDF2-SHA256, salted). Self-serve forgot/reset flow with a 15-minute single-use token. Rate limit 10 attempts per 5 min per IP, account lockout after 5 failed attempts.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">5 May 2026 · CT timing app</div>\n<div class=\"changelog-title\">Per-carnival rules + roster CSV import</div>\n<p>Carnival setup now lets you set max events per student, allow/block relays, gate manual time edits, and enforce strict age groups. Paste your roster from Compass/Sentral as CSV and the platform builds the bib lookup automatically.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">5 May 2026 · Pricing</div>\n<div class=\"changelog-title\">GST registration + tax invoices</div>\n<p>Luck Dragon Pty Ltd is now registered for GST. All prices show inc-GST split (e.g. $1/student = $0.91 ex + $0.09 GST). Stripe issues a compliant tax invoice with our ABN automatically on payment.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">4 May 2026 · CT timing app</div>\n<div class=\"changelog-title\">XC Marshal name picker (no-bibs fallback)</div>\n<p>If physical bibs are missing, marshals can tap a \"Pick\" button to open a full-screen name list filtered to runners in the active race. Tap a name to record the finish.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">4 May 2026 · Infrastructure</div>\n<div class=\"changelog-title\">Firebase → Cloudflare D1 migration complete</div>\n<p>All four sites now run on Cloudflare D1 (Sydney region). No more Firebase reads. Carnival timing data archives directly to D1 on publish. Faster, cheaper, fully Australian-hosted.</p>\n</div>\n\n<div class=\"changelog-entry\">\n<div class=\"changelog-date\">3 May 2026 · Onboarding</div>\n<div class=\"changelog-title\">Welcome email after Stripe checkout</div>\n<p>School Sport Portal subscribers and Carnival Timing buyers now get a branded welcome email immediately after payment with their access code, getting-started link, and direct contact for questions.</p>\n</div>\n\n</div>\n<div class=\"section\"><div class=\"card\"><p>Want to be notified of new features? Email <a href=\"mailto:hello@schoolsportportal.com.au?subject=Subscribe%20to%20release%20notes\">hello@schoolsportportal.com.au</a> with subject \"subscribe to release notes\".</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/about\">About</a> · <a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · <a href=\"/changelog\">Changelog</a> · <a href=\"/modern-slavery\">Modern Slavery</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>","modern-slavery":"<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Modern Slavery Statement — Luck Dragon</title>\n<meta name=\"description\" content=\"Our commitment under the Modern Slavery Act 2018 (Cth).\">\n<meta name=\"robots\" content=\"index, follow\">\n<link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:48px 24px 64px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:\"\";position:absolute;bottom:-1px;left:0;right:0;height:32px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(24px,4.5vw,36px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:560px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:32px}\n.section h2{font-size:17px;font-weight:800;color:#0d1b3e;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\n.section h3{font-size:14px;font-weight:700;color:#0f172a;margin:14px 0 6px}\n.section p{font-size:14px;color:#334155;margin-bottom:10px}\n.section ul, .section ol{font-size:14px;color:#334155;padding-left:22px;margin-bottom:10px}\n.section ul li, .section ol li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:20px 24px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:14px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:24px;text-align:center}\ncode{background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:.92em}\n.changelog-entry{border-left:3px solid #1a56db;padding-left:14px;margin-bottom:18px}\n.changelog-date{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}\n.changelog-title{font-size:15px;font-weight:700;color:#0d1b3e;margin-bottom:6px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n<div class=\"badge\">Legal</div>\n<h1>Modern Slavery Statement</h1>\n<p>Our commitment under the Modern Slavery Act 2018 (Cth).</p>\n</div>\n<div class=\"container\">\n<p class=\"updated\">Last updated: 5 May 2026 · Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n<div class=\"highlight\"><strong>Voluntary statement.</strong> Luck Dragon Pty Ltd is below the $100M annual revenue threshold that makes a Modern Slavery Statement compulsory under the <em>Modern Slavery Act 2018</em> (Cth). We're publishing this voluntarily to be transparent about our supply chain.</div>\n<div class=\"section\"><h2>Our business</h2><div class=\"card\"><p>Luck Dragon Pty Ltd is an Australian software company (ABN 64 697 434 898) based in Victoria. We sell SaaS subscriptions to Australian schools. Our revenue is well below the $100M threshold for compulsory reporting under the Modern Slavery Act 2018. We currently operate as a sole-director company with no employees other than the director.</p></div></div>\n<div class=\"section\"><h2>Supply chain risk assessment</h2><div class=\"card\"><p>Our supply chain is short and almost entirely software-based:</p><ul><li><strong>Cloudflare Inc.</strong> — hosting (USA, ASX-listed parent). Publishes a Modern Slavery Statement.</li><li><strong>Stripe Australia Pty Ltd</strong> — payment processing (Australia / Ireland parent). Publishes a Modern Slavery Statement.</li><li><strong>Resend Inc.</strong> — email delivery (USA). Small US-based startup; we'll review their position annually.</li><li><strong>GitHub (Microsoft)</strong> — source code only (USA). Microsoft publishes a Modern Slavery Statement.</li></ul><p>None of our suppliers operate in industries identified as high-risk for modern slavery (we have no manufacturing, agriculture, mining, hospitality, or construction supply chain). We assess our overall modern slavery risk as <strong>low</strong>.</p></div></div>\n<div class=\"section\"><h2>Actions we take</h2><div class=\"card\"><ul><li>Choose suppliers that publish Modern Slavery Statements where revenue thresholds apply.</li><li>Keep our own supply chain as short as practical (currently 4 sub-processors, fully cloud-based).</li><li>Pay all suppliers commercial market rates.</li><li>If we ever hire, we will commit to fair-work-compliant employment contracts and Working with Children Checks for anyone with access to school data.</li></ul></div></div>\n<div class=\"section\"><h2>Reporting concerns</h2><div class=\"card\"><p>If you are aware of any modern slavery, child labour, forced labour, or human trafficking issue in our supply chain or business, please email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> immediately. We commit to investigate any concern in good faith and report to the Australian Federal Police where appropriate.</p></div></div>\n<div class=\"section\"><h2>Review cycle</h2><div class=\"card\"><p>This statement will be reviewed and republished annually. If we cross the $100M revenue threshold or hire any employees, we will move to a compulsory reporting position under the Act.</p><p>This statement was approved by Patrick Gallivan, Director, on 5 May 2026.</p></div></div>\n</div>\n<footer>\n&copy; 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898 · \n<a href=\"/about\">About</a> · <a href=\"/privacy\">Privacy</a> · <a href=\"/terms\">Terms</a> · <a href=\"/cookies\">Cookies</a> · <a href=\"/subprocessors\">Subprocessors</a> · <a href=\"/security\">Security</a> · <a href=\"/sla\">SLA</a> · <a href=\"/accessibility\">Accessibility</a> · <a href=\"/child-safety\">Child Safety</a> · <a href=\"/changelog\">Changelog</a> · <a href=\"/modern-slavery\">Modern Slavery</a> · \n<a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> · \n<a href=\"https://asgard-status.pgallivan.workers.dev/\">Status</a>\n</footer>\n</body>\n</html>"};
-// Carnival Timing v8.7.1 — add XC Marshal name picker (no-bibs workflow for WD26)
+// Carnival Timing v8.8.0 — slit camera video finish Falkor auto-AI (race summaries + flag times on publish)
 const HTML = `<!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -539,7 +538,11 @@ const HTML = `<!DOCTYPE html>
       display:flex;align-items:center;gap:10px;
       padding:8px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);
     }
-    .xc-detect-pulse {
+    @keyframes xc-rec-pulse {
+  0%, 100% { opacity:1; transform:scale(1); }
+  50%       { opacity:.3; transform:scale(.7); }
+}
+.xc-detect-pulse {
       width:12px;height:12px;border-radius:50%;background:#ef4444;flex-shrink:0;
       animation:xcpulse 1s infinite;
     }
@@ -591,7 +594,7 @@ const HTML = `<!DOCTYPE html>
   "founder": {"@type": "Person", "name": "Paddy Gallivan"},
   "legalName": "Luck Dragon Pty Ltd",
   "taxID": "ABN 64 697 434 898",
-  "email": "hello@schoolsportportal.com.au",
+  "email": "info@sportportal.com.au",
   "areaServed": {"@type": "Country", "name": "Australia"},
   "knowsAbout": ["School sport", "Athletics carnivals", "Swimming carnivals", "Cross country", "Live event timing"]
 }</script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -702,21 +705,6 @@ const HTML = `<!DOCTYPE html>
     </div>
 
 
-    <!-- ── Buy a code (CT $49/$149) ── -->
-    <div style="margin-top:24px;background:#fff;border:2px solid #1a56db;border-radius:14px;padding:18px 20px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:1.1rem">🎟️</span>
-        <span style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#1a56db">Need a code?</span>
-      </div>
-      <div style="font-size:0.98rem;font-weight:700;margin-bottom:6px;color:#0d1b3e;line-height:1.3">Buy access for your school carnival</div>
-      <div style="font-size:0.82rem;color:#64748b;margin-bottom:14px;line-height:1.5">Code is emailed in seconds. Pay by card via Stripe. Tax invoice with GST included.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a href="https://buy.stripe.com/8x26oGgux9IT3wQckm9IQ05" target="_blank" style="background:#1a56db;color:#fff;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">Single Carnival — $49 inc GST</a>
-        <a href="https://buy.stripe.com/7sY3cu3HL8EP4AUesu9IQ06" target="_blank" style="background:#16a34a;color:#fff;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">Annual Pass — $149 inc GST</a>
-        <a href="/help" style="border:1.5px solid #cbd5e1;color:#64748b;padding:8px 16px;border-radius:7px;font-size:0.85rem;font-weight:600;text-decoration:none;display:inline-block">Compare plans</a>
-      </div>
-    </div>
-
     <!-- ── School Sport Portal upsell ── -->
     <div style="margin-top:24px;background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);border-radius:14px;padding:18px 20px;color:#fff">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -724,7 +712,7 @@ const HTML = `<!DOCTYPE html>
         <span style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fcd34d">School Sport Portal</span>
       </div>
       <div style="font-size:0.98rem;font-weight:700;margin-bottom:6px;line-height:1.3">Want persistent results, house points &amp; district qualifiers?</div>
-      <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:14px;line-height:1.5">Watching live results is always free. School Sport Portal adds automatic house point tallies, event program builder, district qualifier tracking and permanent public results pages — for $1/student/year inc GST.</div>
+      <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:14px;line-height:1.5">Carnival Timing is free and always will be. School Sport Portal adds automatic house point tallies, event program builder, district qualifier tracking and permanent public results pages — for $1/student/year.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a href="https://schoolsportportal.com.au" target="_blank" style="background:#f59e0b;color:#0d1b3e;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">See School Sport Portal →</a>
         <a href="https://schoolsportportal.com.au#demo" target="_blank" style="border:1.5px solid rgba(255,255,255,0.3);color:#fff;padding:8px 16px;border-radius:7px;font-size:0.85rem;font-weight:600;text-decoration:none;display:inline-block">Live demo</a>
@@ -808,45 +796,6 @@ const HTML = `<!DOCTYPE html>
       </div>
       <div id="program-rows" style="max-height:240px;overflow-y:auto"></div>
       <div style="color:var(--muted);font-size:.75rem;margin-top:4px">Pre-load your day's schedule. Use "Next Event →" in Race Control to auto-advance.</div>
-    </div>
-    <div class="form-group">
-      <details style="background:#fef3c7;border-radius:10px;padding:14px 16px;border:1px solid #fcd34d;margin-bottom:10px">
-        <summary style="cursor:pointer;font-weight:700;color:#92400e;font-size:.92rem;letter-spacing:0.02em">📋 Roster import (CSV) <span style="font-weight:400;color:var(--muted);font-size:.85rem">(optional — paste from Compass/Sentral)</span></summary>
-        <div style="margin-top:14px">
-          <p style="font-size:.82rem;color:#92400e;margin:0 0 10px">Paste your school roster as CSV. Columns: <code style="background:rgba(255,255,255,.6);padding:1px 6px;border-radius:4px;font-size:.78rem">bib,name,school,year,gender</code>. Bib is optional (auto-numbered if blank). Header row optional.</p>
-          <textarea id="setup-roster-csv" placeholder="125,Henry Fielding,Williamstown PS,11,boys
-126,Ned Hedditch,Williamstown PS,11,boys
-127,Kai Morgan,Williamstown PS,11,boys
-..." style="width:100%;min-height:120px;padding:10px;border:1.5px solid #fcd34d;border-radius:8px;font-family:monospace;font-size:.82rem;background:#fff;color:#0f172a;resize:vertical"></textarea>
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;align-items:center">
-            <button type="button" class="btn btn-secondary" style="padding:6px 12px;font-size:.82rem" onclick="parseRosterCSV()">Parse + Preview →</button>
-            <span id="roster-csv-summary" style="font-size:.78rem;color:#92400e"></span>
-          </div>
-          <div id="roster-csv-preview" style="font-size:.75rem;color:var(--muted);margin-top:8px;max-height:140px;overflow-y:auto"></div>
-        </div>
-      </details>
-      <details style="background:#f1f5f9;border-radius:10px;padding:14px 16px;border:1px solid #e2e8f0">
-        <summary style="cursor:pointer;font-weight:700;color:#0d1b3e;font-size:.92rem;letter-spacing:0.02em">⚙️ Carnival rules <span style="font-weight:400;color:var(--muted);font-size:.85rem">(optional — sane defaults applied)</span></summary>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:#0f172a">
-            <span style="font-weight:600">Max events per student</span>
-            <input type="number" id="setup-max-events" min="0" max="20" placeholder="0 = no limit" style="padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-size:.92rem">
-            <span style="color:var(--muted);font-size:.72rem">App warns when a student is entered in more than this number of events.</span>
-          </label>
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:#0f172a">
-            <span style="font-weight:600">Max relay events per student</span>
-            <input type="number" id="setup-max-relays" min="0" max="10" placeholder="0 = no limit" style="padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-size:.92rem">
-            <span style="color:var(--muted);font-size:.72rem">e.g. 1 if students can be in only one relay.</span>
-          </label>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem"><input type="checkbox" id="setup-allow-relays" checked style="width:18px;height:18px;cursor:pointer"><span><strong>Allow relay events</strong> — uncheck to hide relays from the program builder</span></label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem"><input type="checkbox" id="setup-allow-manual" checked style="width:18px;height:18px;cursor:pointer"><span><strong>Allow manual time edits</strong> — admins can tap a recorded time to edit it</span></label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem"><input type="checkbox" id="setup-allow-position-swap" checked style="width:18px;height:18px;cursor:pointer"><span><strong>Allow manual position swaps</strong> — admins can re-order finishers (e.g. for false-start re-runs)</span></label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem"><input type="checkbox" id="setup-strict-age" style="width:18px;height:18px;cursor:pointer"><span><strong>Strict age-group enforcement</strong> — block entries outside the student's age group</span></label>
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem"><input type="checkbox" id="setup-publish-public" checked style="width:18px;height:18px;cursor:pointer"><span><strong>Publish results publicly</strong> — uncheck to keep results staff-only</span></label>
-        </div>
-      </details>
     </div>
     <button class="btn btn-primary mt-8" onclick="createCarnival()">Create Carnival →</button>
   </div>
@@ -1161,7 +1110,7 @@ const HTML = `<!DOCTYPE html>
   <div class="header">
     <div class="conn-dot" id="marshal-dot"></div><span id="marshal-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
     <div class="header-title">Finish Marshal</div>
-    <div class="header-right"><span id="marshal-event-lbl" class="text-xs text-muted"></span></div>
+    <div class="header-right" style="display:flex;align-items:center;gap:6px"><span id="marshal-event-lbl" class="text-xs text-muted"></span><button id="xc-rec-btn" onclick="xcToggleRecord()" title="Record video" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.75rem;padding:3px 7px;cursor:pointer;line-height:1">📹</button></div>
   </div>
   <div class="content" style="padding:0">
     <!-- WAITING -->
@@ -1187,13 +1136,12 @@ const HTML = `<!DOCTYPE html>
       <button id="xc-auto-mode-btn" class="btn btn-secondary btn-sm"
         style="width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;padding:8px;font-size:.8rem"
         onclick="xcStartAutoMode()">🎯 Switch to Auto-Detect (no tapping)</button>
-      <!-- Big tap button — always visible, always tappable -->
-      <button class="btn-tap" id="marshal-tap-btn" onclick="marshalTap()"
-        style="flex-shrink:0;border-radius:0;margin:0;width:100%">
-        <span class="tap-main" id="marshal-clock-mini">0:00.00</span>
-        <span class="tap-sub">TAP FINISH</span>
-      </button>
-
+      <!-- Recording status bar — visible only when recording -->
+      <div id="xc-rec-bar" style="display:none;align-items:center;gap:8px;padding:6px 12px;background:#1c0000;border-bottom:2px solid #ef4444;flex-shrink:0">
+        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;animation:xc-rec-pulse 1s ease-in-out infinite;flex-shrink:0"></div>
+        <div style="flex:1;font-size:.82rem;font-weight:700;color:#ef4444;letter-spacing:.04em" id="xc-rec-status">● REC 00:00</div>
+        <button onclick="xcStopRecording()" style="background:#ef4444;border:none;border-radius:5px;color:#fff;font-size:.72rem;font-weight:700;padding:4px 9px;cursor:pointer">⏹ Stop &amp; Save</button>
+      </div>
       <!-- Finisher list -->
       <div style="flex:1;overflow-y:auto;padding:10px 16px" id="marshal-finishes-wrap">
         <div id="marshal-finishes-list"></div>
@@ -1214,10 +1162,8 @@ const HTML = `<!DOCTYPE html>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <div style="font-size:0.82rem;font-weight:700;color:var(--text);flex:1"
             id="marshal-bib-for">Enter bib for 1st place</div>
-          <button class="btn btn-secondary btn-sm" id="pick-name-btn" onclick="openNamePicker()" style="flex-shrink:0;font-size:0.72rem">📋 Pick</button>
           <button class="btn btn-secondary btn-sm" id="ocr-btn" onclick="runBibOCR()" style="flex-shrink:0;font-size:0.72rem">🔍 Auto</button>
         </div>
-        <div id="marshal-bib-name" style="font-size:0.92rem;font-weight:600;color:var(--text-2);min-height:1.1rem;margin-bottom:6px"></div>
         <div style="font-size:2.2rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;min-height:2.6rem;margin-bottom:8px"
           id="marshal-bib-display">_</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:280px">
@@ -1236,29 +1182,13 @@ const HTML = `<!DOCTYPE html>
         </div>
         <button class="btn btn-secondary btn-sm" style="width:100%;max-width:280px;margin-top:8px" onclick="bibSkip()">Skip — bib unknown</button>
       </div>
+      <!-- Big tap button — always at bottom (thumb zone), tappable even while bib pad is open -->
+      <button class="btn-tap" id="marshal-tap-btn" onclick="marshalTap()"
+        style="flex-shrink:0;border-radius:0;margin:0;width:100%">
+        <span class="tap-main" id="marshal-clock-mini">0:00.00</span>
+        <span class="tap-sub" id="marshal-tap-sub">TAP FINISH</span>
+      </button>
     </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════
-     XC NAME PICKER OVERLAY (added 2026-05-04)
-════════════════════════════════════════ -->
-<div id="name-picker-overlay" style="display:none;position:fixed;inset:0;background:var(--surface);z-index:600;flex-direction:column">
-  <div style="padding:12px 16px;border-bottom:1px solid var(--surface3);display:flex;align-items:center;gap:10px;background:var(--surface-2)">
-    <button class="btn btn-icon btn-sm" onclick="closeNamePicker()">✕</button>
-    <div style="flex:1">
-      <div style="font-size:0.95rem;font-weight:700" id="name-picker-title">Pick runner</div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-top:1px" id="name-picker-subtitle"></div>
-    </div>
-  </div>
-  <div style="padding:10px 14px;border-bottom:1px solid var(--surface3)">
-    <input type="text" id="name-picker-search" oninput="filterNamePicker()" placeholder="🔍 Type a name…"
-      autocomplete="off" autocapitalize="words"
-      style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--surface3);background:var(--surface);color:var(--text);font-size:1rem">
-  </div>
-  <div id="name-picker-list" style="flex:1;overflow-y:auto;padding:6px 0"></div>
-  <div style="padding:10px 16px;border-top:1px solid var(--surface3);background:var(--surface-2);font-size:0.72rem;color:var(--muted);text-align:center">
-    Tap a name to set the bib for the current finisher.
   </div>
 </div>
 
@@ -1482,7 +1412,7 @@ const HTML = `<!DOCTYPE html>
 </div>
 
 <!-- ════════════════════════════════════════
-     WS PROTOCOL
+     FIREBASE SDK
 ════════════════════════════════════════ -->
 <script>
     // Inlined QRCode generator (davidshimjs/qrcodejs 1.0.0) — no external dependency
@@ -1495,8 +1425,8 @@ const HTML = `<!DOCTYPE html>
 <script>
 'use strict';
 
-// ── WebSocket shim (CT app data sync) ─────────────────────
-// ── WebSocket shim (CT app data sync) ──────
+// ── WebSocket shim (replaces Firebase + Realtime DB) ─────────────────────
+// ── WebSocket shim (replaces Firebase Realtime Database) ──────
 // v4: hibernatable DO backend + seq-based gap detection
 const WS_HOST = 'ws.carnivaltiming.com'; // Add CNAME ws→carnival-timing-ws.pgallivan.workers.dev in CF dashboard
 let _ws=null,_wsCode=null,_wsReady=false,_reqId=0,_msgBuf=[];
@@ -1591,7 +1521,7 @@ function _notifyConn(v){
 function _snap(path,data){ return {val:()=>data, exists:()=>data!=null, key:path.split('/').pop()}; }
 function _send(msg){ return new Promise((res,rej)=>{ const id=_nextId();msg.id=id;const str=JSON.stringify(msg);const timer=setTimeout(()=>{_pendingReqs.delete(id);rej(new Error('ws timeout'));},10000);_pendingReqs.set(id,{resolve:res,reject:rej,timer}); if(_wsReady)_ws.send(str);else _msgBuf.push(str); }); }
 function _ref(path){ return { once:()=>_send({type:'get',path}).then(r=>_snap(path,r.data)), set:(v)=>_send({type:'set',path,data:v}), update:(v)=>_send({type:'update',path,data:v}), push:(v)=>_send({type:'push',path,data:v}).then(r=>({key:r.key})), remove:()=>_send({type:'remove',path}), on:(ev,cb)=>{ if(!_subscriptions.has(path))_subscriptions.set(path,new Set()); _subscriptions.get(path).add(cb); if(_wsReady)_ws.send(JSON.stringify({type:'subscribe',path})); _send({type:'get',path}).then(r=>cb(_snap(path,r.data))).catch(()=>{}); }, off:()=>{ _subscriptions.delete(path); if(_wsReady)_ws.send(JSON.stringify({type:'unsubscribe',path})); } }; }
-const SERVER_TIMESTAMP={'.sv':'timestamp'};
+const firebase={database:{ServerValue:{TIMESTAMP:{'.sv':'timestamp'}}}};
 const db={ref:(path)=>{
   if(path==='.info/serverTimeOffset') return {once:async()=>{const r=await _send({type:'servertime'});return _snap(path,r.ts-Date.now());}};
   if(path==='.info/connected') return {on:(ev,cb)=>{ if(!_subscriptions.has('__connected__'))_subscriptions.set('__connected__',new Set()); _subscriptions.get('__connected__').add(cb); cb(_snap(path,_wsReady)); }};
@@ -1655,15 +1585,11 @@ function removeProgramRow(id) {
   document.getElementById(\`prog-row-\${id}\`)?.remove();
 }
 function getProgramData() {
-  let rows = programRows.map(id => ({
+  return programRows.map(id => ({
     age: document.querySelector(\`.prog-age[data-pid="\${id}"]\`)?.value.trim()||'',
     gender: document.querySelector(\`.prog-gender[data-pid="\${id}"]\`)?.value||'boys',
     event: document.querySelector(\`.prog-event[data-pid="\${id}"]\`)?.value.trim()||''
   })).filter(r => r.age && r.event);
-  // Per-carnival rule: drop relay rows when allowRelays=false at setup time
-  const allowRelays = document.getElementById('setup-allow-relays')?.checked !== false;
-  if (!allowRelays) rows = rows.filter(r => !/relay|×/i.test(r.event));
-  return rows;
 } // lanes DQ'd in current done panel
 
 // ── Event Lists ──
@@ -1673,58 +1599,6 @@ const EVENTS = {
   xc:    ['Cross Country 2km','Cross Country 3km','Cross Country 4km','Cross Country 5km','Fun Run 1km','Fun Run 2km','Fun Run 3km'],
   mixed: ['100m Sprint','200m Sprint','400m','800m','50m Freestyle','50m Backstroke','Cross Country 2km','Cross Country 3km','Long Jump','High Jump']
 };
-
-
-let _rosterFromCSV = null;
-function parseRosterCSV() {
-  const txt = document.getElementById('setup-roster-csv')?.value || '';
-  const summary = document.getElementById('roster-csv-summary');
-  const preview = document.getElementById('roster-csv-preview');
-  if (!txt.trim()) {
-    summary.textContent = 'No CSV entered.'; summary.style.color='#92400e';
-    preview.innerHTML = ''; _rosterFromCSV = null; return;
-  }
-  const lines = txt.split(/\\r?\\n/).map(l=>l.trim()).filter(Boolean);
-  const out = {};
-  let auto = 1, errors = 0, nameIdx = 1, schoolIdx = 2, yearIdx = 3, genderIdx = 4, bibIdx = 0;
-  if (/^[a-zA-Z]/.test(lines[0]) && /name/i.test(lines[0]) && lines[0].split(',').length >= 2) {
-    const cols = lines[0].toLowerCase().split(',').map(c=>c.trim());
-    bibIdx = cols.findIndex(c=>/bib/.test(c));
-    nameIdx = cols.findIndex(c=>/name/.test(c));
-    schoolIdx = cols.findIndex(c=>/school|team/.test(c));
-    yearIdx = cols.findIndex(c=>/year|grade|age/.test(c));
-    genderIdx = cols.findIndex(c=>/gender|sex/.test(c));
-    lines.shift();
-  }
-  for (const line of lines) {
-    const cols = line.split(',').map(c=>c.trim());
-    let bib = bibIdx >= 0 ? parseInt(cols[bibIdx]) : NaN;
-    if (!Number.isFinite(bib) || bib <= 0) { while (out[auto]) auto++; bib = auto++; }
-    const name = (nameIdx >= 0 ? cols[nameIdx] : cols[1]) || '';
-    if (!name) { errors++; continue; }
-    const school = (schoolIdx >= 0 ? cols[schoolIdx] : cols[2]) || '';
-    const year = (yearIdx >= 0 ? cols[yearIdx] : cols[3]) || '';
-    const gender = (genderIdx >= 0 ? (cols[genderIdx] || '').toLowerCase() : '') || '';
-    out[bib] = {n:name, s:school, year, gender};
-  }
-  const count = Object.keys(out).length;
-  _rosterFromCSV = out;
-  summary.textContent = '\u2713 ' + count + ' students parsed' + (errors ? ', ' + errors + ' skipped' : '') + '.';
-  summary.style.color = '#15803d';
-  const entries = Object.entries(out).slice(0,6);
-  let sample = '';
-  for (const [b, r] of entries) {
-    sample += '<div style="display:flex;gap:6px"><strong style="width:42px">' + b + '</strong><span>' + r.n + '</span><span style="color:#94a3b8">' + (r.s||'') + ' ' + (r.year||'') + ' ' + (r.gender||'') + '</span></div>';
-  }
-  preview.innerHTML = '<div style="font-weight:700;margin-bottom:4px">Preview (first 6 of ' + count + '):</div>' + sample;
-}
-
-function filterEventsByRules(events) {
-  if (carnivalMeta?.rules?.allowRelays === false) {
-    return events.filter(e => !/relay|×/i.test(typeof e === 'string' ? e : (e.name||'')));
-  }
-  return events;
-}
 const AGE_GROUPS = ['9 Years','10 Years','11 Years','12/13 Years','Open','Year 3/4','Year 5/6','Year 3–6'];
 const LANE_COUNT = 8;
 
@@ -1871,7 +1745,7 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
-// ── DO/WS helpers ──
+// ── Firebase helpers ──
 function cRef(path) { return db.ref(path); }
 
 function cleanListeners() {
@@ -1926,7 +1800,7 @@ async function startDemo() {
     tier: 'school',
     colour: '#f59e0b',
     isDemo: true,
-    createdAt: SERVER_TIMESTAMP
+    createdAt: firebase.database.ServerValue.TIMESTAMP
   };
   applyAccent('#f59e0b');
   await db.ref('meta').set(carnivalMeta);
@@ -1996,19 +1870,9 @@ async function createCarnival() {
   const housesRaw = document.getElementById('setup-houses')?.value.trim()||'';
   const houses = housesRaw ? housesRaw.split(',').map(h=>h.trim()).filter(Boolean) : [];
   const program = getProgramData();
-  const rules = {
-    maxEventsPerStudent: parseInt(document.getElementById('setup-max-events')?.value)||0,
-    maxRelaysPerStudent: parseInt(document.getElementById('setup-max-relays')?.value)||0,
-    allowRelays: document.getElementById('setup-allow-relays')?.checked !== false,
-    allowManualEdits: document.getElementById('setup-allow-manual')?.checked !== false,
-    allowPositionSwap: document.getElementById('setup-allow-position-swap')?.checked !== false,
-    strictAge: document.getElementById('setup-strict-age')?.checked === true,
-    publishPublic: document.getElementById('setup-publish-public')?.checked !== false,
-  };
   carnivalMeta = { school, name, sport:selSport, tier:selTier, colour,
-    houses, program, rules,
-    roster: _rosterFromCSV || null,
-    createdAt: SERVER_TIMESTAMP };
+    houses, program,
+    createdAt: firebase.database.ServerValue.TIMESTAMP };
 
   await db.ref('meta').set(carnivalMeta);
   localStorage.setItem('fl_last_code', code);
@@ -2113,17 +1977,25 @@ function showRolePicker() {
 function _checkAdminPin(onSuccess) {
   const storedPin = carnivalMeta?.adminPin;
   if (!storedPin) {
-    // No PIN set — let them in, offer to set one
-    onSuccess();
-    _offerSetPin();
+    // No PIN set client-side — server will auto-grant; offer to set one after entry
+    _send({type:'auth', pin: null})
+      .then(r => { if (r.type === 'auth_ok') { onSuccess(); _offerSetPin(); } })
+      .catch(() => { onSuccess(); _offerSetPin(); }); // fallback if WS not ready
     return;
   }
-  _pinModal('Enter Admin PIN', (entered) => {
+  _pinModal('Enter Admin PIN', async (entered) => {
     if (entered === null) return; // cancelled
-    if (String(entered) === String(storedPin)) {
-      onSuccess();
-    } else {
-      toast('Incorrect PIN');
+    try {
+      const r = await _send({type: 'auth', pin: String(entered)});
+      if (r.type === 'auth_ok') {
+        onSuccess();
+      } else if (r.message === 'too_many_attempts') {
+        toast('Too many failed attempts — reconnect and try again.');
+      } else {
+        toast('Incorrect PIN');
+      }
+    } catch {
+      toast('Connection error — try again.');
     }
   });
 }
@@ -2203,7 +2075,7 @@ function enterRole(role) {
   if (role === 'starter') { showScreen('starter');     initStarterView();    return; }
   if (role === 'observer'){ showScreen('observer');    initObserverView();   return; }
   if (role === 'marshal') { showScreen('marshal');     initMarshalView();    return; }
-  if (role === 'admin-xc'){ showScreen('admin-xc');   initXCAdminView();    return; }
+  if (role === 'admin-xc'){ _checkAdminPin(() => { showScreen('admin-xc'); initXCAdminView(); }); return; }
   if (role === 'observer-xc'){ showScreen('observer-xc'); initXCObserverView(); return; }
   if (role === 'results')      { showScreen('results');      initResultsView();   return; }
   if (role === 'video-finish') { showScreen('video-finish'); initVideoFinish();   return; }
@@ -2328,7 +2200,7 @@ async function timerStop() {
   const elapsed = nowServer() - raceState.startedAtServer;
   if (elapsed < 500) { toast('Too quick — check start'); return; }
   const key = fbEnc(myId);
-  const splitPayload = { name: myName, elapsedMs: elapsed, stopAt: SERVER_TIMESTAMP };
+  const splitPayload = { name: myName, elapsedMs: elapsed, stopAt: firebase.database.ServerValue.TIMESTAMP };
   _savePendingSplit(myLane, key, splitPayload);
   const splitBtn = document.getElementById('timer-stop-btn');
   if (splitBtn) { splitBtn.textContent = 'Sending…'; splitBtn.setAttribute('disabled',''); }
@@ -2607,7 +2479,7 @@ async function adminArm() {
   await cRef('race/current').set({
     raceId: genId(6), age, gender:adminGender, event,
     state:'armed', lanes, splits:{},
-    armedAt: SERVER_TIMESTAMP
+    armedAt: firebase.database.ServerValue.TIMESTAMP
   });
   toast('Race armed');
 }
@@ -2616,7 +2488,7 @@ async function adminGo() {
   if (!raceState || raceState.state!=='armed') return;
   document.getElementById('admin-go-btn').setAttribute('disabled','');
   showCountdown(async ()=>{
-    await cRef('race/current').update({ state:'live', startedAtServer:SERVER_TIMESTAMP });
+    await cRef('race/current').update({ state:'live', startedAtServer:firebase.database.ServerValue.TIMESTAMP });
   });
 }
 
@@ -2626,7 +2498,7 @@ async function adminRecall() {
 }
 
 function broadcastRecall() {
-  cRef('recall').set({ active:true, at:SERVER_TIMESTAMP });
+  cRef('recall').set({ active:true, at:firebase.database.ServerValue.TIMESTAMP });
   setTimeout(()=>cRef('recall').set({active:false}), 2500);
   flashRecall();
 }
@@ -2692,7 +2564,7 @@ async function adminPublish() {
     await cRef(\`results/\${key}\`).set({
       type:'lane', age:raceState.age, gender:raceState.gender, event:eventName,
       raceId:raceState.raceId, results:allRows,
-      publishedAt:SERVER_TIMESTAMP
+      publishedAt:firebase.database.ServerValue.TIMESTAMP
     });
     // Accumulate house points
     if (Object.keys(houseDeltas).length) {
@@ -2742,11 +2614,6 @@ function _promptHeat(callback) {
 }
 
 async function adminEditTime(idx) {
-  // Per-carnival rule: gated by allowManualEdits
-  if (carnivalMeta?.rules && carnivalMeta.rules.allowManualEdits === false) {
-    toast('Manual time edits are disabled for this carnival');
-    return;
-  }
   // Load current published results for this race and let admin correct a single time.
   const raceId = raceState && raceState.raceId;
   if (!raceId) { toast('No race loaded'); return; }
@@ -2766,7 +2633,7 @@ async function adminEditTime(idx) {
   // Re-sort + re-place
   pub.results.sort((a,b)=>a.timeMs-b.timeMs);
   pub.results.forEach((r,i)=>r.place=i+1);
-  pub.editedAt = SERVER_TIMESTAMP;
+  pub.editedAt = firebase.database.ServerValue.TIMESTAMP;
   await cRef(\`results/\${key}\`).set(pub);
   toast('Time updated');
 }
@@ -2819,8 +2686,8 @@ function renderAdminDone(race) {
   document.getElementById('admin-results-list').innerHTML = placed.map((r,i)=>\`
     <div class="lane-row" style="opacity:\${r.isDQ?0.45:1};transition:opacity .15s">
       <div class="medal \${r.isDQ?'pN':r.status==='dns'?'pN':r.status==='dnf'?'pN':medalCls(r.place)}" style="\${r.isDQ?'background:var(--warn);color:#fff':r.status?'background:var(--muted);color:#fff':''}">\${r.isDQ?'DQ':r.status?r.status.toUpperCase():(r.place)}</div>
-      <div class="lane-name" onclick="\${(!r.status&&(carnivalMeta?.rules?.allowManualEdits!==false))?\`adminEditTime(\${i})\`:''}" style="flex:1;\${(!r.status&&(carnivalMeta?.rules?.allowManualEdits!==false))?'cursor:pointer':''}" \${(!r.status&&(carnivalMeta?.rules?.allowManualEdits!==false))?'title="Tap to edit time"':''}>\${r.name||\`Lane \${r.lane}\`}\${r.isDQ?'<span style="font-size:.7rem;color:var(--warn);margin-left:6px">DQ</span>':r.status?\`<span style="font-size:.7rem;color:var(--muted);margin-left:6px">\${r.status.toUpperCase()}</span>\`:''}</div>
-      <div class="lane-time font-mono" onclick="\${(carnivalMeta?.rules?.allowManualEdits!==false)?\`adminEditTime(\${i})\`:''}" style="\${(carnivalMeta?.rules?.allowManualEdits!==false)?'cursor:pointer':''}">\${r.isDQ?'—':fmtSec(r.timeMs)}</div>
+      <div class="lane-name" onclick="\${!r.status?\`adminEditTime(\${i})\`:''}" style="flex:1;\${!r.status?'cursor:pointer':''}" \${!r.status?'title="Tap to edit time"':''}>\${r.name||\`Lane \${r.lane}\`}\${r.isDQ?'<span style="font-size:.7rem;color:var(--warn);margin-left:6px">DQ</span>':r.status?\`<span style="font-size:.7rem;color:var(--muted);margin-left:6px">\${r.status.toUpperCase()}</span>\`:''}</div>
+      <div class="lane-time font-mono" onclick="adminEditTime(\${i})" style="cursor:pointer">\${r.isDQ?'—':fmtSec(r.timeMs)}</div>
       <button class="btn btn-sm" style="margin-left:6px;padding:2px 8px;font-size:.7rem;border:1px solid \${r.isDQ?'var(--warn)':'var(--border)'};color:\${r.isDQ?'var(--warn)':'var(--muted)'};background:transparent;border-radius:6px" onclick="adminToggleDQ('\${r.lane}')">\${r.isDQ?'✕ DQ':'DQ'}</button>
     </div>\`).join('') || '<div class="text-muted text-sm">No timed athletes</div>';
 }
@@ -2874,7 +2741,7 @@ function initStarterView() {
 function starterGo() {
   document.getElementById('starter-go-btn').setAttribute('disabled','');
   showCountdown(async ()=>{
-    await cRef('race/current').update({ state:'live', startedAtServer:SERVER_TIMESTAMP });
+    await cRef('race/current').update({ state:'live', startedAtServer:firebase.database.ServerValue.TIMESTAMP });
   });
 }
 function starterRecall() { starterListenStop(); broadcastRecall(); }
@@ -3170,152 +3037,6 @@ async function runBibOCR() {
   }
 }
 
-// ── XC name picker (added 2026-05-04 — restored BIB_LOOKUP for WD26 + name modal) ──
-const BIB_LOOKUP = {
-  // 9/10 Girls
-  1:{n:'Ava Filuk',s:'Altona PS'},2:{n:'Caelyn Ang',s:'Altona PS'},3:{n:'Ella Barrett',s:'Altona PS'},4:{n:'Aria Davidson',s:'Altona PS'},
-  5:{n:'Harper Blakeman',s:'Newport Gardens PS'},6:{n:'Blaise Keel',s:'Newport Gardens PS'},7:{n:'Polly Newall',s:'Newport Gardens PS'},8:{n:'Alice Pitt',s:'Newport Gardens PS'},
-  9:{n:'Alice Fuller',s:'Newport Lakes PS'},10:{n:'Eva Zagame',s:'Newport Lakes PS'},11:{n:'Caitlin Almering',s:'Newport Lakes PS'},12:{n:'Harriet McKeown',s:'Newport Lakes PS'},
-  17:{n:'Kaitlin Ho',s:'Seaholme'},18:{n:'Evie Van Den Burg',s:'Seaholme'},19:{n:'Ruby Loft',s:'Seaholme'},20:{n:'Ivy Bugeja',s:'Seaholme'},
-  21:{n:'Maya Kapitelli',s:'St Marys PS'},22:{n:'Kira Simpson',s:'St Marys PS'},23:{n:'Leah Toal',s:'St Marys PS'},24:{n:'Florence Brown',s:'St Marys PS'},
-  25:{n:'Madeline Gesovski',s:'Williamstown North PS'},26:{n:'Anna Kam',s:'Williamstown North PS'},27:{n:'Grace Neville',s:'Williamstown North PS'},28:{n:'Zara Bell',s:'Williamstown North PS'},
-  29:{n:'Eabha Pease',s:'Williamstown PS'},30:{n:'Chloe Wood',s:'Williamstown PS'},31:{n:'Rose Sexton',s:'Williamstown PS'},32:{n:'Sienna Jordan',s:'Williamstown PS'},
-  33:{n:'Cameron MacIntyre',s:'Altona PS'},34:{n:'Kai McCarthy',s:'Altona PS'},35:{n:'Lachlan Harrison',s:'Altona PS'},36:{n:'Oscar Wilson',s:'Altona PS'},
-  37:{n:'Harry Ward',s:'Newport Gardens PS'},38:{n:'Logan Anderson',s:'Newport Gardens PS'},39:{n:'Darcy Brown',s:'Newport Gardens PS'},40:{n:'Leo Warren',s:'Newport Gardens PS'},
-  41:{n:'Gabriel Ammouchi',s:'Newport Lakes PS'},42:{n:'Sam Jenkins',s:'Newport Lakes PS'},43:{n:'Duke Jackson',s:'Newport Lakes PS'},44:{n:'Lewis Said',s:'Newport Lakes PS'},
-  49:{n:'Toby Kennedy',s:'Seaholme'},50:{n:'Josiah Milo-Selvidge',s:'Seaholme'},51:{n:'Luca Markovski',s:'Seaholme'},52:{n:'Rocco Andrews',s:'Seaholme'},
-  53:{n:'Ollie Carter',s:'St Marys PS'},54:{n:'Raff Lehocz',s:'St Marys PS'},55:{n:'Clem Godde',s:'St Marys PS'},56:{n:'Tom McCutcheon',s:'St Marys PS'},
-  57:{n:'Julen Smith-Gorrochategui',s:'Williamstown North PS'},58:{n:'Alex McQueen',s:'Williamstown North PS'},59:{n:'Jordan Pisanelli',s:'Williamstown North PS'},60:{n:'Oswald Burleigh',s:'Williamstown North PS'},
-  61:{n:"Elias D'Souza",s:'Williamstown PS'},62:{n:'Thomas Reid',s:'Williamstown PS'},63:{n:'Luca Galle',s:'Williamstown PS'},64:{n:'William Galle',s:'Williamstown PS'},
-  65:{n:'Kara Mahon',s:'Altona PS'},66:{n:'Aurora Busuttil',s:'Altona PS'},67:{n:'Cleo Suttcliffe',s:'Altona PS'},68:{n:'Pearl Jeremiah',s:'Altona PS'},
-  69:{n:'Isla Newman',s:'Newport Gardens PS'},70:{n:'Hannah Potts',s:'Newport Gardens PS'},71:{n:'Frankie Bartlett',s:'Newport Gardens PS'},72:{n:'Lizzie Wilson',s:'Newport Gardens PS'},
-  73:{n:'Thea Dennis',s:'Newport Lakes PS'},74:{n:'Freya Rees',s:'Newport Lakes PS'},75:{n:'Audrey Bishop',s:'Newport Lakes PS'},76:{n:'Arya Goodman',s:'Newport Lakes PS'},
-  81:{n:'Erika Nasmark',s:'Seaholme'},82:{n:'Sienna Milo-Selvidge',s:'Seaholme'},83:{n:'Isla Nemcek',s:'Seaholme'},84:{n:'Grace McClelland',s:'Seaholme'},
-  85:{n:'Mikaela Lusi',s:'St Marys PS'},86:{n:'Eloise Pante',s:'St Marys PS'},87:{n:'Ada Pham',s:'St Marys PS'},88:{n:'Isla Toal',s:'St Marys PS'},
-  89:{n:'Charlotte Tucker',s:'Williamstown North PS'},90:{n:'Islay Kennie',s:'Williamstown North PS'},91:{n:'Millie Dur-Hill',s:'Williamstown North PS'},92:{n:'Molly Pasque',s:'Williamstown North PS'},
-  93:{n:'Emilia Rajch',s:'Williamstown PS'},94:{n:'Greta Lovell',s:'Williamstown PS'},95:{n:'Evie Vanderloo',s:'Williamstown PS'},96:{n:'Ava Fleming',s:'Williamstown PS'},
-  97:{n:'Lukas Marchant',s:'Altona PS'},98:{n:'Jake Costello',s:'Altona PS'},99:{n:'Brady Hinton',s:'Altona PS'},100:{n:'Hilton Thomas',s:'Altona PS'},
-  101:{n:'Lorcan Grainger',s:'Newport Gardens PS'},102:{n:'Aidan Crawford',s:'Newport Gardens PS'},103:{n:'Arlo Roffe',s:'Newport Gardens PS'},104:{n:'Lewis McGregor',s:'Newport Gardens PS'},
-  105:{n:'Angus Mahony-Gilchrist',s:'Newport Lakes PS'},106:{n:'Jude Wisby',s:'Newport Lakes PS'},107:{n:'Sam Cortis',s:'Newport Lakes PS'},108:{n:'Ben Finelli',s:'Newport Lakes PS'},
-  113:{n:'James Okey',s:'Seaholme'},114:{n:'Michael Dragovic',s:'Seaholme'},115:{n:'Patrick Tzimopolous',s:'Seaholme'},116:{n:'Graham Hung',s:'Seaholme'},
-  117:{n:'Roman Pantalleresco',s:'St Marys PS'},118:{n:'Quinn Vasilou',s:'St Marys PS'},119:{n:'Lu Kang Suen',s:'St Marys PS'},120:{n:'Alexander McCarthy',s:'St Marys PS'},
-  121:{n:'Christian Ierodiaconou',s:'Williamstown North PS'},122:{n:'Finn Johnson',s:'Williamstown North PS'},123:{n:'Montague Pyke',s:'Williamstown North PS'},124:{n:'Banjo Kane',s:'Williamstown North PS'},
-  125:{n:'Henry Fielding',s:'Williamstown PS'},126:{n:'Ned Hedditch',s:'Williamstown PS'},127:{n:'Kai Morgan',s:'Williamstown PS'},128:{n:'Bernie MacLeod',s:'Williamstown PS'},
-  129:{n:'Zoe Walmsley',s:'Altona PS'},130:{n:'Zara Hunt',s:'Altona PS'},131:{n:'Tilly Armstrong',s:'Altona PS'},132:{n:'Natascha Harrison',s:'Altona PS'},
-  133:{n:'Airlie Pretorius',s:'Newport Gardens PS'},134:{n:'Pippa Mallory',s:'Newport Gardens PS'},135:{n:'Zara Pretorius',s:'Newport Gardens PS'},136:{n:'Emily Rodger',s:'Newport Gardens PS'},
-  137:{n:'Elke Jennings',s:'Newport Lakes PS'},138:{n:'Amelie McKeown',s:'Newport Lakes PS'},139:{n:'Milla Wynne',s:'Newport Lakes PS'},140:{n:'Emilia Stupple',s:'Newport Lakes PS'},
-  145:{n:'Emmy Sullivan',s:'Seaholme'},146:{n:'Evie Marchant',s:'Seaholme'},147:{n:'Marie Weghaus',s:'Seaholme'},148:{n:'Chloe Gielnik',s:'Seaholme'},
-  149:{n:'Olivia Peterson',s:'St Marys PS'},150:{n:'Ella Rinaldi',s:'St Marys PS'},151:{n:'Ava Matina',s:'St Marys PS'},152:{n:'Audrey Trethowan',s:'St Marys PS'},
-  153:{n:'Lila Higginbotham',s:'Williamstown North PS'},154:{n:'Zara Tedesco',s:'Williamstown North PS'},155:{n:'Indiana Bell',s:'Williamstown North PS'},156:{n:'Malia Weiner',s:'Williamstown North PS'},
-  157:{n:'Danica Grant',s:'Williamstown PS'},158:{n:'Lily Sexton',s:'Williamstown PS'},159:{n:'Irida Bladon',s:'Williamstown PS'},160:{n:'Lana Budinoska',s:'Williamstown PS'},
-  161:{n:'Archer Meakes',s:'Altona PS'},162:{n:'Rory Hurley',s:'Altona PS'},163:{n:'Edward Miller',s:'Altona PS'},164:{n:'Dex Kroll',s:'Altona PS'},
-  165:{n:'Jono Connelly',s:'Newport Gardens PS'},166:{n:'Clay Keel',s:'Newport Gardens PS'},167:{n:'(Charlie) Kelly',s:'Newport Gardens PS'},168:{n:'Harry Skipworth',s:'Newport Gardens PS'},
-  169:{n:'Tom (TBC)',s:'Newport Lakes PS'},170:{n:'Ibrahim Abdo',s:'Newport Lakes PS'},171:{n:'Ollie Riley',s:'Newport Lakes PS'},172:{n:'Henry Lawrence',s:'Newport Lakes PS'},
-  177:{n:'Alex Cooper',s:'Seaholme'},178:{n:'Ryan Sarab',s:'Seaholme'},179:{n:'Tom McClelland',s:'Seaholme'},180:{n:'Yubo Peng',s:'Seaholme'},
-  181:{n:'Harry Carter',s:'St Marys PS'},182:{n:'Zachary Cross',s:'St Marys PS'},183:{n:'Toby Boulton',s:'St Marys PS'},184:{n:'Jude Brown',s:'St Marys PS'},
-  185:{n:'Curtis Price',s:'Williamstown North PS'},186:{n:'Alfie Foley',s:'Williamstown North PS'},187:{n:'Evan Hinsley',s:'Williamstown North PS'},188:{n:'Bailey Smith',s:'Williamstown North PS'},
-  189:{n:'Banjo Kane',s:'Williamstown PS'},190:{n:'Jarvis Sullivan',s:'Williamstown PS'},191:{n:'Otis Lethborg',s:'Williamstown PS'},192:{n:'Hudson Middleton',s:'Williamstown PS'},
-};
-
-function _xcRaceBibRange() {
-  const xc = (typeof xcState !== 'undefined' && xcState) ? xcState : null;
-  if (!xc) return [1, 192];
-  const age = String(xc.age || '').trim();
-  const g   = String(xc.gender || '').toLowerCase().trim();
-  if ((age === '10' || age === '9/10') && g.startsWith('g')) return [1, 32];
-  if ((age === '10' || age === '9/10') && g.startsWith('b')) return [33, 64];
-  if (age === '11' && g.startsWith('g')) return [65, 96];
-  if (age === '11' && g.startsWith('b')) return [97, 128];
-  if ((age === '12' || age === '12/13' || age === '13') && g.startsWith('g')) return [129, 160];
-  if ((age === '12' || age === '12/13' || age === '13') && g.startsWith('b')) return [161, 192];
-  return [1, 192];
-}
-
-function openNamePicker() {
-  const overlay = document.getElementById('name-picker-overlay');
-  if (!overlay) return;
-  const titleEl = document.getElementById('name-picker-title');
-  const subEl   = document.getElementById('name-picker-subtitle');
-  const xc = (typeof xcState !== 'undefined' && xcState) ? xcState : null;
-  if (xc) {
-    if (titleEl) titleEl.textContent = ((xc.age || '') + ' ' + (xc.gender || '')).trim() || 'Pick runner';
-    if (subEl) subEl.textContent = (xc.event || '') + (bibPendingKey ? ' — ' + (document.getElementById('marshal-bib-for') ? document.getElementById('marshal-bib-for').textContent : '') : '');
-  }
-  const search = document.getElementById('name-picker-search');
-  if (search) { search.value = ''; }
-  _renderNamePicker('');
-  overlay.style.display = 'flex';
-  setTimeout(function () { if (search) search.focus(); }, 50);
-}
-
-function closeNamePicker() {
-  const overlay = document.getElementById('name-picker-overlay');
-  if (overlay) overlay.style.display = 'none';
-}
-
-function filterNamePicker() {
-  const el = document.getElementById('name-picker-search');
-  const v = el ? el.value : '';
-  _renderNamePicker((v || '').toLowerCase().trim());
-}
-
-function _renderNamePicker(filter) {
-  const list = document.getElementById('name-picker-list');
-  if (!list) return;
-  const range = _xcRaceBibRange();
-  const lo = range[0], hi = range[1];
-  const rows = [];
-  const taken = {};
-  try {
-    if (xcState && xcState.finishes) {
-      Object.keys(xcState.finishes).forEach(function (k) {
-        const f = xcState.finishes[k];
-        if (f && f.bib) taken[parseInt(f.bib)] = true;
-      });
-    }
-  } catch (e) {}
-  const SC = {
-    'Altona PS': '#1565c0', 'Newport Gardens PS': '#2e7d32', 'Newport Lakes PS': '#00695c',
-    'Sacred Heart': '#6a1b9a', 'Seaholme': '#e65100', 'St Marys PS': '#b71c1c',
-    'Williamstown North PS': '#283593', 'Williamstown PS': '#f57f17'
-  };
-  for (let b = lo; b <= hi; b++) {
-    const r = (typeof BIB_LOOKUP !== 'undefined') ? BIB_LOOKUP[b] : null;
-    if (!r) continue;
-    const haystack = (r.n + ' ' + (r.s || '')).toLowerCase();
-    if (filter && haystack.indexOf(filter) === -1) continue;
-    const isTaken = !!taken[b];
-    const sc = SC[r.s] || '#555';
-    const onclick = isTaken ? '' : ('pickRunner(' + b + ')');
-    const cur = isTaken ? 'not-allowed' : 'pointer';
-    const op = isTaken ? '0.35' : '1';
-    const takenLbl = isTaken ? ' <span style="font-size:0.7rem;color:var(--muted)">(already taken)</span>' : '';
-    rows.push(
-      '<div onclick="' + onclick + '" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--surface3);cursor:' + cur + ';opacity:' + op + '">' +
-        '<div style="min-width:46px;font-weight:800;font-size:1.05rem;color:' + sc + '">' + b + '</div>' +
-        '<div style="flex:1">' +
-          '<div style="font-weight:700;font-size:0.96rem">' + r.n + takenLbl + '</div>' +
-          '<div style="font-size:0.78rem;color:' + sc + ';margin-top:1px">' + (r.s || '') + '</div>' +
-        '</div>' +
-      '</div>'
-    );
-  }
-  list.innerHTML = rows.length
-    ? rows.join('')
-    : '<div style="padding:30px 20px;text-align:center;color:var(--muted);font-size:0.9rem">No runners match.</div>';
-}
-
-function pickRunner(bib) {
-  bibValue = String(bib);
-  const disp = document.getElementById('marshal-bib-display');
-  if (disp) disp.textContent = bibValue;
-  const r = (typeof BIB_LOOKUP !== 'undefined') ? BIB_LOOKUP[bib] : null;
-  const nameEl = document.getElementById('marshal-bib-name');
-  if (nameEl && r) nameEl.textContent = r.n + ' · ' + (r.s || '');
-  closeNamePicker();
-  if (typeof bibConfirm === 'function' && bibPendingKey) bibConfirm();
-}
-
 function initMarshalView() {
   requestWakeLock(); syncClock();
   watchConn('marshal-dot');
@@ -3396,13 +3117,14 @@ async function marshalTap() {
     bib:         '',
     name:        '',
     elapsedMs:   elapsed,
-    tapAt:       SERVER_TIMESTAMP
+    tapAt:       firebase.database.ServerValue.TIMESTAMP
   });
 
   toast(\`\${ordinal(place)} — \${fmtMs(elapsed)}\`);
 
   // Queue bib entry
   bibPendingQueue.push({ key, place, elapsed });
+  updateTapBtnLabel();
   if (!bibPendingKey) showNextBib();
 }
 
@@ -3499,6 +3221,14 @@ function xcStartAutoConfirmCountdown(detectedBib) {
 function hideBibPad() {
   document.getElementById('marshal-bib-pad').classList.add('hidden');
   bibPendingKey = null;
+  updateTapBtnLabel();
+}
+
+function updateTapBtnLabel() {
+  const sub = document.getElementById('marshal-tap-sub');
+  if (!sub) return;
+  const n = bibPendingQueue.length;
+  sub.textContent = n > 0 ? \`TAP FINISH  ·  +\${n} queued\` : 'TAP FINISH';
 }
 
 function bibDigit(d) {
@@ -3518,7 +3248,7 @@ async function bibConfirm() {
   if (bibPendingKey) {
     const updates = {};
     if (bibValue) updates.bib = bibValue;
-    // Save compressed photo via WS (base64 JPEG ~15-20KB)
+    // Save compressed photo to Firebase (base64 JPEG ~15-20KB)
     const photo = xcPhotos.get(bibPendingKey);
     if (photo) updates.photo = photo;
     if (Object.keys(updates).length) {
@@ -3528,12 +3258,14 @@ async function bibConfirm() {
   bibPendingQueue.shift();
   bibPendingKey = null;
   showNextBib();
+  updateTapBtnLabel();
 }
 
 function bibSkip() {
   bibPendingQueue.shift();
   bibPendingKey = null;
   showNextBib();
+  updateTapBtnLabel();
 }
 
 function marshalEditBib(key, place, elapsed) {
@@ -3605,7 +3337,7 @@ async function xcAdminArm() {
   await cRef('xc/current').set({
     raceId:genId(6), age, gender:xcGender, event,
     state:'armed', finishes:{},
-    armedAt:SERVER_TIMESTAMP
+    armedAt:firebase.database.ServerValue.TIMESTAMP
   });
   toast('XC Race armed');
 }
@@ -3614,7 +3346,7 @@ async function xcAdminGo() {
   if (!xcState || xcState.state!=='armed') return;
   document.getElementById('xc-go-btn').setAttribute('disabled','');
   showCountdown(async ()=>{
-    await cRef('xc/current').update({state:'live', startedAtServer:SERVER_TIMESTAMP});
+    await cRef('xc/current').update({state:'live', startedAtServer:firebase.database.ServerValue.TIMESTAMP});
   });
 }
 
@@ -3675,7 +3407,7 @@ async function xcAdminPublish() {
       qualifier:   numQual > 0 && (i+1) <= numQual,
       ...(cards[i+1] ? { card: cards[i+1] } : {})
     })),
-    publishedAt: SERVER_TIMESTAMP
+    publishedAt: firebase.database.ServerValue.TIMESTAMP
   });
   await cRef('xc/current').update({state:'done'});
 
@@ -4323,7 +4055,7 @@ async function vfPublish() {
     marks: payload, mode: 'slit',
     offsetMs: vfGetOffset(), offlineMode: vfOfflineMode,
     recordedBy: myName || 'Video Finish',
-    publishedAt: SERVER_TIMESTAMP
+    publishedAt: firebase.database.ServerValue.TIMESTAMP
   });
   toast('Video finish times published!');
   document.getElementById('vf-publish-btn').disabled = true;
@@ -4543,11 +4275,7 @@ function adminPrintResults() {
   <span>·</span>
   <a href="/privacy" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">Privacy</a>
   <span>·</span>
-  <a href="/terms" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">Terms</a>
-  <span>·</span>
   <a href="https://schoolsportportal.com.au" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">School Sport Portal</a>
-  <span>·</span>
-  <a href="https://sportcarnival.com.au" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">Sport Carnival</a>
 </div>
 </body></html>\`);
   win.document.close();
@@ -4698,7 +4426,7 @@ function xcStartDetect() {
   xcCloseLineSetup();
   xcPrevSamples    = null;
   xcLastTrigger    = 0;
-  // FIX 4: sync local counter with current finish count before starting
+  // FIX 4: sync local counter with current Firebase finish count before starting
   xcAutoPlaceCounter = Object.keys(xcState?.finishes || {}).length;
   document.getElementById('xc-detect-status').textContent = '🔴 Detecting — runners auto-recorded';
   xcDetectInterval = setInterval(xcAnalyseFrame, 110); // ~9 fps
@@ -4765,8 +4493,8 @@ async function xcAutoFinish() {
   if (!xcState || xcState.state !== 'live') return;
 
   const elapsed = nowServer() - xcState.startedAtServer;
-  // FIX 4: increment local counter immediately — don't read remote state
-  // (remote snapshot may lag, causing two fast finishes to get the same place)
+  // FIX 4: increment local counter immediately — don't read Firebase state
+  // (Firebase snapshot may lag, causing two fast finishes to get the same place)
   xcAutoPlaceCounter++;
   const place = xcAutoPlaceCounter;
 
@@ -4777,14 +4505,14 @@ async function xcAutoFinish() {
   const key = myId.slice(0, 4) + '-' + Date.now().toString(36);
   xcCapturePhoto(key); // burst capture
 
-  // Write via WS (same structure as marshalTap)
+  // Write to Firebase (same structure as marshalTap)
   await cRef(\`xc/current/finishes/\${key}\`).set({
     marshalId:   myId,
     marshalName: myName || 'Auto',
     bib:         '',
     name:        '',
     elapsedMs:   elapsed,
-    tapAt:       SERVER_TIMESTAMP,
+    tapAt:       firebase.database.ServerValue.TIMESTAMP,
     autoDetected: true,
   });
 
@@ -4812,252 +4540,113 @@ function xcDetectBeep() {
   } catch(e) {}
 }
 
+// ════════════════════════════════════════════════════════
+//  CT v8.8 — Option B: In-App Video Recorder
+// ════════════════════════════════════════════════════════
+let _xcMediaRecorder    = null;
+let _xcRecChunks        = [];
+let _xcRecStartTime     = 0;
+let _xcRecTimerInterval = null;
+
+function xcToggleRecord() {
+  if (_xcMediaRecorder && _xcMediaRecorder.state === 'recording') {
+    xcStopRecording();
+  } else {
+    xcStartRecording();
+  }
+}
+
+async function xcStartRecording() {
+  // Ensure camera is running
+  if (!xcCamStream) {
+    await xcInitCamera();
+    if (!xcCamStream) { toast('Camera not available — grant permission first'); return; }
+  }
+  if (typeof MediaRecorder === 'undefined') { toast('Video recording not supported on this browser'); return; }
+  try {
+    const mimeType = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4']
+      .find(t => MediaRecorder.isTypeSupported(t)) || '';
+    _xcRecChunks = [];
+    _xcMediaRecorder = new MediaRecorder(xcCamStream, mimeType ? { mimeType } : {});
+    _xcMediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) _xcRecChunks.push(e.data); };
+    _xcMediaRecorder.onstop = xcSaveRecording;
+    _xcMediaRecorder.start(1000); // flush chunk every 1 s so data isn't lost if tab closes
+    _xcRecStartTime = Date.now();
+
+    // Update UI
+    const btn = document.getElementById('xc-rec-btn');
+    if (btn) { btn.textContent = '🔴'; btn.style.borderColor = '#ef4444'; btn.style.color = '#ef4444'; }
+    const bar = document.getElementById('xc-rec-bar');
+    if (bar) bar.style.display = 'flex';
+
+    _xcRecTimerInterval = setInterval(() => {
+      const secs = Math.floor((Date.now() - _xcRecStartTime) / 1000);
+      const mm = String(Math.floor(secs / 60)).padStart(2, '0');
+      const ss = String(secs % 60).padStart(2, '0');
+      const el = document.getElementById('xc-rec-status');
+      if (el) el.textContent = '● REC ' + mm + ':' + ss;
+    }, 1000);
+
+    toast('📹 Recording started');
+  } catch(e) {
+    toast('Recording failed: ' + (e.message || e));
+    _xcMediaRecorder = null;
+  }
+}
+
+function xcStopRecording() {
+  if (!_xcMediaRecorder || _xcMediaRecorder.state === 'inactive') return;
+  try { _xcMediaRecorder.stop(); } catch(e) {}
+  clearInterval(_xcRecTimerInterval);
+  _xcRecTimerInterval = null;
+  const btn = document.getElementById('xc-rec-btn');
+  if (btn) { btn.textContent = '📹'; btn.style.borderColor = ''; btn.style.color = ''; }
+  const bar = document.getElementById('xc-rec-bar');
+  if (bar) bar.style.display = 'none';
+  toast('Saving video…');
+}
+
+function xcSaveRecording() {
+  if (!_xcRecChunks.length) { toast('No video captured'); return; }
+  const mimeType = (_xcMediaRecorder && _xcMediaRecorder.mimeType) || 'video/webm';
+  const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+  const blob = new Blob(_xcRecChunks, { type: mimeType });
+  const ts   = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const name = 'ct-recording-' + ts + '.' + ext;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  toast('✅ Saved: ' + name);
+  _xcRecChunks = []; _xcMediaRecorder = null;
+}
+
+
 </script>
 `;
 const HEADERS = {
   'Content-Type': 'text/html; charset=utf-8',
   'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-  'X-CT-Version': 'v8.7.0',
+  'X-CT-Version': 'v8.8.0',
   'X-Frame-Options': 'SAMEORIGIN',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
   'Permissions-Policy': 'camera=(self), microphone=(self), geolocation=()',
   'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; frame-ancestors 'self';",
 };
 
-const PRIVACY_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Privacy Policy \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.product{background:#f1f5f9;border-radius:10px;padding:14px 16px}\n.product .name{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}\n.product .desc{font-size:12px;color:#64748b}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Privacy Policy</h1>\n  <p>How Luck Dragon collects, uses, and protects your information across all our school sport products.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    <strong>The short version:</strong> We collect only what we need to run school sport. Student data is stored securely in Australia and never sold, shared with advertisers, or used for any purpose outside school sport coordination.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Who We Are</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) operates three school sport products:</p>\n      <div class=\"products\">\n        <div class=\"product\"><div class=\"name\">School Sport Portal</div><div class=\"desc\">schoolsportportal.com.au \u2014 school, district &amp; division portals</div></div>\n        <div class=\"product\"><div class=\"name\">Carnival Timing</div><div class=\"desc\">carnivaltiming.com \u2014 live race timing for carnivals</div></div>\n        <div class=\"product\"><div class=\"name\">SportCarnival</div><div class=\"desc\">sportcarnival.com.au \u2014 carnival results and draw management</div></div>\n      </div>\n      <p>This Privacy Policy applies to all three products. For questions, contact us at <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. What Data We Collect</h2>\n    <div class=\"card\">\n      <h3>Student Performance Data (Carnival Timing &amp; School Sport Portal)</h3>\n      <p>When a school coordinator uses our timing tools, we store:</p>\n      <ul>\n        <li>First name and last initial (never full surnames publicly)</li>\n        <li>Age group and gender category</li>\n        <li>Race/event times and placing</li>\n        <li>School name and district</li>\n        <li>House group (where entered)</li>\n      </ul>\n      <p>Full names are only visible to signed-in coordinators. Public result views show first name + last initial + school only.</p>\n\n      <h3>Coordinator Account Data</h3>\n      <ul>\n        <li>Email address (for account access and notifications)</li>\n        <li>School name and role</li>\n        <li>Access code and subscription status (Carnival Timing)</li>\n      </ul>\n\n      <h3>Contact Form Submissions (School Sport Portal)</h3>\n      <ul>\n        <li>Name, email address, school, and message content</li>\n        <li>Used only to respond to your enquiry</li>\n      </ul>\n\n      <h3>Technical Data</h3>\n      <ul>\n        <li>Browser type and device (Cloudflare analytics only \u2014 no cookies placed)</li>\n        <li>Pages visited and time on site (aggregate, not individual tracking)</li>\n        <li>IP address (retained by Cloudflare per their standard policy, not accessed by us)</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. How We Use Your Data</h2>\n    <div class=\"card\">\n      <p>We use data only for the following purposes:</p>\n      <ul>\n        <li><strong>Displaying carnival results</strong> \u2014 showing times and placings to school staff and parents</li>\n        <li><strong>Selecting representative teams</strong> \u2014 surfacing top performers at district, division and region level</li>\n        <li><strong>Account management</strong> \u2014 validating access codes and processing subscriptions</li>\n        <li><strong>Responding to enquiries</strong> \u2014 replying to contact form submissions</li>\n        <li><strong>Improving our products</strong> \u2014 fixing bugs, improving reliability, adding features</li>\n      </ul>\n      <p>We do <strong>not</strong> use data for advertising, profiling, or any purpose unrelated to school sport.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. Data Storage &amp; Security</h2>\n    <div class=\"card\">\n      <p>All data is stored in Australia using the following services:</p>\n      <ul>\n        <li><strong>Cloudflare Workers &amp; KV</strong> \u2014 edge infrastructure with Australian data residency</li>\n        <li><strong>Cloudflare Workers WebSocket</strong> \u2014 Cloudflare global edge (Australian PoPs)</li>\n      </ul>\n      <p>Access to student data requires coordinator authentication. Public-facing result pages display only anonymised data (first name + last initial). We use HTTPS across all services. No passwords are stored \u2014 access is managed via Cloudflare Access and single-use codes.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Data Retention</h2>\n    <div class=\"card\">\n      <p>Carnival result data is retained for a maximum of 3 years to support historical team selection records. Contact form submissions are retained for 12 months. You may request deletion of any data we hold about your school at any time by emailing <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Sharing of Data</h2>\n    <div class=\"card\">\n      <p>We do not sell, rent, or share personal data with third parties, except:</p>\n      <ul>\n        <li><strong>Stripe</strong> \u2014 payment processing for Carnival Timing subscriptions. Stripe handles card data directly; we never see or store payment card numbers.</li>\n        <li><strong>Resend</strong> \u2014 transactional email delivery for contact form replies and access code emails.</li>\n        <li><strong>Cloudflare</strong> \u2014 infrastructure provider. Cloudflare processes request data per their own Privacy Policy.</li>\n      </ul>\n      <p>All third-party providers are bound by data processing agreements and applicable privacy law.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Australian Privacy Act Compliance</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd is committed to compliance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs). In particular:</p>\n      <ul>\n        <li><strong>APP 1</strong> \u2014 This policy is publicly available and describes our data practices</li>\n        <li><strong>APP 3</strong> \u2014 We collect only information reasonably necessary for our school sport functions</li>\n        <li><strong>APP 6</strong> \u2014 Data is used only for the primary purpose of collection</li>\n        <li><strong>APP 8</strong> \u2014 Cross-border disclosures are limited to service providers with equivalent protections</li>\n        <li><strong>APP 11</strong> \u2014 We take reasonable steps to protect data from misuse, loss, and unauthorised access</li>\n        <li><strong>APP 12/13</strong> \u2014 Individuals and schools may access and correct data held about them on request</li>\n      </ul>\n      <p>As our products are used in Victorian government school settings, we also have regard to the <em>Privacy and Data Protection Act 2014</em> (Vic) and Department of Education guidelines for school data management.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Children's Privacy</h2>\n    <div class=\"card\">\n      <p>Our products are designed for use by school sport coordinators and PE teachers, not directly by children. Students do not create accounts or directly interact with our platforms. Student data is entered by authorised school staff only. Public result views are limited to non-identifying information (first name, last initial, school, time).</p>\n      <p>Schools are responsible for obtaining any required parental consents in accordance with their own privacy policies and department requirements before entering student data.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Your Rights</h2>\n    <div class=\"card\">\n      <p>You (or your school) may at any time:</p>\n      <ul>\n        <li>Request a copy of data we hold about your school</li>\n        <li>Request correction of inaccurate data</li>\n        <li>Request deletion of your school's data</li>\n        <li>Opt out of any communications from us</li>\n      </ul>\n      <p>To exercise any of these rights, email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>. We will respond within 30 days.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Changes to This Policy</h2>\n    <div class=\"card\">\n      <p>We may update this Privacy Policy from time to time. Material changes will be notified to active subscribers by email. The \"Last updated\" date at the top of this page reflects the most recent revision. Continued use of our products after changes constitutes acceptance of the updated policy.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Contact &amp; Complaints</h2>\n    <div class=\"card\">\n      <p>For privacy enquiries or complaints:</p>\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd, ABN 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n      <p>If you are not satisfied with our response to a complaint, you may contact the <a href=\"https://www.oaic.gov.au\" target=\"_blank\" rel=\"noopener\">Office of the Australian Information Commissioner (OAIC)</a>.</p>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>\n</footer>\n</body>\n</html>";
-const TERMS_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Terms of Service \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;font-size:13px;color:#92400e;margin:16px 0}\n.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.price-card{background:#f1f5f9;border-radius:10px;padding:16px;text-align:center}\n.price-card .plan{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:4px}\n.price-card .amount{font-size:24px;font-weight:900;color:#0d1b3e}\n.price-card .period{font-size:11px;color:#94a3b8;margin-top:2px}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Terms of Service</h1>\n  <p>The terms that govern your use of School Sport Portal, Carnival Timing, and SportCarnival.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    By using any Luck Dragon product, you agree to these terms. If you are using our products on behalf of a school, you confirm you have authority to bind the school to these terms.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Our Products</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) provides three school sport software products:</p>\n      <ul>\n        <li><strong>School Sport Portal</strong> (schoolsportportal.com.au) \u2014 school, district, and division sport information portals for Australian primary schools</li>\n        <li><strong>Carnival Timing</strong> (carnivaltiming.com) \u2014 real-time race timing and results management for school athletics, swimming, and cross country carnivals</li>\n        <li><strong>SportCarnival</strong> (sportcarnival.com.au) \u2014 carnival draw and results management tools</li>\n      </ul>\n      <p>These Terms of Service apply to all three products and any associated services.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. Eligibility &amp; Account Access</h2>\n    <div class=\"card\">\n      <p>Our products are intended for use by:</p>\n      <ul>\n        <li>PE teachers, sport coordinators, and school administrators at Australian primary and secondary schools</li>\n        <li>District, division, and regional sport coordinators</li>\n        <li>Parents and community members viewing published results (read-only)</li>\n      </ul>\n      <p>You must be 18 years or older to create an account or purchase a subscription. Students do not create accounts and do not directly use our platforms \u2014 all student data is entered by authorised school staff.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. Carnival Timing \u2014 Pricing &amp; Subscriptions</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a paid product. Current pricing:</p>\n      <div class=\"pricing\">\n        <div class=\"price-card\"><div class=\"plan\">Per Carnival</div><div class=\"amount\">$49</div><div class=\"period\">One-time, per event</div></div>\n        <div class=\"price-card\"><div class=\"plan\">Annual</div><div class=\"amount\">$149</div><div class=\"period\">Per year, unlimited carnivals</div></div>\n      </div>\n      <h3>Payment</h3>\n      <p>Payments are processed securely by Stripe. We do not store card details. All prices are in AUD and include 10% GST. Luck Dragon Pty Ltd is registered for GST (effective 23 April 2026). Stripe issues a tax invoice on payment showing the GST split.</p>\n      <h3>Access Codes</h3>\n      <p>On successful payment, you receive an access code by email. This code is linked to your school and grants access to the Carnival Timing app for the purchased period. Access codes are non-transferable.</p>\n      <h3>Refunds</h3>\n      <p>Per-carnival purchases ($49): if you experience a technical failure that prevents you from running your carnival and we are unable to resolve it, we will issue a full refund. Change-of-mind refunds are not available once an access code has been used to enter athlete data.</p>\n      <p>Annual subscriptions ($149): a full refund is available within 14 days of purchase if no carnival data has been entered. After 14 days or after use, no refund is available.</p>\n      <p>To request a refund, email <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a> with your access code and reason.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. School Sport Portal \u2014 Pricing</h2>\n    <div class=\"card\">\n      <p>School Sport Portal is priced at <strong>$1 per student per year inc GST</strong> ($0.91 ex GST + $0.09 GST) for schools with a managed portal. District and division portals are priced separately \u2014 contact us for a quote. A free demo portal is available at <a href=\"https://schoolsportportal.com.au/demo-school\">schoolsportportal.com.au/demo-school</a>.</p>\n      <p>SportCarnival is currently free to use. Future paid features will be announced with at least 30 days notice to existing users.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Acceptable Use</h2>\n    <div class=\"card\">\n      <p>You agree not to:</p>\n      <ul>\n        <li>Enter false or fabricated student data, results, or times</li>\n        <li>Share access codes with schools or individuals not covered by your subscription</li>\n        <li>Attempt to reverse-engineer, copy, or reproduce our software or designs</li>\n        <li>Use our products for any purpose other than legitimate school sport coordination</li>\n        <li>Scrape, bulk-download, or systematically extract data from our platforms</li>\n        <li>Attempt to access accounts or data belonging to other schools</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Student Data Responsibility</h2>\n    <div class=\"card\">\n      <p>Schools are responsible for:</p>\n      <ul>\n        <li>Ensuring they have appropriate authority to enter student data into our systems</li>\n        <li>Complying with their own school and departmental privacy policies when using our products</li>\n        <li>Notifying us promptly if student data needs to be corrected or removed</li>\n        <li>Keeping their access credentials secure</li>\n      </ul>\n      <p>We act as a data processor on behalf of schools for student performance data. Schools remain the data controller under the <em>Privacy Act 1988</em> (Cth) and relevant state legislation.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Accuracy of Results</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a software tool designed to assist with manual race timing. We make no guarantee that recorded times are officially accurate for purposes beyond school sport carnivals. Results recorded by our system should be verified by a qualified official before being used for any formal selection, record-keeping, or competitive purpose beyond the school carnival level.</p>\n      <p>Luck Dragon Pty Ltd accepts no liability for decisions made by schools, districts, divisions, or regions based on timing data recorded using our products.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Service Availability</h2>\n    <div class=\"card\">\n      <p>We aim for high availability but do not guarantee uninterrupted access. Our products run on Cloudflare's global network, which has strong uptime guarantees, but maintenance, updates, or unexpected outages may occur. We are not liable for losses arising from service unavailability.</p>\n      <p>If a paid service is unavailable on the day of your carnival due to our error, we will provide a refund as described in Section 3.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Intellectual Property</h2>\n    <div class=\"card\">\n      <p>All software, designs, text, and branding on our platforms are owned by Luck Dragon Pty Ltd. You may not copy, reproduce, or create derivative works from any part of our products without prior written consent. Student performance data entered by schools remains the property of the relevant school.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Limitation of Liability</h2>\n    <div class=\"card\">\n      <p>To the maximum extent permitted by Australian law, Luck Dragon Pty Ltd's total liability to you for any claim arising from your use of our products is limited to the amount you paid us in the 12 months preceding the claim (or $100 if you have not paid us anything).</p>\n      <p>We are not liable for indirect, incidental, or consequential losses including lost data, missed carnival events, or decisions made based on our results.</p>\n      <p>Nothing in these terms excludes rights you have under Australian consumer law that cannot be excluded by contract.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Governing Law</h2>\n    <div class=\"card\">\n      <p>These Terms of Service are governed by the laws of Victoria, Australia. Any disputes will be subject to the non-exclusive jurisdiction of the courts of Victoria.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>12. Changes to These Terms</h2>\n    <div class=\"card\">\n      <p>We may update these terms from time to time. Active subscribers will be notified of material changes by email at least 14 days before they take effect. Continued use of our products after that date constitutes acceptance of the updated terms.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>13. Contact</h2>\n    <div class=\"card\">\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd</li>\n        <li><strong>ABN:</strong> 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:hello@schoolsportportal.com.au\">hello@schoolsportportal.com.au</a>\n</footer>\n</body>\n</html>";
-
-
-const CT_HELP_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Getting Started — Carnival Timing</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1b3e;color:#e8eaf0;line-height:1.6}
-.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a2f6e 100%);padding:48px 24px 36px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08)}
-.hero h1{font-size:2rem;font-weight:800;color:#fff;margin-bottom:8px}
-.hero p{color:rgba(255,255,255,0.65);font-size:1.05rem;max-width:500px;margin:0 auto}
-nav{background:rgba(0,0,0,0.3);padding:12px 24px;display:flex;align-items:center;gap:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
-nav a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:.9rem}
-nav a:hover{color:#fff}
-nav .logo{font-weight:700;color:#fff;margin-right:auto}
-.container{max-width:800px;margin:0 auto;padding:40px 24px 80px}
-h2{font-size:1.35rem;font-weight:700;color:#fff;margin:40px 0 16px;display:flex;align-items:center;gap:10px}
-h2 .num{background:#2563eb;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;flex-shrink:0}
-p{color:rgba(255,255,255,0.75);margin-bottom:12px}
-.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px 24px;margin-bottom:12px}
-.card h3{color:#fff;font-size:1rem;margin-bottom:8px}
-.card p{font-size:.9rem;color:rgba(255,255,255,0.65);margin:0}
-.tip{background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.35);border-radius:8px;padding:14px 18px;margin:16px 0;font-size:.9rem;color:rgba(255,255,255,0.8)}
-.tip strong{color:#60a5fa}
-.badge{display:inline-block;background:#10b981;color:#fff;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
-.steps{counter-reset:step}
-.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
-.step-num{background:#2563eb;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;margin-top:2px}
-.step-body h3{color:#fff;font-size:.95rem;margin-bottom:4px}
-.step-body p{font-size:.875rem;color:rgba(255,255,255,0.65);margin:0}
-.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:16px 0}
-.role{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px}
-.role h4{color:#fff;font-size:.95rem;margin-bottom:6px}
-.role p{font-size:.82rem;color:rgba(255,255,255,0.55);margin:0}
-.code{font-family:monospace;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;font-size:.85rem;color:#93c5fd}
-footer{text-align:center;padding:24px;border-top:1px solid rgba(255,255,255,0.08);font-size:.85rem;color:rgba(255,255,255,0.35)}
-footer a{color:rgba(255,255,255,0.4);text-decoration:none}
-.cta{background:linear-gradient(135deg,#1d4ed8,#7c3aed);border-radius:12px;padding:28px;text-align:center;margin-top:40px}
-.cta h3{color:#fff;font-size:1.2rem;margin-bottom:8px}
-.cta p{color:rgba(255,255,255,0.7);margin-bottom:16px}
-.cta a{display:inline-block;background:#fff;color:#1d4ed8;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none}
-</style>
-</head>
-<body>
-<nav>
-  <span class="logo">🏁 Carnival Timing</span>
-  <a href="/">Home</a>
-  <a href="/privacy">Privacy</a>
-  <a href="/terms">Terms</a>
-</nav>
-<div class="hero">
-  <h1>Getting Started</h1>
-  <p>Everything you need to run your first carnival in under 5 minutes.</p>
-</div>
-<div class="container">
-
-  <h2><span class="num">1</span> Purchase &amp; Get Your Code</h2>
-  <p>Carnival Timing uses a simple access code system — no accounts, no logins.</p>
-  <div class="card">
-    <h3>Single Carnival — $49 <span style="font-size:.75rem;font-weight:400;color:#64748b">inc GST</span></h3>
-    <p>One-time use. Perfect for a single school carnival or district event.</p>
-    <a href="https://buy.stripe.com/8x26oGgux9IT3wQckm9IQ05" style="display:inline-block;background:#1a56db;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.9rem;margin-top:6px">Buy Single Carnival →</a>
-  </div>
-  <div class="card">
-    <h3>Annual Pass — $149 <span style="font-size:.75rem;font-weight:400;color:#64748b">inc GST</span> <span class="badge">Best Value</span></h3>
-    <p>Unlimited carnivals for 12 months. Cross country, swimming, athletics — use it all year.</p>
-    <a href="https://buy.stripe.com/7sY3cu3HL8EP4AUesu9IQ06" style="display:inline-block;background:#16a34a;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.9rem;margin-top:6px">Buy Annual Pass →</a>
-  </div>
-  <p>After purchase, your access code is emailed to you instantly from hello@carnivaltiming.com. Check spam if it doesn't arrive within 2 minutes.</p>
-  <div class="tip"><strong>School Sport Portal subscribers</strong> get a free school-specific code — contact us if you haven't received yours.</div>
-
-  <h2><span class="num">2</span> Set Up Your Carnival</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h3>Open carnivaltiming.com on your phone</h3>
-        <p>Works in any modern browser — no app download needed. Charge to 100% before the carnival.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h3>Tap "New Carnival" and enter your code</h3>
-        <p>You'll be prompted for your access code the first time.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h3>Choose event type: Lane Racing or Cross Country (XC)</h3>
-        <p>Lane Racing is for swimming and athletics. XC is for cross country — bib-based finish order.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h3>Set a carnival code <span class="code">e.g. WPS2026</span></h3>
-        <p>This code lets spectators follow results live on sportcarnival.com.au. Share it with parents on the day.</p>
-      </div>
-    </div>
-  </div>
-
-  <h2><span class="num">3</span> Assign Roles on the Day</h2>
-  <p>Each role runs on a separate phone or tablet — open carnivaltiming.com and tap the role.</p>
-  <div class="roles">
-    <div class="role">
-      <h4>🎯 Race Control</h4>
-      <p>The admin. Arms races, fires the gun, reviews results, publishes. One person only.</p>
-    </div>
-    <div class="role">
-      <h4>🔫 Starter</h4>
-      <p>Uses the phone microphone to detect the starting gun. Can also manually fire.</p>
-    </div>
-    <div class="role">
-      <h4>⏱ Lane Timer</h4>
-      <p>One phone per lane. Starts on the gun, tap when your runner finishes. Has 3-second undo.</p>
-    </div>
-    <div class="role">
-      <h4>📹 Video Finish</h4>
-      <p>Camera at the finish line. Records video and detects finishers automatically.</p>
-    </div>
-    <div class="role">
-      <h4>📋 XC Marshal</h4>
-      <p>Cross country only. Enter bib numbers as runners cross the finish line.</p>
-    </div>
-    <div class="role">
-      <h4>📊 Spectator</h4>
-      <p>Read-only live results board. Share this link with parents and other teachers.</p>
-    </div>
-  </div>
-
-  <h2><span class="num">4</span> Run Your Races</h2>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h3>Race Control: ARM the race</h3>
-        <p>Confirms all timers are ready. A confirmation modal prevents accidental fires.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h3>Starter fires — 1-second countdown</h3>
-        <p>All lane timers start simultaneously. The countdown gives a cancel window if something goes wrong.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h3>Lane Timers tap as runners finish</h3>
-        <p>Each tap records a split. 3-second undo bar if you tap too early.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h3>Race Control reviews &amp; publishes</h3>
-        <p>Check the finish order, fix any mistakes, then publish. Results go live on sportcarnival.com.au instantly.</p>
-      </div>
-    </div>
-  </div>
-
-  <h2><span class="num">5</span> After the Carnival</h2>
-  <div class="card">
-    <h3>Export Results</h3>
-    <p>Race Control → tap Export to download a CSV of all results. Can also print a results sheet.</p>
-  </div>
-  <div class="card">
-    <h3>House Points</h3>
-    <p>If you set up house points, the tally updates live as results are published. Shown on the spectator board.</p>
-  </div>
-  <div class="card">
-    <h3>District Qualifiers (XC)</h3>
-    <p>sportcarnival.com.au automatically shows the top 10 qualifiers per age group once all races are published.</p>
-  </div>
-  <div class="tip"><strong>Need help?</strong> Email hello@carnivaltiming.com — we respond same day during the school term.</div>
-
-  <div class="cta">
-    <h3>Ready to run your carnival?</h3>
-    <p>Get your access code and be timing within minutes.</p>
-    <a href="/">Get Access →</a>
-  </div>
-</div>
-<footer>
-  <a href="/">Carnival Timing</a> &nbsp;·&nbsp; <a href="/privacy">Privacy</a> &nbsp;·&nbsp; <a href="/terms">Terms</a><br>
-  <span style="margin-top:6px;display:block">© 2026 Luck Dragon Pty Ltd · ABN 64 697 434 898</span>
-</footer>
-</body>
-</html>`;
-const CT_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://carnivaltiming.com/</loc><priority>1.0</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://carnivaltiming.com/help</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://carnivaltiming.com/privacy</loc><priority>0.3</priority></url>
-  <url><loc>https://carnivaltiming.com/terms</loc><priority>0.3</priority></url>
-</urlset>`;
-const CT_ROBOTS_TXT = `User-agent: *
-Allow: /
-Disallow: /app
-Sitemap: https://carnivaltiming.com/sitemap.xml`;
+const PRIVACY_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Privacy Policy \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.product{background:#f1f5f9;border-radius:10px;padding:14px 16px}\n.product .name{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}\n.product .desc{font-size:12px;color:#64748b}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Privacy Policy</h1>\n  <p>How Luck Dragon collects, uses, and protects your information across all our school sport products.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    <strong>The short version:</strong> We collect only what we need to run school sport. Student data is stored securely in Australia and never sold, shared with advertisers, or used for any purpose outside school sport coordination.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Who We Are</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) operates three school sport products:</p>\n      <div class=\"products\">\n        <div class=\"product\"><div class=\"name\">School Sport Portal</div><div class=\"desc\">schoolsportportal.com.au \u2014 school, district &amp; division portals</div></div>\n        <div class=\"product\"><div class=\"name\">Carnival Timing</div><div class=\"desc\">carnivaltiming.com \u2014 live race timing for carnivals</div></div>\n        <div class=\"product\"><div class=\"name\">SportCarnival</div><div class=\"desc\">sportcarnival.com.au \u2014 carnival results and draw management</div></div>\n      </div>\n      <p>This Privacy Policy applies to all three products. For questions, contact us at <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. What Data We Collect</h2>\n    <div class=\"card\">\n      <h3>Student Performance Data (Carnival Timing &amp; School Sport Portal)</h3>\n      <p>When a school coordinator uses our timing tools, we store:</p>\n      <ul>\n        <li>First name and last initial (never full surnames publicly)</li>\n        <li>Age group and gender category</li>\n        <li>Race/event times and placing</li>\n        <li>School name and district</li>\n        <li>House group (where entered)</li>\n      </ul>\n      <p>Full names are only visible to signed-in coordinators. Public result views show first name + last initial + school only.</p>\n\n      <h3>Coordinator Account Data</h3>\n      <ul>\n        <li>Email address (for account access and notifications)</li>\n        <li>School name and role</li>\n        <li>Access code and subscription status (Carnival Timing)</li>\n      </ul>\n\n      <h3>Contact Form Submissions (School Sport Portal)</h3>\n      <ul>\n        <li>Name, email address, school, and message content</li>\n        <li>Used only to respond to your enquiry</li>\n      </ul>\n\n      <h3>Technical Data</h3>\n      <ul>\n        <li>Browser type and device (Cloudflare analytics only \u2014 no cookies placed)</li>\n        <li>Pages visited and time on site (aggregate, not individual tracking)</li>\n        <li>IP address (retained by Cloudflare per their standard policy, not accessed by us)</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. How We Use Your Data</h2>\n    <div class=\"card\">\n      <p>We use data only for the following purposes:</p>\n      <ul>\n        <li><strong>Displaying carnival results</strong> \u2014 showing times and placings to school staff and parents</li>\n        <li><strong>Selecting representative teams</strong> \u2014 surfacing top performers at district, division and region level</li>\n        <li><strong>Account management</strong> \u2014 validating access codes and processing subscriptions</li>\n        <li><strong>Responding to enquiries</strong> \u2014 replying to contact form submissions</li>\n        <li><strong>Improving our products</strong> \u2014 fixing bugs, improving reliability, adding features</li>\n      </ul>\n      <p>We do <strong>not</strong> use data for advertising, profiling, or any purpose unrelated to school sport.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. Data Storage &amp; Security</h2>\n    <div class=\"card\">\n      <p>All data is stored in Australia using the following services:</p>\n      <ul>\n        <li><strong>Cloudflare Workers &amp; KV</strong> \u2014 edge infrastructure with Australian data residency</li>\n        <li><strong>Cloudflare Workers WebSocket</strong> \u2014 Cloudflare global edge (Australian PoPs)</li>\n      </ul>\n      <p>Access to student data requires coordinator authentication. Public-facing result pages display only anonymised data (first name + last initial). We use HTTPS across all services. No passwords are stored \u2014 access is managed via Cloudflare Access and single-use codes.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Data Retention</h2>\n    <div class=\"card\">\n      <p>Carnival result data is retained for a maximum of 3 years to support historical team selection records. Contact form submissions are retained for 12 months. You may request deletion of any data we hold about your school at any time by emailing <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Sharing of Data</h2>\n    <div class=\"card\">\n      <p>We do not sell, rent, or share personal data with third parties, except:</p>\n      <ul>\n        <li><strong>Stripe</strong> \u2014 payment processing for Carnival Timing subscriptions. Stripe handles card data directly; we never see or store payment card numbers.</li>\n        <li><strong>Resend</strong> \u2014 transactional email delivery for contact form replies and access code emails.</li>\n        <li><strong>Cloudflare</strong> \u2014 infrastructure provider. Cloudflare processes request data per their own Privacy Policy.</li>\n      </ul>\n      <p>All third-party providers are bound by data processing agreements and applicable privacy law.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Australian Privacy Act Compliance</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd is committed to compliance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs). In particular:</p>\n      <ul>\n        <li><strong>APP 1</strong> \u2014 This policy is publicly available and describes our data practices</li>\n        <li><strong>APP 3</strong> \u2014 We collect only information reasonably necessary for our school sport functions</li>\n        <li><strong>APP 6</strong> \u2014 Data is used only for the primary purpose of collection</li>\n        <li><strong>APP 8</strong> \u2014 Cross-border disclosures are limited to service providers with equivalent protections</li>\n        <li><strong>APP 11</strong> \u2014 We take reasonable steps to protect data from misuse, loss, and unauthorised access</li>\n        <li><strong>APP 12/13</strong> \u2014 Individuals and schools may access and correct data held about them on request</li>\n      </ul>\n      <p>As our products are used in Victorian government school settings, we also have regard to the <em>Privacy and Data Protection Act 2014</em> (Vic) and Department of Education guidelines for school data management.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Children's Privacy</h2>\n    <div class=\"card\">\n      <p>Our products are designed for use by school sport coordinators and PE teachers, not directly by children. Students do not create accounts or directly interact with our platforms. Student data is entered by authorised school staff only. Public result views are limited to non-identifying information (first name, last initial, school, time).</p>\n      <p>Schools are responsible for obtaining any required parental consents in accordance with their own privacy policies and department requirements before entering student data.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Your Rights</h2>\n    <div class=\"card\">\n      <p>You (or your school) may at any time:</p>\n      <ul>\n        <li>Request a copy of data we hold about your school</li>\n        <li>Request correction of inaccurate data</li>\n        <li>Request deletion of your school's data</li>\n        <li>Opt out of any communications from us</li>\n      </ul>\n      <p>To exercise any of these rights, email <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>. We will respond within 30 days.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Changes to This Policy</h2>\n    <div class=\"card\">\n      <p>We may update this Privacy Policy from time to time. Material changes will be notified to active subscribers by email. The \"Last updated\" date at the top of this page reflects the most recent revision. Continued use of our products after changes constitutes acceptance of the updated policy.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Contact &amp; Complaints</h2>\n    <div class=\"card\">\n      <p>For privacy enquiries or complaints:</p>\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd, ABN 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n      <p>If you are not satisfied with our response to a complaint, you may contact the <a href=\"https://www.oaic.gov.au\" target=\"_blank\" rel=\"noopener\">Office of the Australian Information Commissioner (OAIC)</a>.</p>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>\n</footer>\n</body>\n</html>";
+const TERMS_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Terms of Service \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;font-size:13px;color:#92400e;margin:16px 0}\n.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.price-card{background:#f1f5f9;border-radius:10px;padding:16px;text-align:center}\n.price-card .plan{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:4px}\n.price-card .amount{font-size:24px;font-weight:900;color:#0d1b3e}\n.price-card .period{font-size:11px;color:#94a3b8;margin-top:2px}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Terms of Service</h1>\n  <p>The terms that govern your use of School Sport Portal, Carnival Timing, and SportCarnival.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    By using any Luck Dragon product, you agree to these terms. If you are using our products on behalf of a school, you confirm you have authority to bind the school to these terms.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Our Products</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) provides three school sport software products:</p>\n      <ul>\n        <li><strong>School Sport Portal</strong> (schoolsportportal.com.au) \u2014 school, district, and division sport information portals for Australian primary schools</li>\n        <li><strong>Carnival Timing</strong> (carnivaltiming.com) \u2014 real-time race timing and results management for school athletics, swimming, and cross country carnivals</li>\n        <li><strong>SportCarnival</strong> (sportcarnival.com.au) \u2014 carnival draw and results management tools</li>\n      </ul>\n      <p>These Terms of Service apply to all three products and any associated services.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. Eligibility &amp; Account Access</h2>\n    <div class=\"card\">\n      <p>Our products are intended for use by:</p>\n      <ul>\n        <li>PE teachers, sport coordinators, and school administrators at Australian primary and secondary schools</li>\n        <li>District, division, and regional sport coordinators</li>\n        <li>Parents and community members viewing published results (read-only)</li>\n      </ul>\n      <p>You must be 18 years or older to create an account or purchase a subscription. Students do not create accounts and do not directly use our platforms \u2014 all student data is entered by authorised school staff.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. Carnival Timing \u2014 Pricing &amp; Subscriptions</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a paid product. Current pricing:</p>\n      <div class=\"pricing\">\n        <div class=\"price-card\"><div class=\"plan\">Per Carnival</div><div class=\"amount\">$49</div><div class=\"period\">One-time, per event</div></div>\n        <div class=\"price-card\"><div class=\"plan\">Annual</div><div class=\"amount\">$149</div><div class=\"period\">Per year, unlimited carnivals</div></div>\n      </div>\n      <h3>Payment</h3>\n      <p>Payments are processed securely by Stripe. We do not store card details. All prices are in AUD and include GST where applicable.</p>\n      <h3>Access Codes</h3>\n      <p>On successful payment, you receive an access code by email. This code is linked to your school and grants access to the Carnival Timing app for the purchased period. Access codes are non-transferable.</p>\n      <h3>Refunds</h3>\n      <p>Per-carnival purchases ($49): if you experience a technical failure that prevents you from running your carnival and we are unable to resolve it, we will issue a full refund. Change-of-mind refunds are not available once an access code has been used to enter athlete data.</p>\n      <p>Annual subscriptions ($149): a full refund is available within 14 days of purchase if no carnival data has been entered. After 14 days or after use, no refund is available.</p>\n      <p>To request a refund, email <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a> with your access code and reason.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. School Sport Portal \u2014 Pricing</h2>\n    <div class=\"card\">\n      <p>School Sport Portal is priced at <strong>$1 per student per year</strong> for schools with a managed portal. District and division portals are priced separately \u2014 contact us for a quote. A free demo portal is available at <a href=\"https://schoolsportportal.com.au/demo-school\">schoolsportportal.com.au/demo-school</a>.</p>\n      <p>SportCarnival is currently free to use. Future paid features will be announced with at least 30 days notice to existing users.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Acceptable Use</h2>\n    <div class=\"card\">\n      <p>You agree not to:</p>\n      <ul>\n        <li>Enter false or fabricated student data, results, or times</li>\n        <li>Share access codes with schools or individuals not covered by your subscription</li>\n        <li>Attempt to reverse-engineer, copy, or reproduce our software or designs</li>\n        <li>Use our products for any purpose other than legitimate school sport coordination</li>\n        <li>Scrape, bulk-download, or systematically extract data from our platforms</li>\n        <li>Attempt to access accounts or data belonging to other schools</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Student Data Responsibility</h2>\n    <div class=\"card\">\n      <p>Schools are responsible for:</p>\n      <ul>\n        <li>Ensuring they have appropriate authority to enter student data into our systems</li>\n        <li>Complying with their own school and departmental privacy policies when using our products</li>\n        <li>Notifying us promptly if student data needs to be corrected or removed</li>\n        <li>Keeping their access credentials secure</li>\n      </ul>\n      <p>We act as a data processor on behalf of schools for student performance data. Schools remain the data controller under the <em>Privacy Act 1988</em> (Cth) and relevant state legislation.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Accuracy of Results</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a software tool designed to assist with manual race timing. We make no guarantee that recorded times are officially accurate for purposes beyond school sport carnivals. Results recorded by our system should be verified by a qualified official before being used for any formal selection, record-keeping, or competitive purpose beyond the school carnival level.</p>\n      <p>Luck Dragon Pty Ltd accepts no liability for decisions made by schools, districts, divisions, or regions based on timing data recorded using our products.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Service Availability</h2>\n    <div class=\"card\">\n      <p>We aim for high availability but do not guarantee uninterrupted access. Our products run on Cloudflare's global network, which has strong uptime guarantees, but maintenance, updates, or unexpected outages may occur. We are not liable for losses arising from service unavailability.</p>\n      <p>If a paid service is unavailable on the day of your carnival due to our error, we will provide a refund as described in Section 3.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Intellectual Property</h2>\n    <div class=\"card\">\n      <p>All software, designs, text, and branding on our platforms are owned by Luck Dragon Pty Ltd. You may not copy, reproduce, or create derivative works from any part of our products without prior written consent. Student performance data entered by schools remains the property of the relevant school.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Limitation of Liability</h2>\n    <div class=\"card\">\n      <p>To the maximum extent permitted by Australian law, Luck Dragon Pty Ltd's total liability to you for any claim arising from your use of our products is limited to the amount you paid us in the 12 months preceding the claim (or $100 if you have not paid us anything).</p>\n      <p>We are not liable for indirect, incidental, or consequential losses including lost data, missed carnival events, or decisions made based on our results.</p>\n      <p>Nothing in these terms excludes rights you have under Australian consumer law that cannot be excluded by contract.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Governing Law</h2>\n    <div class=\"card\">\n      <p>These Terms of Service are governed by the laws of Victoria, Australia. Any disputes will be subject to the non-exclusive jurisdiction of the courts of Victoria.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>12. Changes to These Terms</h2>\n    <div class=\"card\">\n      <p>We may update these terms from time to time. Active subscribers will be notified of material changes by email at least 14 days before they take effect. Continued use of our products after that date constitutes acceptance of the updated terms.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>13. Contact</h2>\n    <div class=\"card\">\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd</li>\n        <li><strong>ABN:</strong> 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>\n</footer>\n</body>\n</html>";
 
 export default {
   async fetch(req, env, ctx) {
     const _path = new URL(req.url).pathname;
-    if (_path === '/help') return new Response(CT_HELP_HTML, {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=3600'}});
-    if (_path === '/.well-known/security.txt' || _path === '/security.txt') {
-      return new Response("Contact: mailto:security@schoolsportportal.com.au\nContact: mailto:hello@schoolsportportal.com.au\nExpires: 2027-05-05T00:00:00.000Z\nEncryption: https://schoolsportportal.com.au/.well-known/pgp-key.txt\nAcknowledgments: https://schoolsportportal.com.au/changelog\nPreferred-Languages: en\nCanonical: https://schoolsportportal.com.au/.well-known/security.txt\nPolicy: https://schoolsportportal.com.au/security\nHiring: https://schoolsportportal.com.au/about\n\n# Vulnerability disclosure for School Sport Portal, Carnival Timing, and SportCarnival.\n# Please email security@schoolsportportal.com.au with details.\n# We respond within 48 hours and aim to fix critical issues within 7 days.\n# Responsible discloseres are credited in the changelog.\n", {status:200,headers:{"Content-Type":"text/plain; charset=utf-8","Cache-Control":"public, max-age=86400"}});
-    }
-    if (_path === '/favicon.svg') { return new Response(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#0d1b3e"/><path d="M28 14 c2-1 5-1 7 0 1 1 1 3 0 4 -2 1 -5 1 -7 0 -1-1-1-3 0-4z" fill="#f59e0b"/><path d="M22 24 l8-2 6 4 4 8 -3 6 -8-3 -2-6 -5-3 z" fill="#f59e0b"/><path d="M28 36 l-3 10 5 0 2-7" fill="#f59e0b"/><path d="M36 36 l5 8 4-3 -3-8" fill="#f59e0b"/></svg>`, {status:200,headers:{"Content-Type":"image/svg+xml","Cache-Control":"public, max-age=86400"}}); }
-    if (_path === '/sitemap.xml') return new Response(CT_SITEMAP_XML, {status:200,headers:{'Content-Type':'application/xml','Cache-Control':'public, max-age=86400'}});
-    if (_path === '/robots.txt') return new Response(CT_ROBOTS_TXT, {status:200,headers:{'Content-Type':'text/plain','Cache-Control':'public, max-age=86400'}});
-    if (["/cookies","/subprocessors","/security","/sla","/accessibility","/child-safety","/about","/changelog","/modern-slavery"].includes(_path)) {
-      const slug = _path.slice(1);
-      const html = LEGAL_PAGES[slug];
-      if (html) return new Response(html, {status:200,headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"public, max-age=3600"}});
-    }
     if (_path === '/privacy') return new Response(PRIVACY_HTML, {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=3600'}});
     if (_path === '/terms')   return new Response(TERMS_HTML,   {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=3600'}});
-    if (_path !== "/" && _path !== "/app" && !_path.startsWith("/?")) {
-      return new Response(LEGAL_PAGES["404"], {status:404, headers:{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"}});
-    }
     return new Response(HTML, { headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-      'X-CT-Version': 'v8.7.0',
+      'X-CT-Version': 'v8.8.0',
       'X-Frame-Options': 'SAMEORIGIN',
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -5066,3 +4655,4 @@ export default {
     }});
   }
 };
+
