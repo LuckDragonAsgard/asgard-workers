@@ -59,6 +59,48 @@ Opened each tool at kbt.luckdragon.io in browser and visually verified:
 
 ---
 
+## KBT Trivia Tools — Build Briefs (2026-05-06)
+
+Each KBT tool has a full Opus build brief in `LuckDragonAsgard/kbt-trivia-tools/briefs/`.
+To start a KBT tool build chat, fetch the relevant brief:
+
+| Tool | Brief URL | Status |
+|------|-----------|--------|
+| 🧠 Brain Tool | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/brain-tool.md | Ready to build |
+| 🔑 Crack the Code | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/crack-the-code-tool.md | Ready to build |
+| 🗺️ Carmen Sandiego | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/carmen-sandiego-tool.md | Ready to build |
+| 🎬 Linked Pics | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/linked-pics-tool.md | Full redesign |
+| 🎤 Host Brief | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/host-brief-tool.md | Ready to build |
+| 🎵 SoundMash | https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/soundmash-tool.md | Big rebuild (needs kbt-api changes) |
+
+### KBT Tool Chat Startup
+When starting a KBT tool Opus chat, paste:
+```
+Fetch this brief and execute it exactly. Don't ask questions — read it, understand it, then build.
+[paste the raw brief URL above]
+Also fetch https://falkor.luckdragon.io/profile.md for who Paddy is and how he works.
+```
+
+### KBT Tools Suite — What Was Fixed This Session (2026-05-06)
+All tools at `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io`
+
+| Tool | Fix |
+|------|-----|
+| Brand Tool | CSS `.header h1/p` → `header h1/p` |
+| Crack the Code | `alt<"Rebus">` → `alt="Rebus"` malformed HTML |
+| Ghost Actors | Removed `disabled` from slideLabel input |
+| Carmen Sandiego | Added KBT pill+grid chrome (NOTE: brief says to REMOVE this — brief takes priority) |
+| Host Brief | Full dark→light theme rewrite |
+| Linked Pics | Added Inter font + `document.fonts.ready` before html2canvas |
+
+### kbt-api endpoints (production)
+- `POST https://kbt-api.luckdragon.io/api/matting-hq` — birefnet HQ matting, body: `{image: dataUrl}`
+- `POST https://kbt-api.luckdragon.io/api/ai-text` — AI text gen, body: `{tool: '...', ...fields}`
+- `POST https://kbt-api.luckdragon.io/api/save-morph` — save face morph to Supabase + Drive
+
+
+---
+
 # Falkor — Session Handover (2026-05-04, evening)
 
 ## Who you are talking to
