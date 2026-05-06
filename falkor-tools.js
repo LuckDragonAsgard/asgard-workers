@@ -886,7 +886,7 @@ async function execAgentTool(name, input, env, project, owner, repo, ghHeaders) 
               });
               const d = await r.json();
               const rows = (d.result?.[0]?.results || []).reverse();
-              return { ok:true, turns: rows.map(r=>({role:r.role, content:String(r.content||'').substring(0,400), project: r.project_name, at: r.created_at})) };
+              return { ok:true, turns: rows.map(r=>({role:r.role, content:String(r.content||''), project: r.project_name, at: r.created_at})) };
             } catch(e) { return { error: 'read_chat_history: '+String(e).substring(0,200) }; }
           }
           if (name === 'cf_secret_set') {
