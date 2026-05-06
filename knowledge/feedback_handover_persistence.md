@@ -14,6 +14,6 @@ When working in Luck Dragon 2.0 project, persist progress as you go (don't wait 
 
 **How to apply:** Update these continuously during a session, not just at wrap-up. A full session-wrap doc (`docs/handovers/YYYY-MM-DD-session-wrap.md`) is only needed for major architecture pivots, account migrations, or when many breaking changes happened in one session.
 
-**Vault PIN for asgard-vault:** 535554 (X-Pin header). Vault is at `https://asgard-vault.pgallivan.workers.dev/`, list keys at `/secrets`, get one at `/secret/KEY_NAME`.
+**Vault PIN for asgard-vault:** <VAULT_PIN> (X-Pin header). Vault is at `https://asgard-vault.pgallivan.workers.dev/`, list keys at `/secrets`, get one at `/secret/KEY_NAME`.
 
 **Common gotcha when handing over:** if the doc you're trying to push to GitHub contains live secrets/tokens, GitHub's secret scanning will reject the push. Reference vault keys instead of pasting the values.
