@@ -70,9 +70,9 @@ https://falkor.luckdragon.io
 | **Falkor handover** (current portfolio state) | https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md |
 | **Falkor brain — remember** (POST durable facts) | https://falkor-brain.luckdragon.io/remember (header `X-Pin: <PADDY_PIN>`) |
 | **Falkor dashboard** | https://falkor.luckdragon.io |
-| **Vault — read any secret** | `curl -s -H "X-Pin: 535554" https://asgard-vault.luckdragon.io/secret/<NAME>` |
+| **Vault — read any secret** | `curl -s -H "X-Pin: <VAULT_PIN>" https://asgard-vault.luckdragon.io/secret/<NAME>` |
 | **CF API token (live)** | vault key `CF_API_TOKEN` (fetch via vault — not embedded in this doc for security) |
-| **PADDY_PIN** | `535554` |
+| **PADDY_PIN** | `<VAULT_PIN>` |
 | **CF Account ID** (Luck Dragon Main) | `a6f47c17811ee2f8b6caeb8f38768c20` |
 | **GitHub orgs** | `LuckDragonAsgard` (primary), `PaddyGallivan` (legacy) |
 
@@ -268,13 +268,13 @@ type: reference
 
 **Working token:** Fetch from vault (canonical store):
 ```
-curl -s -H "X-Pin: 535554" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN
+curl -s -H "X-Pin: <VAULT_PIN>" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN
 ```
 Token confirmed working 2026-05-02. Vault is the source of truth — never paste the value into git or chats.
 
 **asgard-tools has CF_API_TOKEN in env** — use `asgard-tools /admin/deploy`, `/admin/patch`, `/admin/add-d1-binding`, `/admin/kv-write` for CF operations without needing the raw token.
 
-**PADDY_PIN:** `535554` — restored to `asgard-vault` env binding 2026-05-02 (was missing after Falkor migration). Both `asgard-vault.luckdragon.io` and `asgard-vault.pgallivan.workers.dev` work.
+**PADDY_PIN:** `<VAULT_PIN>` — restored to `asgard-vault` env binding 2026-05-02 (was missing after Falkor migration). Both `asgard-vault.luckdragon.io` and `asgard-vault.pgallivan.workers.dev` work.
 
 **Account:** `Luck Dragon (Main)` — `a6f47c17811ee2f8b6caeb8f38768c20`
 ```
@@ -453,7 +453,7 @@ SG=10G+B, G1/G2=6G+B, R=½H+½D+M, M=4M, T=4T, D1/D2=D
 - API: https://sly-api.luckdragon.io
 - KV namespace: 4f427724561e48f682d4a7c6153d7124
 - D1: sly D1 id 8d0b8373-40ea-4174-bfd9-628b790abf92
-- PIN: 535554
+- PIN: <VAULT_PIN>
 ```
 
 ---
@@ -494,7 +494,7 @@ These are account-independent and continue working unchanged:
 |---|---|
 | All GitHub repos (LuckDragonAsgard/*, PaddyGallivan/*) | GitHub login is separate from Claude |
 | Cloudflare Workers, D1, KV, R2 | CF login is separate; PADDY_PIN unchanged |
-| asgard-vault | Independent worker; PIN 535554 still works |
+| asgard-vault | Independent worker; PIN <VAULT_PIN> still works |
 | Falkor brain + dashboard | Independent worker; profile.md still served |
 | Google Drive (pgallivan@outlook.com) | Already on the right account |
 | Domain ownership (luckdragon.io, sportcarnival.com.au, lessonlab.com.au, etc.) | Registrar accounts are separate |
@@ -529,7 +529,7 @@ In the new Claude on pgallivan@outlook.com, ask Claude to do this once:
 ```
 1. Fetch https://falkor.luckdragon.io/profile.md and confirm I am Paddy Gallivan.
 2. Fetch https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md and brief me on the last hour of activity.
-3. Run `curl -s -H "X-Pin: 535554" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN` and confirm it returns a token starting with `cfut_`.
+3. Run `curl -s -H "X-Pin: <VAULT_PIN>" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN` and confirm it returns a token starting with `cfut_`.
 4. Fetch https://sportcarnival.com.au/wd26 and confirm it returns 200.
 5. Confirm you've saved all 14 memory files from the migration pack.
 ```
@@ -543,7 +543,7 @@ If all 5 come back green, the migration is done.
 - Paddy phone (CT timing app runs here) — already saved
 - Falkor dashboard: https://falkor.luckdragon.io
 - Status page: https://asgard-status.luckdragon.io
-- Vault PIN: **535554**
+- Vault PIN: **<VAULT_PIN>**
 - WPS access code: **WPS-2026**
 
 ---
