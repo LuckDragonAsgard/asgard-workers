@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-05-06 — Host Brief Tool — Output Quality Rebuild
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → live at `kbt.luckdragon.io/host-brief-tool`
+**Brief:** `https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/host-brief-tool.md`
+
+### Problem
+The "Generate Host Brief" button worked, but output was a generic flowing paragraph — no per-round intros, no section headers, no Aussie pub energy. Brief explicitly demanded: 🎤 WELCOME / 📋 RULES / 🎯 ROUND N (one per round) / 🏆 FINALE with stage directions and varied per-round energy.
+
+### Fix — three commits + CF API deploy
+1. **Prompt rewrite** (`workers/kbt-api.js`): explicit emoji section headers, per-round intros for ALL N rounds, transitions in `[brackets]`, ROUND TYPE energy guide (SoundMash → ears, Face Morph → eyes, etc.), few-shot example, hard "DO NOT" list. Now also receives `prizes` (was destructured-out before).
+2. **Per-tool model override** (new pattern): `TOOL_MODEL_OVERRIDES` map in kbt-api.js. host-brief now uses `anthropic/claude-haiku-4.5` (instruction-following), other tools stay on `google/gemini-flash-1.5` (cost). Other tools that need format fidelity should use this same override.
+3. **HTML polish** (`host-brief-tool.html`): Inter font for the script (was Georgia), 1.15em / line-height 1.7, Print button alongside Copy, `@media print` hides chrome and renders 13pt for paper.
+
+### Verified live
+3.1KB script generated for "Kow Brainer Tuesday Night Trivia, 6 rounds, Face Morph R3 + SoundMash R5, $100/$50 bar tab + wooden-spoon free schooner". All sections present, all 6 rounds have unique intros, R3 hits "FACE MORPH ... eyes up", R5 hits "SOUNDMASH ... ears open, drinks down", finale calls out the actual prize amounts. Reads cleanly aloud.
+
+### ⚠️ Deploy gotcha (already documented but bears repeating)
+**Pushing to `workers/kbt-api.js` does NOT auto-deploy.** `kbt-trivia-tools` is a CF Pages project (`pages_build_output_dir: ./`). The live `kbt-api` Worker (id `685b262cc21649ac9866407748d94710` in account `a6f47c17... Luck Dragon Main`) needs a direct CF API multipart PUT or `wrangler deploy`. Use `keep_bindings: ["secret_text", "kv_namespace", "d1", "r2_bucket", "service", "queue", "ai", "analytics_engine"]` in metadata to preserve existing secrets.
+
+### Commits
+- `eb90af5` workers/kbt-api.js — prompt rewrite + model override = claude-haiku-4.5
+- `5f2146f` host-brief-tool.html — Inter, print CSS, Print btn
+- CF Worker upload etag `6bed8e09…` (then re-deployed with model fix)
+
+---
+
+
 ## 2026-05-06 — Linked Pics Tool — Full Redesign (concept change)
 
 **Old concept (broken):** generic "what's the connection between these 4 images?" — too vague, hard to score.
