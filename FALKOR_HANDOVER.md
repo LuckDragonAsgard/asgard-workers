@@ -1,40 +1,69 @@
-# FALKOR HANDOVER
-
+---
 ---
 
-## 2026-05-06 — SoundMash Tool v2 — AI suggest + Deezer auto-fetch
+## 2026-05-06 — KBT New Question Types — 21 Opus Build Briefs Pushed
 
-**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io/soundmash-tool`
-**Worker:** `kbt-api` (kbt-api.luckdragon.io) — 3 new endpoints
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools/briefs/`
+**Total briefs now in repo:** 27 (6 existing + 21 new)
 
-### Shipped
-- `kbt-api` (commit `dc3198bb`) — added:
-  - `GET /api/deezer/search?q=` — Deezer search proxy, returns up to 8 tracks with 30s preview URLs.
-  - `GET /api/deezer/preview?url=` — MP3 byte-proxy (allow-list: `*.dzcdn.net | *.deezer.com | *.deezer.net`). Bypasses browser CORS for Deezer's signed preview URLs.
-  - `POST /api/ai-text` with `{tool:"soundmash-suggest"}` — song-pair generator returning JSON with `songA`, `songB`, `connection`, `clipAdvice` per song, `difficulty`. Prompt avoids chorus (where titles are sung).
-- `soundmash-tool.html` (commit `44e823e0`) — full rebuild:
-  - "AI Suggest Song Pair" button → renders connection + per-song clip advice → "Load Both Clips" auto-searches Deezer + auto-loads previews.
-  - Manual per-slot search also available.
-  - Waveform with draggable trim handles (start/end), numeric inputs, in-browser per-clip preview.
-  - Sequential or Overlap mash mode (overlap = crossfade with configurable overlap seconds).
-  - Q slide (decorative bars + KBT pill) + A slide (album covers + titles + artist + connection caption).
-  - WAV + Q/A PNG downloads.
+### New briefs pushed today (all ready for individual Opus chats)
 
-### Verified live
-- `/api/deezer/search?q=walking on sunshine` returns 8 results (top = Katrina & The Waves).
-- `/api/deezer/preview?url=...` returns 200 `audio/mpeg`, ~480 KB MP3.
-- `/api/ai-text` `{tool:soundmash-suggest}` returns valid JSON song pair.
-- `kbt.luckdragon.io/soundmash-tool` loads with the new UI.
+| Brief | URL | Category |
+|-------|-----|----------|
+| `pixel-reveal-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/pixel-reveal-tool.md) | Visual |
+| `silhouette-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/silhouette-tool.md) | Visual |
+| `baby-photo-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/baby-photo-tool.md) | Visual |
+| `close-up-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/close-up-tool.md) | Visual |
+| `movie-frame-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/movie-frame-tool.md) | Visual |
+| `intro-only-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/intro-only-tool.md) | Audio |
+| `wrong-speed-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/wrong-speed-tool.md) | Audio |
+| `backwards-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/backwards-tool.md) | Audio |
+| `voice-id-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/voice-id-tool.md) | Audio |
+| `instrument-solo-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/instrument-solo-tool.md) | Audio |
+| `emoji-song-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/emoji-song-tool.md) | Word/Text |
+| `translator-fail-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/translator-fail-tool.md) | Word/Text |
+| `text-message-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/text-message-tool.md) | Word/Text |
+| `first-letters-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/first-letters-tool.md) | Word/Text |
+| `country-outline-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/country-outline-tool.md) | Geography |
+| `city-skyline-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/city-skyline-tool.md) | Geography |
+| `flag-mashup-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/flag-mashup-tool.md) | Geography |
+| `sound-and-pic-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/sound-and-pic-tool.md) | Combo |
+| `title-sequence-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/title-sequence-tool.md) | Combo |
+| `stats-puzzle-tool.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/stats-puzzle-tool.md) | Combo |
+| `song-bank-infra.md` | [link](https://raw.githubusercontent.com/LuckDragonAsgard/kbt-trivia-tools/main/briefs/song-bank-infra.md) | Infra |
 
-### Deploy gotcha — kbt-api transient auto-revert
-Between v43–v48 some external process overwrote my deploys (different etag each time, paddy@luckdragon.io, source: api). Pattern stopped after v49 (deploy at 12:07:16 UTC, stable 5+ min later). Sources checked and ruled out: `asgard-watchdog` (only auto-fixes `asgard`), `worker-watchdog` and `sentinel` (health-check only), `asgard-snapshot` (read-only, kbt-api not in target list). If revert recurs, fallback plan is to move Deezer + soundmash-suggest to a dedicated `kbt-soundmash` worker.
+### Key design decisions across all briefs
+- **All audio tools** use Deezer free preview (no API key) via kbt-api proxy (`/api/deezer/search`, `/api/deezer/preview`)
+- **Shared Web Audio API** pattern: `loadPreview → trimBuffer → reverseBuffer` — identical across Intro Only, Wrong Speed, Backwards. Audio tools should extract `kbt-audio-utils.js` as shared inline util
+- **Emoji rendering** in html2canvas is tricky — Emoji Song and Movie Frame both use DOM div approach (not canvas `fillText`) to capture emoji correctly
+- **Song Bank** (Supabase `song_bank` table in `huvfgenbcaiicatvtxak`) is prerequisite for all audio tools — build first
+- **birefnet matting** (`/api/matting-hq`) used by Silhouette tool — same endpoint as Brain Tool and Face Morph
+- **GeoJSON shapes** from `datasets/geo-countries` — Country Outline uses this, no backend needed
+- **flagcdn.com** — free flag images by ISO2 code, supports CORS (useCORS: true in html2canvas)
+- All tools: black background except Baby Photo (white) and Emoji/Translator/Text Message (white)
 
-### Worker module-name gotcha
-`kbt-api` deploys with `main_module: "kbt-api.js"` (NOT `worker.js`). Multipart field name must match: `-F "kbt-api.js=@..."`.
+### Build priority order (suggested)
+1. **Song Bank infra** — all audio tools depend on it
+2. **Pixel Reveal** — simplest visual tool, quick win
+3. **Country Outline** — self-contained, no AI, no audio
+4. **Flag Mashup** — self-contained, flagcdn.com only
+5. **Emoji Song** — popular format, good party energy
+6. **First Letters** — no external deps, pure text
+7. **Intro Only** — first audio tool (establishes Deezer pipeline)
+8. **Wrong Speed** — trivial delta on Intro Only
+9. **Backwards** — trivial delta on Intro Only (adds reverseBuffer)
+10. Rest in any order
 
----
+### Existing 6 briefs (execution pending Opus chats)
+| Brief | Status |
+|-------|--------|
+| `brain-tool.md` | Brief written, needs Opus execution |
+| `crack-the-code-tool.md` | Brief written, needs Opus execution |
+| `carmen-sandiego-tool.md` | Brief written, needs Opus execution |
+| `linked-pics-tool.md` | Brief written, needs Opus execution |
+| `host-brief-tool.md` | Brief written, needs Opus execution |
+| `soundmash-tool.md` | Brief written, needs Opus execution |
 
----
 
 ## 2026-05-06 — Brain Tool — Matting + Shadow Quality Pass
 
