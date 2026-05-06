@@ -1,6 +1,7 @@
-// compliance-watchdog v0.1.0
+// compliance-watchdog v0.2.0
 // Continuous legal/compliance monitor across all LuckDragon domains.
 // Cron-driven probes write to D1 compliance-db, dashboard at legal.luckdragon.io.
+// v0.2.0: adds /api/brief endpoint returning live legal brief for Nick Zavatierri.
 
 const PIN_HEADER = "X-Pin";
 
@@ -134,6 +135,240 @@ function score(probes) {
   return "green";
 }
 
+// ─── NEW v0.2.0: Generate live legal brief from D1 ───────────────────────────
+
+async function generateBriefContent(env) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-AU", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Melbourne"
+  });
+
+  // Fetch all data
+  const { results: projects } = await env.DB.prepare(
+    "SELECT * FROM projects ORDER BY sector, name"
+  ).all();
+
+  const { results: allDomains } = await env.DB.prepare("SELECT * FROM domains").all();
+  const domainsByProject = {};
+  for (const d of allDomains) {
+    domainsByProject[d.project_id] = domainsByProject[d.project_id] || [];
+    domainsByProject[d.project_id].push(d);
+  }
+
+  const { results: allProbes } = await env.DB.prepare("SELECT * FROM domain_probes").all();
+  const probesByDomain = {};
+  for (const p of allProbes) {
+    probesByDomain[p.domain] = probesByDomain[p.domain] || [];
+    probesByDomain[p.domain].push(p);
+  }
+
+  const { results: allZones } = await env.DB.prepare("SELECT * FROM regulatory_zones").all();
+  const zonesByProject = {};
+  for (const z of allZones) {
+    zonesByProject[z.project_id] = zonesByProject[z.project_id] || [];
+    zonesByProject[z.project_id].push(z);
+  }
+
+  const lastScan = await env.DB.prepare("SELECT * FROM scan_runs ORDER BY id DESC LIMIT 1").first();
+  const lastScanStr = lastScan
+    ? `${lastScan.started_at} (${lastScan.domains_scanned} domains, ${lastScan.checks_run} probes)`
+    : "No scans run yet";
+
+  // Compute scores and group by sector
+  const bySector = {};
+  let totalRed = 0, totalAmber = 0, totalGreen = 0, totalGray = 0;
+
+  for (const p of projects) {
+    const pds = domainsByProject[p.id] || [];
+    const probesForProject = pds.flatMap((d) => probesByDomain[d.name] || []);
+    const stat = probesForProject.length ? score(probesForProject) : "gray";
+    if (stat === "red") totalRed++;
+    else if (stat === "amber") totalAmber++;
+    else if (stat === "green") totalGreen++;
+    else totalGray++;
+
+    const hasPrivacy = probesForProject.some((x) =>
+      (x.probe_type === "privacy_policy" || x.probe_type === "privacy_policy_html") && x.status === "ok"
+    );
+    const hasTerms = probesForProject.some((x) =>
+      (x.probe_type === "terms_of_service" || x.probe_type === "terms_of_service_html") && x.status === "ok"
+    );
+    const secProbe = probesForProject.find((x) => x.probe_type === "security_headers");
+    const secStatus = secProbe ? secProbe.status : "unscanned";
+    const zones = (zonesByProject[p.id] || []).map((z) => z.zone_code).join(", ") || "none flagged";
+
+    const sector = p.sector || "other";
+    bySector[sector] = bySector[sector] || [];
+    bySector[sector].push({ p, stat, hasPrivacy, hasTerms, secStatus, zones, pds });
+  }
+
+  // Build the brief
+  const lines = [];
+
+  lines.push("LUCK DRAGON PTY LTD");
+  lines.push("LEGAL & COMPLIANCE BRIEF");
+  lines.push(`Generated: ${dateStr}`);
+  lines.push(`Data source: legal.luckdragon.io (live from compliance-watchdog v0.2.0)`);
+  lines.push(`Last scan: ${lastScanStr}`);
+  lines.push("");
+  lines.push("═".repeat(72));
+  lines.push("");
+
+  lines.push("OVERVIEW");
+  lines.push("─".repeat(40));
+  lines.push("");
+  lines.push("Prepared for: Nicholas Zavatierri (Legal Counsel)");
+  lines.push("Prepared by: Patrick Gallivan, Founder & Director");
+  lines.push("Entity: Luck Dragon Pty Ltd (ACN pending)");
+  lines.push("Trading domain: luckdragon.io");
+  lines.push("Registered office: Victoria, Australia");
+  lines.push("");
+  lines.push(
+    "Luck Dragon Pty Ltd is the holding entity for a portfolio of web-based software " +
+    "products built on Cloudflare Workers infrastructure. Products span education technology, " +
+    "event management, sport administration, and consumer tools. All products are " +
+    "operated by Patrick Gallivan as sole director. The trivia events business (10 16 Pty Ltd, " +
+    "co-owned with George Pappas) is a completely separate entity with no shared IP or liability."
+  );
+  lines.push("");
+
+  lines.push("COMPLIANCE SNAPSHOT");
+  lines.push("─".repeat(40));
+  lines.push(`  RED (critical gaps):    ${totalRed} products`);
+  lines.push(`  AMBER (minor gaps):     ${totalAmber} products`);
+  lines.push(`  GREEN (compliant):      ${totalGreen} products`);
+  lines.push(`  UNSCANNED:              ${totalGray} products`);
+  lines.push(`  TOTAL PRODUCTS:         ${projects.length}`);
+  lines.push("");
+
+  lines.push("═".repeat(72));
+  lines.push("");
+
+  // Sector-by-sector breakdown
+  const sectorOrder = ["education", "sport", "events", "consumer", "infrastructure", "other"];
+  const sortedSectors = Object.keys(bySector).sort((a, b) => {
+    const ia = sectorOrder.indexOf(a);
+    const ib = sectorOrder.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+
+  for (const sector of sortedSectors) {
+    const items = bySector[sector];
+    lines.push(`SECTOR: ${sector.toUpperCase()}`);
+    lines.push("─".repeat(40));
+    lines.push("");
+
+    // Sector-level notes
+    if (sector === "education") {
+      lines.push(
+        "Regulatory context: Products in this sector serve schools, teachers, and students " +
+        "in Victoria. Applicable frameworks include the Education and Training Reform Act 2006 " +
+        "(Vic), Victorian Student Privacy Principles, and Department of Education ICT Acceptable " +
+        "Use policies. Student personal data must not be collected, stored, or published without " +
+        "explicit DE/SSV guidelines compliance. Any product that exposes student names or results " +
+        "publicly requires a formal privacy impact assessment."
+      );
+      lines.push("");
+    } else if (sector === "sport") {
+      lines.push(
+        "Regulatory context: Sport administration tools intersect with student privacy (where " +
+        "participants are minors), Working With Children obligations (where staff access student " +
+        "data), and potentially the Consumer Data Right if financial transactions are involved. " +
+        "Results publication must comply with school-level consent frameworks."
+      );
+      lines.push("");
+    } else if (sector === "events") {
+      lines.push(
+        "Regulatory context: Event management and ticketing products are subject to Australian " +
+        "Consumer Law (ACL) — refund obligations, pricing transparency, and unfair contract terms. " +
+        "Where prize money or tipping competitions involve a fee to enter, the Gambling Regulation " +
+        "Act 2003 (Vic) exemptions for \"eligible\" games of skill must be reviewed. The Australian " +
+        "Privacy Act 1988 (and any state health records acts) applies to any personal information collected."
+      );
+      lines.push("");
+    } else if (sector === "consumer") {
+      lines.push(
+        "Regulatory context: Consumer-facing tools must comply with the Australian Privacy Act " +
+        "1988 (notifiable data breaches, APP compliance), Australian Consumer Law, and any " +
+        "sector-specific obligations (e.g. health information under Health Records Act 2001 Vic " +
+        "if health data is touched). GDPR may apply if users are EU residents."
+      );
+      lines.push("");
+    }
+
+    for (const { p, stat, hasPrivacy, hasTerms, secStatus, zones, pds } of items) {
+      const statusIcon = stat === "red" ? "🔴" : stat === "amber" ? "🟡" : stat === "green" ? "🟢" : "⚪";
+      lines.push(`  ${statusIcon} ${p.name} [${stat.toUpperCase()}]`);
+      if (p.primary_domain) lines.push(`     Domain:   ${p.primary_domain}`);
+      if (pds.length > 1) lines.push(`     Also:     ${pds.filter(d => d.name !== p.primary_domain).map(d => d.name).join(", ")}`);
+      if (p.description) lines.push(`     About:    ${p.description}`);
+      lines.push(`     Privacy:  ${hasPrivacy ? "✓ Present" : "✗ MISSING"}`);
+      lines.push(`     T&C:      ${hasTerms ? "✓ Present" : "✗ MISSING"}`);
+      lines.push(`     Security: ${secStatus}`);
+      lines.push(`     Zones:    ${zones}`);
+      if (p.repo) lines.push(`     Repo:     github.com/${p.repo}`);
+      lines.push("");
+    }
+  }
+
+  lines.push("═".repeat(72));
+  lines.push("");
+
+  lines.push("PRIORITY ACTIONS FOR LEGAL REVIEW");
+  lines.push("─".repeat(40));
+  lines.push("");
+
+  const redItems = [];
+  for (const sector of sortedSectors) {
+    for (const { p, stat, hasPrivacy, hasTerms } of bySector[sector]) {
+      if (stat === "red") {
+        const issues = [];
+        if (!hasPrivacy) issues.push("no Privacy Policy");
+        if (!hasTerms) issues.push("no Terms of Service");
+        redItems.push(`  • ${p.name} (${sector}): ${issues.join(", ")}`);
+      }
+    }
+  }
+
+  if (redItems.length) {
+    lines.push("CRITICAL — Requires immediate attention:");
+    lines.push(...redItems);
+    lines.push("");
+  }
+
+  lines.push("STANDING ITEMS for counsel:");
+  lines.push("  1. Privacy Policy template review & approval (education products with student data)");
+  lines.push("  2. Terms of Service template review — subscription products (LessonLab, SSP, Carnival Timing)");
+  lines.push("  3. Tipping competition exemption — confirm 'game of skill' classification under Vic gambling law");
+  lines.push("  4. Trademark search — 'Luck Dragon', 'LessonLab', 'SportCarnival', 'Carnival Timing'");
+  lines.push("  5. ABN/ACN registration confirmation for Luck Dragon Pty Ltd");
+  lines.push("  6. Working With Children obligations review — any product with teacher/student interaction");
+  lines.push("  7. Australian Privacy Act APP compliance review across all products collecting personal data");
+  lines.push("  8. ACL unfair contract terms review — subscription cancellation and refund policies");
+  lines.push("");
+
+  lines.push("═".repeat(72));
+  lines.push("");
+  lines.push("LIVE DASHBOARD");
+  lines.push("─".repeat(40));
+  lines.push("Full compliance dashboard with per-domain probe details:");
+  lines.push("  https://legal.luckdragon.io");
+  lines.push("");
+  lines.push("AI-assisted legal manager (Falkor/Asgard):");
+  lines.push("  https://falkor.luckdragon.io");
+  lines.push("");
+  lines.push("This brief is auto-generated from live scan data and refreshes every 6 hours.");
+  lines.push("For the most current version, visit the dashboard or request a fresh brief via API.");
+  lines.push("");
+  lines.push("─".repeat(72));
+  lines.push("Luck Dragon Pty Ltd · luckdragon.io · Patrick Gallivan, Director");
+  lines.push(`Auto-generated ${now.toISOString()} by compliance-watchdog v0.2.0`);
+
+  return lines.join("\n");
+}
+
+// ─── END v0.2.0 additions ─────────────────────────────────────────────────────
+
 const css = `
   :root { --bg:#0b0d11; --fg:#e8eaed; --muted:#9aa0a6; --green:#34a853; --amber:#fbbc04; --red:#ea4335; --card:#161a21; --border:#1f242c; }
   * { box-sizing: border-box; }
@@ -151,7 +386,7 @@ const css = `
   .pill.green { background:rgba(52,168,83,0.18); color:#7ee696; }
   .pill.amber { background:rgba(251,188,4,0.18); color:#ffd966; }
   .pill.red { background:rgba(234,67,53,0.18); color:#ff8a80; }
-  .pill.gray { background:#1f242c; color:var(--muted); }
+  .pill.gray { background:#1f2937; color:var(--muted); }
   .checks { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
   .check { font-size:11px; padding:2px 6px; border-radius:4px; background:#0f1318; }
   .check.ok { color:#7ee696; }
@@ -270,6 +505,17 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/brief") {
+      if (req.headers.get(PIN_HEADER) !== env.WATCHDOG_PIN) return new Response("forbidden", { status: 403 });
+      const brief = await generateBriefContent(env);
+      return new Response(brief, {
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "cache-control": "no-cache, no-store, must-revalidate",
+        },
+      });
+    }
+
     if (url.pathname === "/api/projects") {
       const r = await env.DB.prepare("SELECT * FROM projects ORDER BY sector, name").all();
       return Response.json(r.results);
@@ -296,7 +542,7 @@ export default {
       return Response.json(r.results);
     }
     if (url.pathname === "/health") {
-      return Response.json({ ok: true, version: "0.1.0", service: "compliance-watchdog" });
+      return Response.json({ ok: true, version: "0.2.0", service: "compliance-watchdog" });
     }
     return new Response("not found", { status: 404 });
   },
