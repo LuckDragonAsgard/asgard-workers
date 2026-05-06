@@ -102,8 +102,15 @@ function routeIntent(text) {
     return { agent: 'sport', action: 'summary' };
   if (/\b(trivia|kbt|kow|brainer|quiz|question|pub quiz|game|host|players|leaderboard|event tonight|next event)\b/.test(t))
     return { agent: 'kbt', action: 'query' };
-  if (/\b(deploy|fix worker|broken worker|fleet|falkor-code|self.heal|redeploy|worker health|which workers|code agent)\b/.test(t))
+  if (/\b(deploy|fix worker|broken worker|fleet|falkor-code|self.heal|redeploy|worker health|which workers|code agent)\b/.test(t)) {
+    // Detect specific deploy/fix/self-heal actions
+    const workerMatch = t.match(/\bfalkor-[\w-]+\b/);
+    const workerName = workerMatch ? workerMatch[0] : null;
+    if (/\bself[\s.-]?heal\b/.test(t)) return { agent: 'code', action: 'self_heal' };
+    if (/\b(fix|repair|broken)\b/.test(t) && workerName) return { agent: 'code', action: 'fix', workerName };
+    if (/\b(deploy|redeploy)\b/.test(t) && workerName) return { agent: 'code', action: 'deploy', workerName };
     return { agent: 'code', action: 'summary' };
+  }
   if (/(lesson plan|plan.*week|week.*plan|plan.*lesson|what should i teach|teaching plan|activities for|session plan|plan.*pe|pe.*plan|plan.*class|class.*plan)/.test(t))
     return { agent: 'school', action: 'lesson_week' };
   if (/(single lesson|one lesson|today.*lesson|lesson.*today|45.*min|30.*min|60.*min lesson)/.test(t) && /(pe|sport|lesson|teach|class|activity)/.test(t))
@@ -127,7 +134,7 @@ function routeIntent(text) {
   return null;
 }
 
-async function callSubAgent(agentKey, action, text, pin, aiPin) {
+async function callSubAgent(agentKey, action, text, pin, aiPin, intentCtx) {
   const baseUrl = AGENTS[agentKey];
   if (!baseUrl) return null;
   try {
@@ -136,8 +143,20 @@ async function callSubAgent(agentKey, action, text, pin, aiPin) {
         return fetch(`${baseUrl}/summary`, { headers: { 'X-Pin': pin } }).then(r => r.ok ? r.json() : null);
       case 'kbt':
         return fetch(`${baseUrl}/summary`, { headers: { 'X-Pin': pin } }).then(r => r.ok ? r.json() : null);
-      case 'code':
+      case 'code': {
+        const codeAction = agentKey === 'code' ? action : 'summary';
+        const workerName = intentCtx && intentCtx.workerName;
+        if (codeAction === 'self_heal') {
+          return fetch(`${baseUrl}/self-heal`, { method: 'POST', headers: { 'X-Pin': pin, 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.ok ? r.json() : null);
+        }
+        if (codeAction === 'deploy' && workerName) {
+          return fetch(`${baseUrl}/deploy`, { method: 'POST', headers: { 'X-Pin': pin, 'Content-Type': 'application/json' }, body: JSON.stringify({ worker_name: workerName }) }).then(r => r.ok ? r.json() : null);
+        }
+        if (codeAction === 'fix' && workerName) {
+          return fetch(`${baseUrl}/fix`, { method: 'POST', headers: { 'X-Pin': pin, 'Content-Type': 'application/json' }, body: JSON.stringify({ worker_name: workerName }) }).then(r => r.ok ? r.json() : null);
+        }
         return fetch(`${baseUrl}/summary`, { headers: { 'X-Pin': pin } }).then(r => r.ok ? r.json() : null);
+      }
       case 'brain':
         return fetch(`${baseUrl}/recall`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Pin': pin },
@@ -627,7 +646,7 @@ export class FalkorAgent {
       const memory = await this.getMemory();
       const ctxTs = await this.state.storage.get('liveContextTs');
       return corsJson({
-        version: '2.9.0',
+        version: '2.10.0',
         activeSessions: this.sessions.size,
         historyLength: history.length,
         memoryKeys: Object.keys(memory).length,
@@ -766,7 +785,7 @@ export class FalkorAgent {
     const intent = routeIntent(text);
     if (intent) {
       if (AGENT_MODEL_OVERRIDES[intent.agent]) model = AGENT_MODEL_OVERRIDES[intent.agent];
-      const agentData = await callSubAgent(intent.agent, intent.action, text, pin, aiPin);
+      const agentData = await callSubAgent(intent.agent, intent.action, text, pin, aiPin, intent);
       if (agentData) {
         // Special handling for web search: use the answer field prominently
         if (intent.agent === 'web' && agentData.answer) {
@@ -1017,7 +1036,7 @@ export default {
     }
 
     if (url.pathname === '/health') {
-      return Response.json({ status: 'ok', version: '2.9.0', worker: 'falkor-agent' });
+      return Response.json({ status: 'ok', version: '2.10.0', worker: 'falkor-agent' });
     }
 
     // ── /tasks proxy → falkor-workflows via service binding (no 522 loopback) ──
