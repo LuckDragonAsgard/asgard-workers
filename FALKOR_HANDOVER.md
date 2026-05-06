@@ -33,7 +33,7 @@
 - **kbt-api worker** has new `/api/save-morph` endpoint (Drive upload + Supabase INSERT)
 - **Worker secrets ROTATED:** GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN. Now uses Asgard AI client (`205533966048-1f5e2...`) in GCP project `asgard-493906`. Refresh token has both `presentations` + `drive` scopes.
 - **New worker secret added:** SUPABASE_SERVICE_ROLE_KEY (needed for kbt_question INSERT — bypasses RLS)
-- **Vault keys added:** GOOGLE_CLIENT_ID_ASGARD_AI, GOOGLE_CLIENT_SECRET_ASGARD_AI, GOOGLE_REFRESH_TOKEN_ASGARD_AI (X-Pin 535554)
+- **Vault keys added:** GOOGLE_CLIENT_ID_ASGARD_AI, GOOGLE_CLIENT_SECRET_ASGARD_AI, GOOGLE_REFRESH_TOKEN_ASGARD_AI (X-Pin <VAULT_PIN>)
 - **Old OAuth client `342815819710-sugohi...` was wrong** — doesn't exist in `asgard-493906`. Don't restore.
 - **4 wordmark colour fixes shipped** (SoundMash/Carmen/Guess The Year → green, Linked Pics → purple)
 
@@ -267,8 +267,8 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ## Recently shipped (2026-05-06)
 **Streamline Webapps — security + UX hardening sweep (v32):**
-1. **CRITICAL FOUND:** Vault PIN `535554` is committed in 12+ files across **public** GitHub repos (asgard-source, asgard-workers, asgard-handovers, superleague-yeah-v4). Token used here only had `public_repo` scope so could not flip repos to private — Paddy must do via GitHub UI with higher-scope token, then rotate the vault PIN itself.
-2. **Streamline ADMIN_PIN rotated** — moved out of source code (was hardcoded `535554`) into worker secret `ADMIN_PIN` (20-char random). New PIN stored in vault under key `STREAMLINE_ADMIN_PIN`. Old PIN no longer accepted on `/admin/data`. `/admin` HTML now has `X-Robots-Tag: noindex`.
+1. **CRITICAL FOUND:** Vault PIN `<VAULT_PIN>` is committed in 12+ files across **public** GitHub repos (asgard-source, asgard-workers, asgard-handovers, superleague-yeah-v4). Token used here only had `public_repo` scope so could not flip repos to private — Paddy must do via GitHub UI with higher-scope token, then rotate the vault PIN itself.
+2. **Streamline ADMIN_PIN rotated** — moved out of source code (was hardcoded `<VAULT_PIN>`) into worker secret `ADMIN_PIN` (20-char random). New PIN stored in vault under key `STREAMLINE_ADMIN_PIN`. Old PIN no longer accepted on `/admin/data`. `/admin` HTML now has `X-Robots-Tag: noindex`.
 3. **Worker rewrite v31→v32** committed to `asgard-source/workers/streamlinewebapps-proxy.js` and deployed:
    - CORS locked from `*` to allowlist (streamlinewebapps.com + www.* + localhost dev), `Vary: Origin` set
    - Security headers added on every response: HSTS preload, CSP (allow Stripe + Google Fonts + Supabase), X-Frame DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy (camera/mic/geo blocked, payment scoped to Stripe)
@@ -412,7 +412,7 @@ Repo: `LuckDragonAsgard/superleague-yeah-v4` HEAD — multi-commit batch (34ee9a
 - SSP `/help`, `/sitemap.xml`, `/robots.txt` embedded in `ssp-portal`.
 - SSP auto-reply via `ssp-contact` (Resend) — fires after internal notification.
 - SSP, CT, SC footer cross-links between all three products.
-- CT admin dashboard (`ct_admin_dashboard.html`) — `ct-access.luckdragon.io/admin/codes` with `X-Pin: 535554`.
+- CT admin dashboard (`ct_admin_dashboard.html`) — `ct-access.luckdragon.io/admin/codes` with `X-Pin: <VAULT_PIN>`.
 - CT `hello@carnivaltiming.com` email forwarding via CF Email Routing → paddy@luckdragon.io.
 - Pitch email templates (4) saved.
 
@@ -439,9 +439,9 @@ Repo: `LuckDragonAsgard/superleague-yeah-v4` HEAD — multi-commit batch (34ee9a
 
 - **falkor.luckdragon.io login (Paddy):** `2967` (POST falkor-push `/user/verify`)
 - **AGENT_PIN** (fleet inter-worker `X-Pin`): `JilSS1zLn3Rl7mWrM6fOJc69` (rotated 2026-05-01)
-- **VAULT_PIN** (asgard-vault): `535554` (active 2026-05-03)
+- **VAULT_PIN** (asgard-vault): `<VAULT_PIN>` (active 2026-05-03)
 - **falkor-dashboard worker PIN**: `luckdragon`
-- **Vault read**: `GET https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: 535554`
+- **Vault read**: `GET https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: <VAULT_PIN>`
 - Stripe webhook secret: `we_1TS4y0Am8bVflPN0qCkWbAkO`
 
 ---
@@ -630,7 +630,7 @@ Three Cloudflare workers built to model the Footscray-Williamstown property casc
 - Mobile-friendly: viewport meta + 600px media queries collapsing all grids to single column.
 
 ### Deploy gotchas
-- **CF API token vault**: `https://asgard-vault.pgallivan.workers.dev/secret/CF_API_TOKEN` with `X-Pin: 535554`.
+- **CF API token vault**: `https://asgard-vault.pgallivan.workers.dev/secret/CF_API_TOKEN` with `X-Pin: <VAULT_PIN>`.
 - **CF account ID**: `a6f47c17811ee2f8b6caeb8f38768c20`.
 - **No D1 binding needed** — these are pure HTML responses, not DB-backed.
 - File-tool writes to outputs/ are NOT visible to bash sandbox (one-way Win→Linux mount). Either write directly via bash heredoc, or write to `Luck Dragon 2.0` mount which IS shared. Lost an hour to this on May 4.
@@ -1156,7 +1156,7 @@ Paddy: "All wrapped up so I can fully completely continue from new claude accoun
 | **GitHub `commercial/`** | same | PIA, DPA, parental consent, WPS case study, sales pack, outreach list, insurance app sheet | none (public) |
 | **GitHub `snapshots/workers/`** | same | Daily snapshots of all 9 production worker source files | none (public) |
 | **Falkor brain** | https://falkor-brain.luckdragon.io | Durable facts (POST /remember). Augmentation, not canonical. | `X-Pin: JilSS1zLn3Rl7mWrM6fOJc69` |
-| **Asgard vault** | https://asgard-vault.pgallivan.workers.dev | All secrets | `X-Pin: 535554` |
+| **Asgard vault** | https://asgard-vault.pgallivan.workers.dev | All secrets | `X-Pin: <VAULT_PIN>` |
 
 ### How a new Claude session bootstraps (procedure)
 
@@ -1176,7 +1176,7 @@ Paddy: "All wrapped up so I can fully completely continue from new claude accoun
 
 - `curl https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/knowledge/NEW_CHAT_BOOTSTRAP.md` returns 200 with full bootstrap doc
 - 18 memory files mirrored (user_identity, feedback_*, project_*, lessonlab_*, sly_*, wd26_*, paddy_jacky_finance, asgard_bootstrap, MEMORY.md, reference_cf_token redacted)
-- All vault secrets reachable via X-Pin: 535554
+- All vault secrets reachable via X-Pin: <VAULT_PIN>
 - FALKOR_HANDOVER + manual/ + commercial/ + snapshots/ + knowledge/ all in same repo, all pushable, all readable from any URL with PAT
 
 
@@ -1209,7 +1209,7 @@ Paddy: "All wrapped up so I can fully completely continue from new claude accoun
 
 Set up so future Claude sessions can write durable facts to `/remember`.
 
-- AGENT_PIN stored in vault: `https://asgard-vault.pgallivan.workers.dev/secret/AGENT_PIN` (X-Pin: 535554 to retrieve)
+- AGENT_PIN stored in vault: `https://asgard-vault.pgallivan.workers.dev/secret/AGENT_PIN` (X-Pin: <VAULT_PIN> to retrieve)
 - Same value bound as secret_text on falkor-brain worker
 - Write endpoint: `POST https://falkor-brain.luckdragon.io/remember` with X-Pin header set to the AGENT_PIN value
 - Body: `{"text":"...", "tags":["..."]}`
