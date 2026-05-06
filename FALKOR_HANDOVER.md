@@ -1,4 +1,29 @@
 ---
+
+## 2026-05-06 — Falkor UI auto-mirror — /handover, /handover.md, /profile.md
+
+**Worker:** `falkor-tools` (deploy id `ab29d56503f8`)
+**Source commit:** `8b43f59c` (also fixed a stray leading `h` typo on byte 0 that had been causing CF deploy validation failures from the GitHub copy — live worker never had it).
+
+### What's new
+Three routes on `falkor.luckdragon.io` that auto-fetch from GitHub raw, 60s cf cacheTtl + 60s edge cache:
+- `https://falkor.luckdragon.io/handover.md` → raw FALKOR_HANDOVER.md as `text/markdown`
+- `https://falkor.luckdragon.io/profile.md` → raw PROFILE.md as `text/markdown`
+- `https://falkor.luckdragon.io/handover` → rendered HTML page (marked.js client-side render, GitHub-style theme, link to /handover.md raw)
+
+### Why
+Paddy: "all updates need to be here too in UI - automatically from all work". Previously these URLs returned the SPA shell — there was NO way to view the live handover or profile from `falkor.luckdragon.io`. Now they auto-mirror GitHub on a 60s cache.
+
+### Insertion point
+Right before `if(url.pathname.startsWith('/api/sport/afl/'))` in `falkor-tools.js`. Pure additive — no existing route changed. Existing 8 secret_text bindings preserved via `keep_bindings:["secret_text"]` in metadata.
+
+### How to apply this pattern to other docs
+To add another auto-mirror, copy the 5-line `if(url.pathname==='/foo.md'){...}` handler and point it at any file in the repo. Cache is `cf:{cacheTtl:60,cacheEverything:true}` + `cache-control: public, max-age=60`.
+
+### Not done (deferred)
+- A "Recent Falkor activity" panel inside the chat home page (would show last 3-5 handover entries). Risk: modifies the inline HTML constant — needs careful diff to avoid black-screen. Leaving as a follow-up unless Paddy says go.
+
+---
 ---
 
 ## 2026-05-06 — KBT New Question Types — 21 Opus Build Briefs Pushed
