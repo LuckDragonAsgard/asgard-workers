@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-05-06 — Carmen Sandiego Tool — Brief refit shipped
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → live at `kbt.luckdragon.io/carmen-sandiego-tool`
+**Commit:** `7a5ba14955` — "Carmen Sandiego: Voyager tiles + Nominatim search + clean export (no KBT chrome) + Q/A naming"
+**Brief:** [`briefs/carmen-sandiego-tool.md`](https://github.com/LuckDragonAsgard/kbt-trivia-tools/blob/main/briefs/carmen-sandiego-tool.md)
+
+### What changed (all 5 brief items + naming bonus):
+1. **Tiles → CartoDB Voyager** (was ESRI World Imagery satellite). Topographic / road style with city + country labels — matches `Mappins Bhutan Q.png` reference. Free, no API key, CORS-friendly.
+2. **Location search** — Nominatim (free, no key). New input + Go button + Enter-key. Auto-fills the filename field if blank. Status line shows resolved place.
+3. **High-res export** — offscreen 1920×1080 Leaflet map, event-based `tiles.on('load')` wait + 8s hard fallback + 400ms settle, then `html2canvas(scale:1, useCORS:true)`. No more stretched-screen blur.
+4. **KBT chrome removed** — `drawKBTGrid` / `drawKBTPill` / `loadFontsForCanvas` all stripped from export pipeline AND from the script (dead code). Reference outputs have clean map only.
+5. **Filename pattern** — `CarmenQ_{slideLabel}_{location}.png` (question, all red) and `CarmenA_{slideLabel}_{location}.png` (answer, correct pin green). Slide label is filename-only, never overlaid.
+
+Bonus: button text + how-it-works copy renamed `A/B → Q/A` to match question/answer semantics.
+
+### Visual QA confirmed live:
+Loaded `kbt.luckdragon.io/carmen-sandiego-tool`, typed "Bhutan", hit Go → map jumped to country at zoom 7, rendered crisp Voyager tiles (THIMPHU, SHIGATSE, GUWAHATI labels visible). Search status line shows "→ Bhutan". Filename field auto-filled. Live grep: `drawKBTPill 0`, `World_Imagery 0`, `voyager 2`, `navigateTo 4`.
+
+### Deploy lesson:
+`raw.githubusercontent.com` aggressively caches — after a PUT, querying raw with cache-buster still returned old content for ~30–60s. Use `api.github.com/repos/{owner}/{repo}/contents/{path}` to verify push immediately; CDN catches up shortly.
+
+---
+
 ## 2026-05-06 — LessonLab — v11 generator follow-ups all shipped
 
 **Repo:** `LuckDragonAsgard/lessonlab` → auto-deploys to `www.lessonlab.com.au` on push to main.
