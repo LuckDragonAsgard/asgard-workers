@@ -265,6 +265,31 @@ Auto-start on login: run `install-bridge-startup.bat` as admin.
 
 ---
 
+## Recently shipped (2026-05-06)
+**Streamline Webapps — security + UX hardening sweep (v32):**
+1. **CRITICAL FOUND:** Vault PIN `535554` is committed in 12+ files across **public** GitHub repos (asgard-source, asgard-workers, asgard-handovers, superleague-yeah-v4). Token used here only had `public_repo` scope so could not flip repos to private — Paddy must do via GitHub UI with higher-scope token, then rotate the vault PIN itself.
+2. **Streamline ADMIN_PIN rotated** — moved out of source code (was hardcoded `535554`) into worker secret `ADMIN_PIN` (20-char random). New PIN stored in vault under key `STREAMLINE_ADMIN_PIN`. Old PIN no longer accepted on `/admin/data`. `/admin` HTML now has `X-Robots-Tag: noindex`.
+3. **Worker rewrite v31→v32** committed to `asgard-source/workers/streamlinewebapps-proxy.js` and deployed:
+   - CORS locked from `*` to allowlist (streamlinewebapps.com + www.* + localhost dev), `Vary: Origin` set
+   - Security headers added on every response: HSTS preload, CSP (allow Stripe + Google Fonts + Supabase), X-Frame DENY, X-Content-Type-Options nosniff, Referrer-Policy strict-origin-when-cross-origin, Permissions-Policy (camera/mic/geo blocked, payment scoped to Stripe)
+   - Real `/robots.txt` (plaintext) and `/sitemap.xml` (XML) — were both returning HTML
+   - Real 404 handler — unknown paths previously returned homepage HTML at status 200, now return a styled 404 page at status 404
+   - Real `/stats` query from DB (live=26, building=6, monthly=14440, paid_out=3610) replacing the hardcoded fiction in the upstream Supabase edge function
+   - Resend sender migrated from unverified `hello@streamlinewebapps.com` → verified `noreply@luckdragon.io` with `reply_to: hello@streamlinewebapps.com` (admin notification + customer auto-reply)
+   - `/health` reports v32 with `sha: hardening-2026-05-06`
+   - 60s idempotency window on `/submit` (SHA-256 of email+title) — prevents double-submit creating two DB rows + two Stripe sessions
+   - Admin dashboard XSS fixed (escaper applied to `renderDash` interpolations of submitted titles/names/emails)
+   - HTML escape applied to user-submitted fields in admin notification email body (was raw concat)
+   - og:title / og:description / og:image / twitter:card / canonical added to homepage `<head>` for social previews + SEO
+   - Rate-limit map now prunes expired entries when size > 5000 (was unbounded)
+4. **Audit confirmed working:** Stripe checkout session creation works end-to-end (smoke test → real `cs_live_` URL → DB row created → Stripe session expired + DB row cleaned up). Stripe prices verified active: $29 / $99 / $299 AUD all one_time. Stripe webhook configured at `huvfgenbcaiicatvtxak.supabase.co/functions/v1/stripe-webhook` (signature verification not audited — lives in Supabase edge function).
+5. **Still TODO (Paddy tasks):**
+   - Make 4 public repos private OR rotate vault PIN system-wide (consumer migration is large)
+   - PI insurance quote (BizCover/Aon)
+   - Equity-tier IP deed template (lawyer)
+   - Audit Supabase `stripe-webhook` for signature verification
+   - Decide: "We build with AI" copy is currently manual — either build a real autonomous pipeline or rephrase honestly ("reviewed within 48hrs")
+
 ## Recently shipped (2026-05-03 → 2026-05-04)
 **SLY hardening sweep — 6 batches (2026-05-05 evening):**
 1. **Cache-Control + CORS lock**: /api/rounds + /api/scores now send `Cache-Control: no-cache, must-revalidate`. CORS Allow-Origin restricted from `*` to allowlist (superleague.streamlinewebapps.com + sly-api.luckdragon.io + localhost dev). `Vary: Origin` set. sly-checks.py MUTATION_ENDPOINTS extended with the 5 new PATCH paths.
