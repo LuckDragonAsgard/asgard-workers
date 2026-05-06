@@ -1,3 +1,36 @@
+---
+
+## 2026-05-06 — Brain Tool — Matting + Shadow Quality Pass
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → live at `kbt.luckdragon.io/brain-tool`
+**Commit:** `e799217c`
+
+### What changed
+- **Replaced** client-side `@imgly/background-removal` (isnet, jaggy edges, ~170MB WASM download) with server-side `POST /api/matting-hq` on `kbt-api.luckdragon.io` (fal-ai/birefnet, hair-aware). Same endpoint face-morph-tool uses — single source of truth for KBT matting.
+- **API contract:** POST `{image: dataURL}` → JSON `{url: <matted-png-url>}`. Brief said `await res.blob()` but the actual API returns `{url}` JSON; followed face-morph's working pattern instead.
+- **Drop shadow constants** in `applyEffectsAndFit` updated to Lucia spec: `SHADOW_OX=12, OY=32, BLUR=90, OPACITY=0.65` (was 10/14/28/0.55). Matches face-morph hardwired values.
+- **Outline stroke** already 12px (no change needed).
+- **First-load warning copy** updated — no more "downloads ~170MB" language; says "server-side hair-aware matting (fal-ai/birefnet) — typically 3-6s per image".
+- **Removed** `@imgly/background-removal` import + `removeBackground()` call entirely. Switched the script tag from `type="module"` to plain script (no more imports needed).
+
+### Pipeline downstream — UNCHANGED
+- face-api.js (ssdMobilenetv1 + faceLandmark68Net) still does face/eye detection on the original image
+- `buildSplineCut` (organic brow-line cut) unchanged
+- `applyEffectsAndFit` logic unchanged except the four shadow constants
+- KBT grid + green pill chrome retained (consistency with 2026-05-06 9-tool audit; brief said "no grid/pill" describing the OLD reference PNG, not the deployed tool)
+
+### Verified
+- Live `/brain-tool` returns 200 + new code (matting-hq present, @imgly count = 0)
+- `/api/matting-hq` proxies correctly to fal-ai/birefnet (smoke-tested with 1×1 PNG → expected `image_too_small` 422 from fal — endpoint chain is healthy)
+- Page loads cleanly in Chrome, no console errors
+- **Full E2E with a real celeb photo is on Paddy** (per brief: VERIFY VISUALLY — drop celeb pic, check organic cut at brows, white stroke, dramatic shadow vs Larry David reference)
+
+### Brief referenced
+`LuckDragonAsgard/kbt-trivia-tools/briefs/brain-tool.md`
+
+### NOTE — handover restoration
+This entry was originally landed as commit `624ad871` at 11:58, then **wiped** at 12:07 by a parallel "Linked Pics" chat's botched restore (`1ab86c50` — "prior commit truncated by mishap"). Several other 2026-05-06 entries (Crack The Code, LessonLab v11, Carmen Sandiego refit, original Linked Pics) are also missing from the file as a result and may need re-adding.
+
 # FALKOR HANDOVER
 
 ---
