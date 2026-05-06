@@ -18,7 +18,8 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
-const FALKOR_WS_URL   = process.env.FALKOR_WS_URL || 'wss://falkor-agent.luckdragon.io/';
+const _PIN            = process.env.FALKOR_PIN || '';
+const FALKOR_WS_URL   = process.env.FALKOR_WS_URL || ('wss://falkor-agent.luckdragon.io/' + (_PIN ? '?pin=' + _PIN : ''));
 const RECONNECT_DELAY = 5000;
 const PLATFORM = process.platform;
 const HOSTNAME = os.hostname();
