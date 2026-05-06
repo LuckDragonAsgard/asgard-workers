@@ -64,7 +64,7 @@ You don't need Claude for race day. Phone runs CT timing.
 ## If anything looks off
 
 ```
-curl -s -H "X-Pin: 535554" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN
+curl -s -H "X-Pin: <VAULT_PIN>" https://asgard-vault.luckdragon.io/secret/CF_API_TOKEN
 ```
 
 If that returns a `cfut_*` token, your whole stack still works. The Claude UI is just the steering wheel.
