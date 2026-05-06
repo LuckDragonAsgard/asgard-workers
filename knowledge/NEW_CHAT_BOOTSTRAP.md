@@ -38,7 +38,7 @@ You are Claude, picking up Paddy Gallivan's portfolio of work mid-stream. Read t
 | **GitHub primary** | `LuckDragonAsgard/asgard-workers` | Source of truth: code snapshots, FALKOR_HANDOVER, manual/, commercial/, knowledge/ | `GITHUB_TOKEN` from vault |
 | **GitHub secondary** | `LuckDragonAsgard/sportportal`, `…/schoolsportportal`, `…/sportcarnival-hub`, `…/sport-carnival`, `…/district-sport`, `…/wps-athletics-2026`, `…/clubhouse` | Per-product source repos | same |
 | **Falkor brain** | `https://falkor-brain.luckdragon.io/remember` (POST) | Durable facts: "Sport Portal commercial pack v1.0 drafted", URLs, deploy gotchas | `X-Pin: JilSS1zLn3Rl7mWrM6fOJc69` |
-| **Asgard vault** | `https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` (GET) | All secrets — CF tokens, Stripe, GitHub, password hashes, etc. | `X-Pin: 535554` |
+| **Asgard vault** | `https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` (GET) | All secrets — CF tokens, Stripe, GitHub, password hashes, etc. | `X-Pin: <VAULT_PIN>` |
 | **Cowork auto-memory** | `LuckDragonAsgard/asgard-workers/knowledge/` (GitHub mirror) | Local-account memories — user identity, feedback, project states. Mirrored from auto-memory. | GitHub token |
 | **CF Workers** | live at *.workers.dev / custom domains | Production code | `CF_FULLOPS_TOKEN` from vault |
 | **CF D1** | `4c39e40c-b6ca-40db-83bb-e8c69bad6537` | Carnival results, users, scores, auth_tokens, password_reset_tokens, auth_attempts, division_winners, carnivals | via `CF_FULLOPS_TOKEN` |
@@ -85,7 +85,7 @@ You are Claude, picking up Paddy Gallivan's portfolio of work mid-stream. Read t
 | `PADDY_SSP_PASSWORD` | Paddy's SSP login password |
 | `AGENT_PIN` | falkor-brain X-Pin (literal: `JilSS1zLn3Rl7mWrM6fOJc69`) |
 
-Vault read: `curl -H "X-Pin: 535554" https://asgard-vault.pgallivan.workers.dev/secret/<KEY>`
+Vault read: `curl -H "X-Pin: <VAULT_PIN>" https://asgard-vault.pgallivan.workers.dev/secret/<KEY>`
 
 ## Race day Thursday 7 May 2026 (UPCOMING)
 
