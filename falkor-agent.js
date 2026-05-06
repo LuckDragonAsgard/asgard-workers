@@ -646,7 +646,7 @@ export class FalkorAgent {
       const memory = await this.getMemory();
       const ctxTs = await this.state.storage.get('liveContextTs');
       return corsJson({
-        version: '2.10.0',
+        version: '2.11.0',
         activeSessions: this.sessions.size,
         historyLength: history.length,
         memoryKeys: Object.keys(memory).length,
@@ -1035,8 +1035,41 @@ export default {
       }
     }
 
+    // ── Bridge HTTP endpoints ─────────────────────────────────────────────────
+    if (url.pathname === '/bridge/status') {
+      const bridges = this.bridges ? [...this.bridges.entries()].map(([id, b]) => ({
+        bridgeId: id, hostname: b.hostname, platform: b.platform,
+        capabilities: b.capabilities, registeredAt: b.registeredAt,
+      })) : [];
+      return Response.json({ ok: true, connected: bridges.length > 0, count: bridges.length, bridges });
+    }
+
+    if (url.pathname === '/bridge/exec' && request.method === 'POST') {
+      const pin = request.headers.get('X-Pin') || '';
+      const body = await request.json().catch(() => ({}));
+      const { command, args = {}, bridge_id } = body;
+      if (!command) return Response.json({ error: 'command required' }, { status: 400 });
+      if (!this.bridges || this.bridges.size === 0)
+        return Response.json({ error: 'No bridge connected — run falkor-bridge.js on your PC' }, { status: 503 });
+      // Pick bridge (first, or by bridge_id)
+      const [bId, bridge] = bridge_id && this.bridges.has(bridge_id)
+        ? [bridge_id, this.bridges.get(bridge_id)]
+        : this.bridges.entries().next().value;
+      const cmdId = 'cmd_' + Date.now();
+      bridge.ws.send(JSON.stringify({ type: 'bridge_command', commandId: cmdId, command, args }));
+      // Poll DO storage for result (max 15s)
+      let result = null;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        const stored = await this.state.storage.get('bridge_result_' + cmdId);
+        if (stored) { result = JSON.parse(stored); break; }
+      }
+      if (!result) return Response.json({ error: 'timeout waiting for bridge result', commandId: cmdId }, { status: 504 });
+      return Response.json({ ok: true, commandId: cmdId, bridgeId: bId, result });
+    }
+
     if (url.pathname === '/health') {
-      return Response.json({ status: 'ok', version: '2.10.0', worker: 'falkor-agent' });
+      return Response.json({ status: 'ok', version: '2.11.0', worker: 'falkor-agent' });
     }
 
     // ── /tasks proxy → falkor-workflows via service binding (no 522 loopback) ──
