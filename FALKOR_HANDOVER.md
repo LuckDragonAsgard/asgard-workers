@@ -2,6 +2,26 @@
 
 ---
 
+## 2026-05-06 — Crack The Code: black bg + structured AI clues
+
+**Repo:** `LuckDragonAsgard/kbt-trivia-tools` → `kbt.luckdragon.io/crack-the-code-tool`
+**Worker:** `kbt-api` (etag `03a919d80abb5737`, modified 2026-05-06)
+
+### Changes (all per `briefs/crack-the-code-tool.md`)
+1. **Black canvas** — `crack-the-code-tool.html` `#export-canvas` and `.canvas-wrapper` are `#000000`; `html2canvas` `backgroundColor: '#000000'`; grid lines removed; `.rebus-image` outline upgraded to `12px solid #ffffff` for sticker effect; answer/question text set to `#ffffff` for black bg.
+2. **AI prompt rewrite** — both `workers/kbt-api.js:81` and `functions/api/ai-text.js:13` now hold the `STRICT RULES` prompt (no first name, no full last name, sound-alike syllable clues, JSON output `{clues:[{syllable,image,sound}],explanation}`). Verified live: Kelly Clarkson → CELERY/DRAGONFLY/CLARKS MERCANTILE/SONNET (no "Kelly" leak).
+3. **Structured clue UI** — `renderAiClues()` parses JSON from `kbt-api`, renders per-clue cards (syllable + image desc + sound) in the AI panel, with a "Create N image slots" button calling `syncSlotsToClues(n)` to resize the upload grid to match.
+
+### Deploy
+- HTML + functions auto-deploy via CF Pages (commit `3a6eb354`, `6b4e870c`).
+- `kbt-api` worker deployed via CF API multipart PUT, `keep_bindings: ["secret_text"]` to preserve ANTHROPIC_API_KEY / FAL_KEY / GOOGLE_* / SUPABASE_SERVICE_ROLE_KEY.
+
+### Visual QA
+- Black preview canvas confirmed live (screenshot 2026-05-06).
+- AI endpoint returns structured JSON for both Kelly Clarkson and Sandra Bullock — no first-name leakage.
+
+---
+
 ## 2026-05-06 — KBT Tools Suite — Branding/Bug Fixes
 
 **Session:** KBT all-tools audit + fix pass (separate chat from face-morph work)
