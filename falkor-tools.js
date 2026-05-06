@@ -1,4 +1,4 @@
-h// falkor-tools v2.1.0 — Asgard-style project hub with Finance, sorting, all info per project
+// falkor-tools v2.1.0 — Asgard-style project hub with Finance, sorting, all info per project
 const PROJECTS_API = 'https://falkor-dashboard.luckdragon.io/api/projects';
 const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
@@ -3119,6 +3119,26 @@ upBtn.onclick=async()=>{
         const text = (a.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
         return Response.json({ ok:true, briefing: text, items_considered: items.length, generated_at: new Date().toISOString() }, { headers:{...CORS,...NOCACHE} });
       } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/handover.md'){
+      try {
+        const r = await fetch('https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md', { cf:{cacheTtl:60,cacheEverything:true} });
+        return new Response(await r.text(), { headers: { 'content-type':'text/markdown; charset=utf-8', 'cache-control':'public, max-age=60', ...CORS } });
+      } catch(e){ return new Response('error: '+e, {status:500, headers:CORS}); }
+    }
+    if(url.pathname==='/profile.md'){
+      try {
+        const r = await fetch('https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/PROFILE.md', { cf:{cacheTtl:60,cacheEverything:true} });
+        return new Response(await r.text(), { headers: { 'content-type':'text/markdown; charset=utf-8', 'cache-control':'public, max-age=60', ...CORS } });
+      } catch(e){ return new Response('error: '+e, {status:500, headers:CORS}); }
+    }
+    if(url.pathname==='/handover'){
+      try {
+        const r = await fetch('https://raw.githubusercontent.com/LuckDragonAsgard/asgard-workers/main/FALKOR_HANDOVER.md', { cf:{cacheTtl:60,cacheEverything:true} });
+        const md = await r.text();
+        const html = '<!doctype html><html><head><meta charset="utf-8"><title>Falkor Handover</title><style>body{font-family:-apple-system,system-ui,sans-serif;max-width:920px;margin:2em auto;padding:0 1.2em;line-height:1.55;color:#222}h1,h2,h3{margin-top:1.6em}h1{border-bottom:2px solid #16a34a;padding-bottom:.3em}h2{border-bottom:1px solid #ddd;padding-bottom:.2em}code{background:#f3f3f3;padding:1px 5px;border-radius:3px;font-size:.92em}pre{background:#f6f8fa;padding:1em;border-radius:6px;overflow-x:auto}table{border-collapse:collapse}th,td{border:1px solid #ddd;padding:6px 10px}a{color:#0969da}.meta{font-size:.85em;color:#666;margin-bottom:1em}</style></head><body><div class="meta">Auto-mirrored from <a href="https://github.com/LuckDragonAsgard/asgard-workers/blob/main/FALKOR_HANDOVER.md">GitHub</a> &middot; 60s cache &middot; <a href="/handover.md">raw</a></div><div id="md"></div><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script>document.getElementById("md").innerHTML=marked.parse('+JSON.stringify(md)+');</script></body></html>';
+        return new Response(html, { headers: { 'content-type':'text/html; charset=utf-8', 'cache-control':'public, max-age=60', ...CORS } });
+      } catch(e){ return new Response('error: '+e, {status:500, headers:CORS}); }
     }
     if(url.pathname.startsWith('/api/sport/afl/')){
       // Squiggle AFL proxy with proper UA + caching
