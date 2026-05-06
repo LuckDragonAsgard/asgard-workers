@@ -2,11 +2,21 @@
 
 > **Single source of truth for who I am and how I work.** Auto-fetched at start of every Falkor/Cowork chat. Edit on GitHub or via falkor.luckdragon.io/profile.md (60s cache).
 
-> **Easiest bootstrap for any new chat anywhere**: `Fetch https://asgard-tools.pgallivan.workers.dev/brief?pin=535554 and brief me. I'm Paddy.` — that returns the full state in one call (HANDOVER + CLAUDE.md + live D1 product progress all merged).
+> **Easiest bootstrap for any new chat anywhere**: `Fetch https://asgard-tools.pgallivan.workers.dev/brief?pin=<VAULT_PIN> and brief me. I'm Paddy.` — that returns the full state in one call (HANDOVER + CLAUDE.md + live D1 product progress all merged).
 
 ---
 
 # 🚨 RULE #1 — ABSOLUTE, NO EXCEPTIONS
+
+---
+
+## 🔐 VAULT PIN ROTATED 2026-05-06
+
+The vault PIN `535554` is **DEAD**. Old pin returns 401 from `asgard-vault.pgallivan.workers.dev`. New PIN stored in: vault binding `VAULT_PIN_PRIMARY` AND vault key `VAULT_PIN_PRIMARY` (retrievable via the new PIN). For new chats, fetch the new PIN from a connected MCP / vault env binding — do NOT commit to public source.
+
+Replace any `X-Pin: <VAULT_PIN>` placeholder in this file with the new value when running curl manually. The placeholder format keeps history clean.
+
+
 
 ## NEVER save anything to the C: drive. EVER.
 
@@ -134,8 +144,8 @@ If any check fails: diagnose from scratch, fix, re-run all 10 checks from step 1
 - **GitHub source of truth (workers fleet):** `LuckDragonAsgard/asgard-workers`
 - **GitHub source of truth (high-level):** `LuckDragonAsgard/asgard-source` (CLAUDE.md + docs/HANDOVER.md)
 - **Falkor brain (RAG):** `falkor-brain.luckdragon.io` — Vectorize index `falkor-memory`, D1 `asgard-prod`. AGENT_PIN in vault.
-- **Vault:** `https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: 535554`
-- **Brief endpoint:** `https://asgard-tools.pgallivan.workers.dev/brief?pin=535554` — full state in one call
+- **Vault:** `https://asgard-vault.pgallivan.workers.dev/secret/<KEY>` with `X-Pin: <VAULT_PIN>`
+- **Brief endpoint:** `https://asgard-tools.pgallivan.workers.dev/brief?pin=<VAULT_PIN>` — full state in one call
 - **Bootstrap:** `https://falkor.luckdragon.io/bootstrap.md`
 
 ## Credential map (vault keys)
@@ -147,7 +157,7 @@ If any check fails: diagnose from scratch, fix, re-run all 10 checks from step 1
 | `CF_PAGES_TOKEN` | CF Pages deployments |
 | `RESEND_API_KEY` | Transactional email |
 
-Get any: `curl -sS -H "X-Pin: 535554" https://asgard-vault.pgallivan.workers.dev/secret/NAME`
+Get any: `curl -sS -H "X-Pin: <VAULT_PIN>" https://asgard-vault.pgallivan.workers.dev/secret/NAME`
 
 ## Storage routing
 - **Code, configs, docs, markdown** → GitHub (LuckDragonAsgard org)
@@ -280,7 +290,7 @@ This file should grow smarter over time, not stay static.
 
 **Easiest** (single line):
 ```
-Fetch https://asgard-tools.pgallivan.workers.dev/brief?pin=535554 and brief me. I'm Paddy.
+Fetch https://asgard-tools.pgallivan.workers.dev/brief?pin=<VAULT_PIN> and brief me. I'm Paddy.
 ```
 
 **Or** the bootstrap file:
