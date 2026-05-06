@@ -556,3 +556,76 @@ Real figures captured this session.
 - https://paddy-finance.pgallivan.workers.dev
 - IP ownership selector defaults to Jacky
 - Refi-plan banner with ATO purpose-test warning
+
+---
+
+## Compliance Watchdog — NEW 2026-05-06
+
+**Live:** https://legal.luckdragon.io/ (PIN-gated for write ops)
+
+### What it is
+Continuous legal/compliance monitor. Auto-discovers every project, domain, and worker; probes each public domain for privacy/terms/security/TLS hygiene every 6 hours; renders a red/amber/green dashboard. Triggered by Paddy's "can we create something that continuously monitors all this?" — answer: yes, this.
+
+### Infrastructure
+| Resource | Value |
+|---|---|
+| Worker | `compliance-watchdog` (account `a6f47c17811ee2f8b6caeb8f38768c20`) |
+| D1 db | `compliance-db` (UUID `780dc3ff-654a-448b-ab68-c1c3ba40aece`, region OC) |
+| Custom domain | `legal.luckdragon.io` (cert `c1a5c691-e9dd-4037-98fd-bd6075cc3b28`) |
+| Cron | `0 */6 * * *` (every 6 hours) |
+| Repo path | `LuckDragonAsgard/asgard-workers/workers/compliance-watchdog/worker.js` |
+| Write PIN | vault key `WATCHDOG_PIN` (retrieve with `X-Pin: 535554`) |
+
+### D1 schema
+- `projects` — id, name, sector (schools/health/gambling/general/etc.), description, primary_domain, repo, status
+- `domains` — name, project_id, status, tld
+- `regulatory_zones` — project_id × zone_code (e.g. `vic_det`, `ahpra_advertising`, `acma_iga`)
+- `requirements` — sector × requirement (priv_policy, terms_of_service, vic_det_pia, age_18_plus, ...)
+- `checks` — project × requirement × status
+- `domain_probes` — auto-populated by cron; (domain, probe_type) UNIQUE
+- `scan_runs` — audit log of cron + manual triggers
+
+### Probes per domain
+Homepage / privacy / privacy.html / terms / terms.html / legal / cookies / robots.txt / security headers (HSTS, CSP, XFO, XCTO, Referrer, Permissions). `/terms` body scanned for "DRAFT" flag.
+
+### API endpoints
+- `GET /` — dashboard (HTML)
+- `GET /health` — worker version
+- `GET /api/projects` — JSON
+- `GET /api/probes` — JSON
+- `GET /api/zones` — JSON
+- `GET /api/requirements` — JSON
+- `GET /api/scan-runs` — recent cron + manual scan history
+- `POST /api/scan-all` (X-Pin: WATCHDOG_PIN) — trigger immediate scan
+
+### Coverage matrix (regulatory zones tracked)
+**Universal:** Privacy/Terms/cookies/contact/security headers/TLS/WCAG/ABN/NDB.
+**Schools:** VIC DET PIA, DPA, parental consent, WWCC, Reportable Conduct, Cyber+PI insurance, data residency.
+**Health:** AHPRA, My Health Records Act, APP 11.
+**Gambling:** ACMA IGA, state betting license, AUSTRAC AML, 18+ verification, responsible gambling.
+**Trademark/adult:** trademark clearance, eSafety classification.
+**Food:** Food Act, ASIC business name, trademark clearance.
+**Finance:** general-information-only disclaimer.
+
+### First-scan results (2026-05-06 12:27 UTC)
+38 projects loaded · 22 domains · 16 active scanned · 144 probes / 0 errors
+
+- **6 RED** projects (priv/terms missing or draft)
+- **5 AMBER** (partial security headers, etc.)
+- **4 GREEN**
+- **23 UNSCANNED** (no primary domain or pending status)
+
+Notable hits:
+- `luckdragon.io` returning **HTTP 525 (SSL error)** on /privacy and /terms — handover previously claimed this was fixed; regression confirmed.
+- `lessonlab.com.au` `/terms` 404
+- `rooneygolftours.com.au` `/terms` 404
+- 4 parked domains (boothmeup, clothescarousel, coatcarousel, goingtotraining) all 403 — expected for parked, but flag for cleanup.
+- 11/16 active domains missing all security headers.
+
+### Next phases
+- **Phase 2:** map `requirements` × `projects` properly; render gap report.
+- **Phase 3:** auto-discovery — diff CF zones/workers vs `projects` table, alert on new/orphan rows.
+- **Phase 4:** AI-drafted templates per sector (privacy / ToS / DPA / parental consent) using falkor-agent.
+
+### Inventory gap surfaced 2026-05-06
+Live scan found **141 CF Workers**, **22 zones**, **78 LuckDragonAsgard repos**, **146 PaddyGallivan repos** — handover prior to today only documented ~30%. Compliance Watchdog now serves as the canonical project register.
