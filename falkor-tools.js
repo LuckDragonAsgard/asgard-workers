@@ -1303,6 +1303,7 @@ function renderSidebar(){
  sb.appendChild(navItem("finance","\uD83D\uDCB0","Finance"));
  sb.appendChild(navItem("revenue","\uD83D\uDCC8","Revenue"));
  sb.appendChild(navItem("tools","\uD83D\uDEE0","Tools"));
+ sb.appendChild(navItem("inbox","\uD83D\uDCE7","Inbox"));
  const chatNav=navItem("chat","\uD83D\uDCAC","Chat");
  chatNav.addEventListener("click",(e)=>{
   if(window.innerWidth<=720){e.stopPropagation();const cp=document.querySelector(".chat-pane");if(cp){cp.classList.toggle("mobile-open");if(cp.classList.contains("mobile-open"))setTimeout(()=>{const i=cp.querySelector("input");if(i)i.focus()},100);return}}
@@ -1349,6 +1350,7 @@ function renderMain(){
  if(STATE.view==="finance")return renderFinance(m);
  if(STATE.view==="revenue")return renderRevenue(m);
  if(STATE.view==="tools")return renderTools(m);
+ if(STATE.view==="inbox")return renderInbox(m);
  if(STATE.view==="chat")return renderChatMain(m);
  if(STATE.view==="sport")return renderSport(m);
  if(STATE.view==="school")return renderSchool(m);
@@ -1441,7 +1443,7 @@ function renderHome(m){
   sendBtn.textContent="Processing ⟳";
   sendBtn.style.opacity="0.6";
   try{
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});const _fa=STATE.chatContext&&((STATE.pendingImages||[]).length+(STATE.pendingFiles||[]).length)>0?[...(STATE.pendingFiles||[]).map(f=>({name:f.name,type:f.type||""})),...(STATE.pendingImages||[]).map(f=>({name:f.name,type:f.type||"image/png"}))]:null;if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}if(_fa&&_fa.length){fetch("/api/project/attach-files",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({project_id:STATE.chatContext.id,project_name:STATE.chatContext.name||"",files:_fa,sent_at:new Date().toISOString()})}).catch(()=>{});}
    if(!r.ok||!r.body){throw new Error("HTTP "+r.status)}
    const live=STATE.chat[STATE.chat.length-1];
    if(live&&live.pending){live.pending=false;live.streaming=true;live.spinning=false;live.content=""}
@@ -1807,7 +1809,7 @@ function renderChatPane(){
   btn.disabled=true;
   try{
    // Streaming: route through agent-chat-stream — tokens arrive word-by-word
-   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}
+   const r=await fetch("/api/agent-chat-stream",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({message:text,project:STATE.chatContext||null,images:STATE.pendingImages||[],files:STATE.pendingFiles||[]})});const _fa=STATE.chatContext&&((STATE.pendingImages||[]).length+(STATE.pendingFiles||[]).length)>0?[...(STATE.pendingFiles||[]).map(f=>({name:f.name,type:f.type||""})),...(STATE.pendingImages||[]).map(f=>({name:f.name,type:f.type||"image/png"}))]:null;if(STATE.pendingImages)STATE.pendingImages=[];if(STATE.pendingFiles)STATE.pendingFiles=[];const _ub=document.querySelector('button[title="Attach image"]');if(_ub){_ub.textContent="\ud83d\udcce";_ub.style.color="var(--muted)";_ub.style.borderColor="var(--border)";}if(_fa&&_fa.length){fetch("/api/project/attach-files",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({project_id:STATE.chatContext.id,project_name:STATE.chatContext.name||"",files:_fa,sent_at:new Date().toISOString()})}).catch(()=>{});}
    if(!r.ok || !r.body){throw new Error("HTTP "+r.status)}
    // Convert pending placeholder into live streaming bubble
    const live = STATE.chat[STATE.chat.length-1];
@@ -1976,6 +1978,38 @@ function renderFinance(m){
  });
  wrap.appendChild(tbl);
  m.appendChild(wrap);
+ // AI Call Spend tracker — real cost_logs data
+ const spendWrap = el("div",{style:"padding:16px 20px;border-top:1px solid var(--border);margin-top:12px"});
+ spendWrap.appendChild(el("h2",{style:"margin:0 0 6px;font-size:18px"},"AI Call Spend — 30 days"));
+ spendWrap.appendChild(el("div",{style:"color:var(--muted);font-size:12px;margin-bottom:12px"},"Costs logged from Falkor AI calls. Updates after each chat."));
+ const spendList = el("div",{style:"display:flex;flex-direction:column;gap:6px"});
+ const spendTotal = el("div",{style:"font-family:ui-monospace,monospace;font-size:13px;color:var(--muted);padding:4px 0"},"Loading…");
+ spendWrap.appendChild(spendTotal);
+ spendWrap.appendChild(spendList);
+ m.appendChild(spendWrap);
+ fetch("/api/cost/summary?days=30",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json()).then(d=>{
+   if(!d.ok){spendTotal.textContent="Failed to load: "+(d.error||"unknown");return}
+   const grand=d.grand_total||0;
+   spendTotal.textContent="Total (30d): $"+grand.toFixed(4)+" USD";
+   const by=d.by_service||{};
+   const services=Object.keys(by).sort((a,b)=>(by[b].total||0)-(by[a].total||0));
+   if(!services.length){spendList.appendChild(el("div",{style:"color:var(--muted);font-size:12px;padding:4px 0"},"No AI calls logged yet."));return}
+   services.forEach(svc=>{
+     const s=by[svc];
+     const row=el("div",{style:"display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:6px;align-items:start"});
+     const nameWrap=el("div");
+     nameWrap.appendChild(el("div",{style:"font-weight:600;font-size:13px;text-transform:capitalize"},svc));
+     if(s.breakdown&&s.breakdown.length>0){
+       const bk=el("div",{style:"display:flex;gap:4px;flex-wrap:wrap;margin-top:3px"});
+       s.breakdown.slice(0,4).forEach(b=>{bk.appendChild(el("span",{style:"font-size:10px;color:var(--muted);background:var(--bg);padding:1px 5px;border-radius:3px;white-space:nowrap"},b.category+"×"+b.calls))});
+       nameWrap.appendChild(bk);
+     }
+     row.appendChild(nameWrap);
+     row.appendChild(el("div",{style:"font-size:12px;color:var(--muted);text-align:right;padding-top:1px"},(s.calls||0).toLocaleString()+" calls"));
+     row.appendChild(el("div",{style:"font-family:ui-monospace,monospace;font-size:13px;color:var(--accent);text-align:right;padding-top:1px"},"$"+(s.total||0).toFixed(4)));
+     spendList.appendChild(row);
+   });
+ }).catch(e=>{spendTotal.textContent="err: "+String(e).substring(0,80)});
  // Operating Costs panel — live API queries
  const costsWrap = el("div",{style:"padding:16px 20px;border-top:1px solid var(--border);margin-top:12px"});
  costsWrap.appendChild(el("h2",{style:"margin:0 0 6px;font-size:18px"},"Operating Costs (live)"));
@@ -2106,6 +2140,47 @@ function renderTools(m){
 
  m.appendChild(wrap);return m;
 }
+function renderInbox(m){
+ const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Inbox"));m.appendChild(top);
+ const wrap=el("div",{style:"padding:20px;display:grid;gap:10px"});
+ wrap.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-bottom:4px"},"Inbound mail to hello@luckdragon.io"));
+ const listEl=el("div",{style:"display:grid;gap:6px"});
+ const statusEl=el("div",{style:"color:var(--muted);font-size:13px;padding:8px 0"},"Loading…");
+ listEl.appendChild(statusEl);
+ wrap.appendChild(listEl);
+ m.appendChild(wrap);
+ fetch("/api/email/list?limit=50",{headers:{"X-Pin":STATE.agentPin||""}}).then(r=>r.json()).then(d=>{
+   listEl.innerHTML="";
+   if(!d.ok){listEl.appendChild(el("div",{style:"color:var(--red)"},"Error: "+(d.error||"unknown")));return}
+   if(!d.emails||!d.emails.length){
+     const empty=el("div",{style:"padding:24px 0;text-align:center;color:var(--muted);font-size:13px"});
+     empty.appendChild(el("div",{style:"font-size:28px;margin-bottom:8px"},"📬"));
+     empty.appendChild(el("div",{},"No emails yet."));
+     empty.appendChild(el("div",{style:"font-size:11px;margin-top:4px"},"Once CF Email Routing is set up for hello@luckdragon.io, mail appears here."));
+     listEl.appendChild(empty);return;
+   }
+   d.emails.forEach(function(email){
+     const row=el("div",{style:"padding:12px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;cursor:pointer"+(email.read?";opacity:0.75":"")});
+     const topRow=el("div",{style:"display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline"});
+     topRow.appendChild(el("div",{style:"font-weight:"+(email.read?"400":"700")+";font-size:14px"},email.subject||"(no subject)"));
+     topRow.appendChild(el("div",{style:"font-size:11px;color:var(--muted);white-space:nowrap"},(email.received_at||"").substring(0,10)));
+     row.appendChild(topRow);
+     row.appendChild(el("div",{style:"font-size:12px;color:var(--muted);margin-top:2px"},"📤 "+(email.from_addr||"")));
+     const preview=el("div",{style:"font-size:12px;color:var(--muted);margin-top:5px;overflow:hidden;max-height:36px;line-height:18px;white-space:nowrap;text-overflow:ellipsis"},(email.body||"").substring(0,200));
+     row.appendChild(preview);
+     let expanded=false;
+     row.addEventListener("click",function(){
+       expanded=!expanded;
+       preview.style.maxHeight=expanded?"600px":"36px";
+       preview.style.whiteSpace=expanded?"pre-wrap":"nowrap";
+       if(!email.read){email.read=true;row.style.opacity="0.75";topRow.firstChild.style.fontWeight="400";fetch("/api/email/read",{method:"POST",headers:{"Content-Type":"application/json","X-Pin":STATE.agentPin||""},body:JSON.stringify({id:email.id})}).catch(function(){});}
+     });
+     listEl.appendChild(row);
+   });
+ }).catch(function(e){listEl.innerHTML="";listEl.appendChild(el("div",{style:"color:var(--red);font-size:12px"},"err: "+String(e).substring(0,100)))});
+ return m;
+}
+
 function renderRevenue(m){
  const top=el("div",{class:"topbar"});top.appendChild(el("h1",{},"Revenue (projected)"));m.appendChild(top);
  const isMerged = p => ["merged","archived","dormant"].includes((p.status||"").toLowerCase());
@@ -4419,6 +4494,61 @@ upBtn.onclick=async()=>{
       }
     }
 
-    return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
+    if(url.pathname==='/api/project/attach-files'&&request.method==='POST'){
+      try {
+        const b = await request.json();
+        const projectId = String(b.project_id||'');
+        const projectName = String(b.project_name||'').substring(0,200);
+        const files = Array.isArray(b.files) ? b.files.slice(0,20) : [];
+        if (!projectId || !files.length) return Response.json({ok:true,skipped:true},{headers:{...CORS,...NOCACHE}});
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'CREATE TABLE IF NOT EXISTS project_files (id INTEGER PRIMARY KEY AUTOINCREMENT, project_id TEXT, project_name TEXT, file_name TEXT, file_type TEXT, sent_at TEXT)'})
+        });
+        for (const f of files) {
+          await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+            method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+            body: JSON.stringify({sql:'INSERT INTO project_files (project_id, project_name, file_name, file_type, sent_at) VALUES (?,?,?,?,?)', params:[projectId, projectName, String(f.name||'').substring(0,200), String(f.type||'').substring(0,100), String(b.sent_at||new Date().toISOString())]})
+          });
+        }
+        return Response.json({ok:true, recorded:files.length},{headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/email/store'&&request.method==='POST'){
+      try {
+        const b = await request.json();
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'CREATE TABLE IF NOT EXISTS inbound_emails (id INTEGER PRIMARY KEY AUTOINCREMENT, from_addr TEXT, to_addr TEXT, subject TEXT, body TEXT, received_at TEXT, read INTEGER DEFAULT 0)'})
+        });
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'INSERT INTO inbound_emails (from_addr, to_addr, subject, body, received_at) VALUES (?,?,?,?,?)', params:[String(b.from_addr||'').substring(0,200), String(b.to_addr||'').substring(0,200), String(b.subject||'').substring(0,500), String(b.body||'').substring(0,20000), String(b.received_at||new Date().toISOString())]})
+        });
+        return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/email/list'&&request.method==='GET'){
+      try {
+        const limit = Math.min(parseInt(url.searchParams.get('limit')||'50'), 100);
+        const r = await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'SELECT id, from_addr, to_addr, subject, body, received_at, read FROM inbound_emails ORDER BY id DESC LIMIT ?', params:[limit]})
+        });
+        const d = await r.json();
+        return Response.json({ok:true, emails: d.result?.[0]?.results||[]},{headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+    if(url.pathname==='/api/email/read'&&request.method==='POST'){
+      try {
+        const b = await request.json();
+        await fetch('https://api.cloudflare.com/client/v4/accounts/'+env.CF_ACCOUNT_ID+'/d1/database/'+env.D1_DB_ID+'/query', {
+          method:'POST', headers:{'Authorization':'Bearer '+env.CF_API_TOKEN,'Content-Type':'application/json'},
+          body: JSON.stringify({sql:'UPDATE inbound_emails SET read=1 WHERE id=?', params:[parseInt(b.id||0)]})
+        });
+        return Response.json({ok:true},{headers:{...CORS,...NOCACHE}});
+      } catch(e){ return Response.json({error:String(e).substring(0,200)},{status:500,headers:{...CORS,...NOCACHE}}); }
+    }
+        return new Response(HTML,{headers:{'Content-Type':'text/html; charset=utf-8',...NOCACHE,...CORS}});
   },
 };
