@@ -1,5 +1,8 @@
-// Carnival Timing v8.8.0 — slit camera video finish Falkor auto-AI (race summaries + flag times on publish)
-const HTML = `<!DOCTYPE html>
+--16ed25e12f7a97eaa07fcf088e830b0e7368087f01fdd53b73401798022f
+Content-Disposition: form-data; name="index.js"
+
+// worker.js
+var HTML = `<!DOCTYPE html>
 <html lang="en-AU">
 <head>
   <meta charset="UTF-8">
@@ -36,11 +39,11 @@ const HTML = `<!DOCTYPE html>
       overflow-x: hidden;
     }
 
-    /* ── Screens ── */
+    /* \u2500\u2500 Screens \u2500\u2500 */
     .screen { display: none; min-height: 100vh; }
     .screen.active { display: block; }
 
-    /* ── Header ── */
+    /* \u2500\u2500 Header \u2500\u2500 */
     .header {
       background: var(--surface);
       border-bottom: 1px solid var(--surface3);
@@ -70,10 +73,10 @@ const HTML = `<!DOCTYPE html>
     }
     .conn-dot.live { background: var(--success); box-shadow: 0 0 6px var(--success); }
 
-    /* ── Content ── */
+    /* \u2500\u2500 Content \u2500\u2500 */
     .content { padding: 16px; }
 
-    /* ── Home Screen ── */
+    /* \u2500\u2500 Home Screen \u2500\u2500 */
     .home-hero {
       text-align: center;
       padding: 52px 24px 32px;
@@ -111,7 +114,7 @@ const HTML = `<!DOCTYPE html>
     }
     .home-sport-pill span { margin-right: 5px; }
 
-    /* ── Buttons ── */
+    /* \u2500\u2500 Buttons \u2500\u2500 */
     .btn {
       display: block; width: 100%;
       padding: 14px 20px;
@@ -172,7 +175,7 @@ const HTML = `<!DOCTYPE html>
     }
     .btn[disabled] { opacity: 0.38; pointer-events: none; }
 
-    /* ── Form ── */
+    /* \u2500\u2500 Form \u2500\u2500 */
     .form-group { margin-bottom: 16px; }
     label {
       display: block; font-size: 0.78rem; font-weight: 600;
@@ -189,7 +192,7 @@ const HTML = `<!DOCTYPE html>
     input:focus, select:focus { border-color: var(--accent); }
     select option { background: var(--surface2); }
 
-    /* ── Sport Picker ── */
+    /* \u2500\u2500 Sport Picker \u2500\u2500 */
     .sport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .sport-btn {
       background: var(--surface2); border: 2px solid var(--surface3);
@@ -202,7 +205,7 @@ const HTML = `<!DOCTYPE html>
     .sport-btn .s-label { font-size: 0.85rem; font-weight: 700; }
     .sport-btn .s-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
-    /* ── Tier Pills ── */
+    /* \u2500\u2500 Tier Pills \u2500\u2500 */
     .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .pill {
       padding: 6px 14px; border-radius: 20px;
@@ -213,7 +216,7 @@ const HTML = `<!DOCTYPE html>
     }
     .pill.active { border-color: var(--accent); color: var(--accent); background: rgba(20,184,166,0.1); }
 
-    /* ── Card ── */
+    /* \u2500\u2500 Card \u2500\u2500 */
     .card {
       background: var(--surface); border: 1px solid var(--surface3);
       border-radius: 12px; padding: 16px; margin-bottom: 12px;
@@ -223,7 +226,7 @@ const HTML = `<!DOCTYPE html>
       text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;
     }
 
-    /* ── Badge ── */
+    /* \u2500\u2500 Badge \u2500\u2500 */
     .badge {
       display: inline-block; padding: 3px 9px;
       border-radius: 20px; font-size: 0.7rem;
@@ -234,7 +237,7 @@ const HTML = `<!DOCTYPE html>
     .badge-idle { background: rgba(139,148,158,0.15); color: var(--muted); border: 1px solid rgba(139,148,158,0.2); }
     .badge-done { background: rgba(20,184,166,0.15); color: var(--accent); border: 1px solid rgba(20,184,166,0.3); }
 
-    /* ── Clock ── */
+    /* \u2500\u2500 Clock \u2500\u2500 */
     .clock {
       font-family: 'Menlo','SF Mono','Courier New',monospace;
       font-size: 4.2rem; font-weight: 700;
@@ -243,7 +246,7 @@ const HTML = `<!DOCTYPE html>
     }
     .clock.stopped { color: var(--muted); }
 
-    /* ── Lane Row ── */
+    /* \u2500\u2500 Lane Row \u2500\u2500 */
     .lane-row {
       display: flex; align-items: center;
       padding: 10px 12px; background: var(--surface2);
@@ -262,7 +265,7 @@ const HTML = `<!DOCTYPE html>
     .conf-CHECK { color: var(--warn); font-size: 0.7rem; }
     .conf-LOW { color: var(--danger); font-size: 0.7rem; }
 
-    /* ── Place Row (XC) ── */
+    /* \u2500\u2500 Place Row (XC) \u2500\u2500 */
     .place-row {
       display: flex; align-items: center;
       padding: 10px 12px; background: var(--surface2);
@@ -278,7 +281,7 @@ const HTML = `<!DOCTYPE html>
     .medal.p3 { background: #CD7F32; color: #fff; }
     .medal.pN { background: var(--surface3); color: var(--muted); }
 
-    /* ── Tap Counter ── */
+    /* \u2500\u2500 Tap Counter \u2500\u2500 */
     .tap-counter { text-align: center; padding: 16px 0 8px; }
     .tap-place {
       font-size: 5.5rem; font-weight: 900; line-height: 1;
@@ -287,7 +290,7 @@ const HTML = `<!DOCTYPE html>
     }
     .tap-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
 
-    /* ── Role Grid ── */
+    /* \u2500\u2500 Role Grid \u2500\u2500 */
     .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .role-card {
       background: var(--surface2); border: 2px solid var(--surface3);
@@ -301,7 +304,7 @@ const HTML = `<!DOCTYPE html>
     .role-card .r-desc { font-size: 0.73rem; color: var(--muted); margin-top: 3px; }
     .role-card.full { grid-column: 1 / -1; }
 
-    /* ── Video Finish (slit camera) ── */
+    /* \u2500\u2500 Video Finish (slit camera) \u2500\u2500 */
     .vf-canvas  { width:100%; aspect-ratio:16/9; background:#111; border-radius:12px; display:block; touch-action:none; cursor:ew-resize; }
     .vf-slit-wrap { position:relative; overflow:hidden; border-radius:10px; border:1px solid var(--border); background:#000; margin-top:12px; }
     .vf-slit-display { width:100%; height:140px; display:block; background:#111; cursor:default; }
@@ -311,7 +314,7 @@ const HTML = `<!DOCTYPE html>
     .vf-rec-dot { width:10px; height:10px; border-radius:50%; background:#ef4444; animation:vf-pulse 1s infinite; }
     @keyframes vf-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* ── Countdown Overlay ── */
+    /* \u2500\u2500 Countdown Overlay \u2500\u2500 */
     #countdown-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(13,17,23,0.97); z-index: 200;
@@ -328,7 +331,7 @@ const HTML = `<!DOCTYPE html>
       margin-top: 16px; text-transform: uppercase; letter-spacing: 0.15em;
     }
 
-    /* ── Flash Overlay ── */
+    /* \u2500\u2500 Flash Overlay \u2500\u2500 */
     #flash-overlay {
       display: none; position: fixed; inset: 0;
       z-index: 250; pointer-events: none;
@@ -341,7 +344,7 @@ const HTML = `<!DOCTYPE html>
     }
     #tap-flash.show { display: block; }
 
-    /* ── Join Code ── */
+    /* \u2500\u2500 Join Code \u2500\u2500 */
     .join-code {
       font-size: 3.2rem; font-family: 'Menlo',monospace;
       font-weight: 900; color: var(--accent);
@@ -350,7 +353,7 @@ const HTML = `<!DOCTYPE html>
     .qr-wrap { text-align: center; padding: 12px 0; }
     .qr-wrap img { border-radius: 10px; max-width: 180px; }
 
-    /* ── Modal ── */
+    /* \u2500\u2500 Modal \u2500\u2500 */
     .modal-backdrop {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.72); z-index: 400;
@@ -365,7 +368,7 @@ const HTML = `<!DOCTYPE html>
     .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
     .modal-body { color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; }
 
-    /* ── Toast ── */
+    /* \u2500\u2500 Toast \u2500\u2500 */
     #toast {
       position: fixed; bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(80px);
@@ -378,7 +381,7 @@ const HTML = `<!DOCTYPE html>
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* ── Utility ── */
+    /* \u2500\u2500 Utility \u2500\u2500 */
     .stack { display: flex; flex-direction: column; gap: 10px; }
     .row { display: flex; gap: 10px; }
     .row > .btn { flex: 1; }
@@ -397,7 +400,7 @@ const HTML = `<!DOCTYPE html>
     .items-center { align-items: center; }
     .gap-8 { gap: 8px; }
 
-    /* ── XC name input inline ── */
+    /* \u2500\u2500 XC name input inline \u2500\u2500 */
     .xc-name-input {
       background: transparent; border: none;
       border-bottom: 1px dashed var(--surface3);
@@ -407,7 +410,7 @@ const HTML = `<!DOCTYPE html>
     }
     .xc-name-input:focus { border-bottom-color: var(--accent); }
 
-    /* ── Admin Lane Input Row ── */
+    /* \u2500\u2500 Admin Lane Input Row \u2500\u2500 */
     .status-btn {
   padding: 3px 7px; border-radius: 6px; font-size: .72rem; font-weight: 700;
   border: 1.5px solid var(--border); background: var(--surface2); color: var(--muted);
@@ -441,7 +444,7 @@ const HTML = `<!DOCTYPE html>
       #countdown-num { font-size: 9rem; }
     }
 
-    /* ── Demo Card ── */
+    /* \u2500\u2500 Demo Card \u2500\u2500 */
     .demo-card {
       display: flex; align-items: center; gap: 14px;
       background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.06) 100%);
@@ -457,7 +460,7 @@ const HTML = `<!DOCTYPE html>
     .demo-card-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
     .demo-card-arrow { margin-left: auto; font-size: 1.3rem; color: #f59e0b; flex-shrink: 0; }
 
-    /* ── Demo Banner (admin screen) ── */
+    /* \u2500\u2500 Demo Banner (admin screen) \u2500\u2500 */
     .demo-banner {
       background: rgba(245,158,11,0.10);
       border: 1.5px solid rgba(245,158,11,0.30);
@@ -480,7 +483,7 @@ const HTML = `<!DOCTYPE html>
     .demo-banner-hint strong { color: var(--text); }
     .demo-qr { margin-top: 10px; }
   
-    /* ── XC Photo Burst + Finish Card ── */
+    /* \u2500\u2500 XC Photo Burst + Finish Card \u2500\u2500 */
     .finish-photo-wrap {
       width:100%;background:var(--surface3);border-radius:10px;
       overflow:hidden;margin-bottom:8px;position:relative;
@@ -514,7 +517,7 @@ const HTML = `<!DOCTYPE html>
     #finish-card-overlay .card-actions { display:flex;gap:10px;flex-wrap:wrap;justify-content:center; }
 
   
-    /* v8.5.1 — auto-detect */
+    /* v8.5.1 \u2014 auto-detect */
     #xc-line-setup-overlay {
       display:none;position:fixed;inset:0;z-index:9996;background:#000;
       flex-direction:column;
@@ -582,14 +585,14 @@ const HTML = `<!DOCTYPE html>
 .ct-access-badge{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;color:#15803d;border-radius:6px;font-size:.75rem;font-weight:700;padding:3px 8px}
 </style>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='6'/><path d='M15.477 12.89 17 22l-5-3-5 3 1.523-9.11'/></svg>"><meta name="robots" content="index, follow">
-<link rel="canonical" href="https://carnivaltiming.com/"><meta property="og:title" content="Carnival Timing — Live Race Management for School Carnivals"><meta property="og:description" content="Real-time race timing for school athletics, swimming and cross country carnivals. Multi-device, live results, QR pairing. Free to use."><meta property="og:url" content="https://carnivaltiming.com/"><meta property="og:type" content="website"><meta property="og:locale" content="en_AU"><meta property="og:site_name" content="Carnival Timing"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Carnival Timing — Live Race Management for School Carnivals"><meta name="twitter:description" content="Real-time race timing for school athletics, swimming and cross country carnivals. Multi-device, live results, QR pairing. Free to use."><script type="application/ld+json">{
+<link rel="canonical" href="https://carnivaltiming.com/"><meta property="og:title" content="Carnival Timing \u2014 Live Race Management for School Carnivals"><meta property="og:description" content="Real-time race timing for school athletics, swimming and cross country carnivals. Multi-device, live results, QR pairing. Free to use."><meta property="og:url" content="https://carnivaltiming.com/"><meta property="og:type" content="website"><meta property="og:locale" content="en_AU"><meta property="og:site_name" content="Carnival Timing"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Carnival Timing \u2014 Live Race Management for School Carnivals"><meta name="twitter:description" content="Real-time race timing for school athletics, swimming and cross country carnivals. Multi-device, live results, QR pairing. Free to use."><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Carnival Timing",
   "alternateName": "Sport Portal",
   "url": "https://carnivaltiming.com",
   "logo": "https://carnivaltiming.com/favicon.svg",
-  "description": "School sport management platform — carnivals, live timing, district hub, parent-facing results.",
+  "description": "School sport management platform \u2014 carnivals, live timing, district hub, parent-facing results.",
   "address": {"@type": "PostalAddress", "addressCountry": "AU", "addressRegion": "VIC"},
   "founder": {"@type": "Person", "name": "Paddy Gallivan"},
   "legalName": "Luck Dragon Pty Ltd",
@@ -597,7 +600,7 @@ const HTML = `<!DOCTYPE html>
   "email": "info@sportportal.com.au",
   "areaServed": {"@type": "Country", "name": "Australia"},
   "knowsAbout": ["School sport", "Athletics carnivals", "Swimming carnivals", "Cross country", "Live event timing"]
-}</script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+}<\/script><script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"><\/script>
 </head>
 <body>
 
@@ -606,18 +609,18 @@ const HTML = `<!DOCTYPE html>
 <canvas id="xc-cap" style="display:none"></canvas>
 
 <div id="reconnect-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:8px 16px;font-size:.9rem;font-weight:600;letter-spacing:.02em;">
-  ⚡ Reconnecting…
+  \u26A1 Reconnecting\u2026
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: HOME
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-home" class="screen active">
   <div class="home-hero">
     <div class="home-logo">CT</div>
     <div class="home-title">Carnival Timing</div>
-    <div class="home-tagline">Real-time race timing — no stopwatches, no paper, no chaos</div>
-    <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);text-align:center;margin-top:6px;letter-spacing:0.08em;text-transform:uppercase">Track · Swimming · Cross Country</div>
+    <div class="home-tagline">Real-time race timing \u2014 no stopwatches, no paper, no chaos</div>
+    <div style="font-size:0.72rem;color:rgba(255,255,255,0.3);text-align:center;margin-top:6px;letter-spacing:0.08em;text-transform:uppercase">Track \xB7 Swimming \xB7 Cross Country</div>
     <div class="home-sports">
       <div class="home-sport-pill"><span><svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true' style='vertical-align:middle'><polyline points='22 12 18 12 15 21 9 3 6 12 2 12'/></svg></span>Track & Field</div>
       <div class="home-sport-pill"><span><svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true' style='vertical-align:middle'><path d='M2 20s2-2 5-2 5 2 7 2 5-2 7-2 3 1 3 1M2 16s2-2 5-2 5 2 7 2 5-2 7-2 3 1 3 1'/><circle cx='14' cy='5' r='2'/></svg></span>Swimming</div>
@@ -642,10 +645,10 @@ const HTML = `<!DOCTYPE html>
         <div class="demo-card-title">Live demo</div>
         <div class="demo-card-desc">Runs a real carnival with 8 athletes. No sign-up.</div>
       </div>
-      <div class="demo-card-arrow">→</div>
+      <div class="demo-card-arrow">\u2192</div>
     </div>
 
-    <!-- ── How it works ── -->
+    <!-- \u2500\u2500 How it works \u2500\u2500 -->
     <div style="margin-top:32px">
       <div style="font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;text-align:center">How it works</div>
 
@@ -661,7 +664,7 @@ const HTML = `<!DOCTYPE html>
           <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:0.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
           <div>
             <div style="font-weight:600;font-size:0.9rem">Everyone joins on their phone</div>
-            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Open carnivaltiming.com, tap Join Carnival, enter the code. Pick a role — Timer, Observer, Starter or XC Marshal.</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Open carnivaltiming.com, tap Join Carnival, enter the code. Pick a role \u2014 Timer, Observer, Starter or XC Marshal.</div>
           </div>
         </div>
         <div style="display:flex;align-items:flex-start;gap:12px">
@@ -674,7 +677,7 @@ const HTML = `<!DOCTYPE html>
         <div style="display:flex;align-items:flex-start;gap:12px">
           <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:0.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
           <div>
-            <div style="font-weight:600;font-size:0.9rem">Times sync instantly — publish when ready</div>
+            <div style="font-weight:600;font-size:0.9rem">Times sync instantly \u2014 publish when ready</div>
             <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Race Control sees all splits live and publishes the averaged result.</div>
           </div>
         </div>
@@ -685,8 +688,8 @@ const HTML = `<!DOCTYPE html>
         <div style="font-size:0.78rem;font-weight:700;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Roles</div>
         <div style="display:flex;flex-direction:column;gap:7px;font-size:0.82rem">
           <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Race Control</span><span style="color:var(--muted)">Arms races, fires GO/RECALL, publishes results. One per carnival.</span></div>
-          <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Timer</span><span style="color:var(--muted)">Taps STOP for one lane. Bring 2–3 per lane for accuracy.</span></div>
-          <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Starter</span><span style="color:var(--muted)">Fires GO from the start line (optional — Race Control can do it).</span></div>
+          <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Timer</span><span style="color:var(--muted)">Taps STOP for one lane. Bring 2\u20133 per lane for accuracy.</span></div>
+          <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Starter</span><span style="color:var(--muted)">Fires GO from the start line (optional \u2014 Race Control can do it).</span></div>
           <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">Observer</span><span style="color:var(--muted)">Watches live splits on any device. Read-only.</span></div>
           <div style="display:flex;gap:8px"><span style="font-weight:700;min-width:110px">XC Marshal</span><span style="color:var(--muted)">Taps finishers in order at the cross country finish chute.</span></div>
         </div>
@@ -698,43 +701,43 @@ const HTML = `<!DOCTYPE html>
         <div style="font-size:0.82rem;display:flex;flex-direction:column;gap:5px">
           <div style="display:flex;gap:8px"><span style="min-width:70px;font-weight:700">1 timer</span><span style="color:var(--muted)">That time is used directly.</span></div>
           <div style="display:flex;gap:8px"><span style="min-width:70px;font-weight:700">2 timers</span><span style="color:var(--muted)">Average of both.</span></div>
-          <div style="display:flex;gap:8px"><span style="min-width:70px;font-weight:700">3+ timers</span><span style="color:var(--muted)">Trimmed mean — fastest and slowest dropped, rest averaged. <strong>Recommended for accuracy.</strong></span></div>
+          <div style="display:flex;gap:8px"><span style="min-width:70px;font-weight:700">3+ timers</span><span style="color:var(--muted)">Trimmed mean \u2014 fastest and slowest dropped, rest averaged. <strong>Recommended for accuracy.</strong></span></div>
         </div>
         <div style="margin-top:8px;font-size:0.78rem;color:var(--muted)">No hard limit on timers. More timers per lane = more accurate result.</div>
       </div>
     </div>
 
 
-    <!-- ── School Sport Portal upsell ── -->
+    <!-- \u2500\u2500 School Sport Portal upsell \u2500\u2500 -->
     <div style="margin-top:24px;background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);border-radius:14px;padding:18px 20px;color:#fff">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:1.1rem">🏅</span>
+        <span style="font-size:1.1rem">\u{1F3C5}</span>
         <span style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fcd34d">School Sport Portal</span>
       </div>
       <div style="font-size:0.98rem;font-weight:700;margin-bottom:6px;line-height:1.3">Want persistent results, house points &amp; district qualifiers?</div>
-      <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:14px;line-height:1.5">Carnival Timing is free and always will be. School Sport Portal adds automatic house point tallies, event program builder, district qualifier tracking and permanent public results pages — for $1/student/year.</div>
+      <div style="font-size:0.82rem;color:rgba(255,255,255,0.75);margin-bottom:14px;line-height:1.5">Carnival Timing is free and always will be. School Sport Portal adds automatic house point tallies, event program builder, district qualifier tracking and permanent public results pages \u2014 for $1/student/year.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a href="https://schoolsportportal.com.au" target="_blank" style="background:#f59e0b;color:#0d1b3e;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">See School Sport Portal →</a>
+        <a href="https://schoolsportportal.com.au" target="_blank" style="background:#f59e0b;color:#0d1b3e;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">See School Sport Portal \u2192</a>
         <a href="https://schoolsportportal.com.au#demo" target="_blank" style="border:1.5px solid rgba(255,255,255,0.3);color:#fff;padding:8px 16px;border-radius:7px;font-size:0.85rem;font-weight:600;text-decoration:none;display:inline-block">Live demo</a>
       </div>
     </div>
 
     <div class="text-center text-muted text-xs mt-32">
-      Auto-reconnects · No app install · Join &amp; observe free<br>
-      <span style="opacity:0.5">Carnival Timing · carnivaltiming.com</span>
+      Auto-reconnects \xB7 No app install \xB7 Join &amp; observe free<br>
+      <span style="opacity:0.5">Carnival Timing \xB7 carnivaltiming.com</span>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: SETUP (New Carnival)
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-setup" class="screen">
   <div class="header">
     <div class="logo-badge">SP</div>
     <div class="header-title">New Carnival</div>
     <div class="header-right">
-      <button class="btn btn-icon btn-sm" onclick="showScreen('home')">← Back</button>
+      <button class="btn btn-icon btn-sm" onclick="showScreen('home')">\u2190 Back</button>
     </div>
   </div>
   <div class="content">
@@ -782,10 +785,10 @@ const HTML = `<!DOCTYPE html>
     </div>
     <div class="form-group">
       <label>Accent Colour <span style="font-weight:400;text-transform:none;font-size:0.85em">(optional)</span></label>
-      <input type="text" id="setup-colour" placeholder="#14b8a6 — leave blank for teal">
+      <input type="text" id="setup-colour" placeholder="#14b8a6 \u2014 leave blank for teal">
     </div>
         <div class="form-group">
-      <label>Houses <span style="color:var(--muted);font-size:.8rem;font-weight:400">(optional — for points tally)</span></label>
+      <label>Houses <span style="color:var(--muted);font-size:.8rem;font-weight:400">(optional \u2014 for points tally)</span></label>
       <input type="text" id="setup-houses" placeholder="Red, Blue, Green, Yellow">
       <div style="color:var(--muted);font-size:.75rem;margin-top:4px">Comma-separated. Leave blank to skip house points.</div>
     </div>
@@ -795,21 +798,21 @@ const HTML = `<!DOCTYPE html>
         <button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:.8rem" onclick="addProgramRow()">+ Add Event</button>
       </div>
       <div id="program-rows" style="max-height:240px;overflow-y:auto"></div>
-      <div style="color:var(--muted);font-size:.75rem;margin-top:4px">Pre-load your day's schedule. Use "Next Event →" in Race Control to auto-advance.</div>
+      <div style="color:var(--muted);font-size:.75rem;margin-top:4px">Pre-load your day's schedule. Use "Next Event \u2192" in Race Control to auto-advance.</div>
     </div>
-    <button class="btn btn-primary mt-8" onclick="createCarnival()">Create Carnival →</button>
+    <button class="btn btn-primary mt-8" onclick="createCarnival()">Create Carnival \u2192</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: JOIN
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-join-screen" class="screen">
   <div class="header">
     <div class="logo-badge">SP</div>
     <div class="header-title">Join Carnival</div>
     <div class="header-right">
-      <button class="btn btn-icon btn-sm" onclick="showScreen('home')">← Back</button>
+      <button class="btn btn-icon btn-sm" onclick="showScreen('home')">\u2190 Back</button>
     </div>
   </div>
   <div class="content">
@@ -823,14 +826,14 @@ const HTML = `<!DOCTYPE html>
       <label>Your Name</label>
       <input type="text" id="join-name-input" placeholder="e.g. Alex">
     </div>
-    <button class="btn btn-primary" onclick="joinCarnival()">Join →</button>
+    <button class="btn btn-primary" onclick="joinCarnival()">Join \u2192</button>
     <div id="join-error" class="text-center text-muted mt-16 hidden" style="color:var(--danger)"></div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: ROLE PICKER
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-role" class="screen">
   <div class="header">
     <div class="logo-badge">SP</div>
@@ -854,9 +857,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: TIMER (Lane)
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-timer" class="screen">
   <div class="header">
     <div class="conn-dot" id="timer-dot"></div><span id="timer-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -869,11 +872,11 @@ const HTML = `<!DOCTYPE html>
   <div class="content">
     <div class="card" id="timer-athlete-card">
       <div class="card-title" id="timer-athlete-event">Event</div>
-      <div id="timer-athlete-name" style="font-size:1.5rem;font-weight:700">—</div>
+      <div id="timer-athlete-name" style="font-size:1.5rem;font-weight:700">\u2014</div>
       <div id="timer-athlete-note" class="text-muted text-sm"></div>
     </div>
 
-    <div id="timer-recall-banner" class="hidden" style="background:#7f1d1d;color:#fca5a5;border-radius:10px;padding:10px 14px;text-align:center;font-weight:700;font-size:1.05rem;margin-bottom:8px;">FALSE START — Race Recalled</div>
+    <div id="timer-recall-banner" class="hidden" style="background:#7f1d1d;color:#fca5a5;border-radius:10px;padding:10px 14px;text-align:center;font-weight:700;font-size:1.05rem;margin-bottom:8px;">FALSE START \u2014 Race Recalled</div>
 
     <div class="clock" id="timer-clock">0:00.00</div>
 
@@ -893,7 +896,7 @@ const HTML = `<!DOCTYPE html>
 
     <div id="timer-splits-card" class="card mt-8 hidden">
       <div class="card-title">All timers this lane</div>
-      <div class="text-xs text-muted" style="padding:0 4px 6px;line-height:1.4;">Race Control publishes a <strong>trimmed mean</strong> — with 3+ timers the fastest and slowest are dropped.</div>
+      <div class="text-xs text-muted" style="padding:0 4px 6px;line-height:1.4;">Race Control publishes a <strong>trimmed mean</strong> \u2014 with 3+ timers the fastest and slowest are dropped.</div>
       <div id="timer-splits-list"></div>
     </div>
 
@@ -904,9 +907,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: ADMIN (Lane Race)
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-admin" class="screen">
   <div class="header">
     <div class="conn-dot" id="admin-dot"></div><span id="admin-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -922,7 +925,7 @@ const HTML = `<!DOCTYPE html>
         <span class="badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border-color:rgba(245,158,11,0.3)">DEMO</span>
       </div>
       <div class="demo-banner-hint" style="margin-bottom:10px">
-        <strong>Share this code</strong> — open carnivaltiming.com on another device and tap "Join Carnival"
+        <strong>Share this code</strong> \u2014 open carnivaltiming.com on another device and tap "Join Carnival"
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span class="demo-code-pill" id="demo-code-display" onclick="copyDemoCode()" title="Tap to copy">????</span>
@@ -958,7 +961,7 @@ const HTML = `<!DOCTYPE html>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div class="card-title" style="margin:0">Lane Assignments</div>
-          <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:.78rem" onclick="openRosterModal()">📋 Paste Roster</button>
+          <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:.78rem" onclick="openRosterModal()">\u{1F4CB} Paste Roster</button>
         </div>
         <div id="admin-lane-inputs"></div>
       </div>
@@ -970,8 +973,8 @@ const HTML = `<!DOCTYPE html>
         <div id="admin-house-standings"></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="adminArm()" style="flex:1">ARM RACE →</button>
-        <button class="btn btn-secondary" id="admin-next-event-btn" onclick="adminNextEvent()" style="flex:1;display:none">Next Event →</button>
+        <button class="btn btn-primary" onclick="adminArm()" style="flex:1">ARM RACE \u2192</button>
+        <button class="btn btn-secondary" id="admin-next-event-btn" onclick="adminNextEvent()" style="flex:1;display:none">Next Event \u2192</button>
       </div>
     </div>
 
@@ -1001,8 +1004,8 @@ const HTML = `<!DOCTYPE html>
       <div id="admin-splits-list"></div>
       <button class="btn btn-primary mt-16 hidden" id="admin-publish-btn" onclick="adminPublish()"><svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true' style='vertical-align:middle'><rect x='8' y='2' width='8' height='4' rx='1' ry='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/></svg> Publish Results</button>
       <div id="admin-export-btns" class="hidden" style="display:none;gap:8px;margin-top:8px">
-        <button class="btn btn-secondary" style="flex:1" onclick="adminExportCSV()">⬇ Export CSV</button>
-        <button class="btn btn-secondary" style="flex:1" onclick="adminPrintResults()">🖨 Print</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="adminExportCSV()">\u2B07 Export CSV</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="adminPrintResults()">\u{1F5A8} Print</button>
       </div>
     </div>
 
@@ -1021,9 +1024,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: STARTER
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-starter" class="screen">
   <div class="header">
     <div class="conn-dot" id="starter-dot"></div><span id="starter-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -1047,14 +1050,14 @@ const HTML = `<!DOCTYPE html>
         <div id="starter-listen-idle">
           <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:12px">Point mic toward the starting pistol</div>
           <button class="btn btn-primary" style="width:100%;font-size:1.1rem;padding:16px" onclick="starterListenStart()">
-            🎙️ Listen for Gun
+            \u{1F399}\uFE0F Listen for Gun
           </button>
         </div>
         <!-- Listening state -->
         <div id="starter-listen-active" class="hidden">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;animation:vf-pulse 0.8s infinite;flex-shrink:0"></div>
-            <div style="font-size:0.9rem;font-weight:700;color:#ef4444;flex:1">Listening…</div>
+            <div style="font-size:0.9rem;font-weight:700;color:#ef4444;flex:1">Listening\u2026</div>
             <div id="starter-cal-lbl" style="font-size:0.72rem;color:var(--muted)">Calibrating</div>
           </div>
           <!-- Volume bar -->
@@ -1070,7 +1073,7 @@ const HTML = `<!DOCTYPE html>
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-secondary" style="flex:1;font-size:0.85rem" onclick="starterListenStop()">Stop Listening</button>
-            <button class="btn btn-secondary" style="font-size:0.85rem;padding:8px 12px" title="Recalibrate noise floor" onclick="starterRecalibrate()">↺ Recal</button>
+            <button class="btn btn-secondary" style="font-size:0.85rem;padding:8px 12px" title="Recalibrate noise floor" onclick="starterRecalibrate()">\u21BA Recal</button>
           </div>
         </div>
       </div>
@@ -1084,9 +1087,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: OBSERVER (Lane Race)
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-observer" class="screen">
   <div class="header">
     <div class="conn-dot" id="observer-dot"></div><span id="observer-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -1103,14 +1106,14 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: XC MARSHAL
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-marshal" class="screen">
   <div class="header">
     <div class="conn-dot" id="marshal-dot"></div><span id="marshal-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
     <div class="header-title">Finish Marshal</div>
-    <div class="header-right" style="display:flex;align-items:center;gap:6px"><span id="marshal-event-lbl" class="text-xs text-muted"></span><button id="xc-rec-btn" onclick="xcToggleRecord()" title="Record video" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.75rem;padding:3px 7px;cursor:pointer;line-height:1">📹</button></div>
+    <div class="header-right" style="display:flex;align-items:center;gap:6px"><span id="marshal-event-lbl" class="text-xs text-muted"></span><button id="xc-rec-btn" onclick="xcToggleRecord()" title="Record video" style="background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:0.75rem;padding:3px 7px;cursor:pointer;line-height:1">\u{1F4F9}</button></div>
   </div>
   <div class="content" style="padding:0">
     <!-- WAITING -->
@@ -1124,29 +1127,29 @@ const HTML = `<!DOCTYPE html>
       <!-- Auto-detect toggle bar -->
       <div id="xc-auto-bar" style="display:none" class="xc-detect-bar">
         <div class="xc-detect-pulse"></div>
-        <div style="flex:1;font-size:.85rem;font-weight:600;color:var(--text)" id="xc-detect-status">Setting up…</div>
+        <div style="flex:1;font-size:.85rem;font-weight:600;color:var(--text)" id="xc-detect-status">Setting up\u2026</div>
         <input type="range" id="xc-sensitivity" min="8" max="55" value="22"
           style="width:70px" title="Sensitivity"
           oninput="xcDiffThreshold=+this.value;document.getElementById('xc-sens-val').textContent=this.value"
           >
         <span id="xc-sens-val" style="font-size:.7rem;color:var(--muted);min-width:18px">22</span>
-        <button class="btn btn-secondary btn-sm" onclick="xcStopAutoMode()" style="font-size:.7rem">✕ Off</button>
+        <button class="btn btn-secondary btn-sm" onclick="xcStopAutoMode()" style="font-size:.7rem">\u2715 Off</button>
       </div>
       <!-- Auto-detect mode button -->
       <button id="xc-auto-mode-btn" class="btn btn-secondary btn-sm"
         style="width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;padding:8px;font-size:.8rem"
-        onclick="xcStartAutoMode()">🎯 Switch to Auto-Detect (no tapping)</button>
-      <!-- Recording status bar — visible only when recording -->
+        onclick="xcStartAutoMode()">\u{1F3AF} Switch to Auto-Detect (no tapping)</button>
+      <!-- Recording status bar \u2014 visible only when recording -->
       <div id="xc-rec-bar" style="display:none;align-items:center;gap:8px;padding:6px 12px;background:#1c0000;border-bottom:2px solid #ef4444;flex-shrink:0">
         <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;animation:xc-rec-pulse 1s ease-in-out infinite;flex-shrink:0"></div>
-        <div style="flex:1;font-size:.82rem;font-weight:700;color:#ef4444;letter-spacing:.04em" id="xc-rec-status">● REC 00:00</div>
-        <button onclick="xcStopRecording()" style="background:#ef4444;border:none;border-radius:5px;color:#fff;font-size:.72rem;font-weight:700;padding:4px 9px;cursor:pointer">⏹ Stop &amp; Save</button>
+        <div style="flex:1;font-size:.82rem;font-weight:700;color:#ef4444;letter-spacing:.04em" id="xc-rec-status">\u25CF REC 00:00</div>
+        <button onclick="xcStopRecording()" style="background:#ef4444;border:none;border-radius:5px;color:#fff;font-size:.72rem;font-weight:700;padding:4px 9px;cursor:pointer">\u23F9 Stop &amp; Save</button>
       </div>
       <!-- Finisher list -->
       <div style="flex:1;overflow-y:auto;padding:10px 16px" id="marshal-finishes-wrap">
         <div id="marshal-finishes-list"></div>
         <div class="text-center mt-8">
-          <button class="btn btn-icon btn-sm" onclick="marshalUndo()">↩ Undo last</button>
+          <button class="btn btn-icon btn-sm" onclick="marshalUndo()">\u21A9 Undo last</button>
         </div>
       </div>
 
@@ -1155,14 +1158,14 @@ const HTML = `<!DOCTYPE html>
         style="flex-shrink:0;padding:14px 16px 16px;background:var(--surface-2);border-top:2px solid var(--accent)">
         <!-- Finish photo preview -->
         <div class="finish-photo-wrap" id="finish-photo-wrap">
-          <div class="finish-photo-capturing" id="finish-photo-status">📷 Capturing…</div>
+          <div class="finish-photo-capturing" id="finish-photo-status">\u{1F4F7} Capturing\u2026</div>
           <img id="finish-photo-img" src="" style="display:none">
         </div>
         <!-- Bib label + OCR row -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <div style="font-size:0.82rem;font-weight:700;color:var(--text);flex:1"
             id="marshal-bib-for">Enter bib for 1st place</div>
-          <button class="btn btn-secondary btn-sm" id="ocr-btn" onclick="runBibOCR()" style="flex-shrink:0;font-size:0.72rem">🔍 Auto</button>
+          <button class="btn btn-secondary btn-sm" id="ocr-btn" onclick="runBibOCR()" style="flex-shrink:0;font-size:0.72rem">\u{1F50D} Auto</button>
         </div>
         <div style="font-size:2.2rem;font-weight:700;color:var(--accent);letter-spacing:0.12em;min-height:2.6rem;margin-bottom:8px"
           id="marshal-bib-display">_</div>
@@ -1176,13 +1179,13 @@ const HTML = `<!DOCTYPE html>
           <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem" onclick="bibDigit('7')">7</button>
           <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem" onclick="bibDigit('8')">8</button>
           <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem" onclick="bibDigit('9')">9</button>
-          <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem;color:var(--danger)" onclick="bibBack()">⌫</button>
+          <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem;color:var(--danger)" onclick="bibBack()">\u232B</button>
           <button class="btn btn-secondary" style="padding:14px;font-size:1.1rem" onclick="bibDigit('0')">0</button>
-          <button class="btn btn-primary" style="padding:14px;font-size:1.1rem" onclick="bibConfirm()">✓</button>
+          <button class="btn btn-primary" style="padding:14px;font-size:1.1rem" onclick="bibConfirm()">\u2713</button>
         </div>
-        <button class="btn btn-secondary btn-sm" style="width:100%;max-width:280px;margin-top:8px" onclick="bibSkip()">Skip — bib unknown</button>
+        <button class="btn btn-secondary btn-sm" style="width:100%;max-width:280px;margin-top:8px" onclick="bibSkip()">Skip \u2014 bib unknown</button>
       </div>
-      <!-- Big tap button — always at bottom (thumb zone), tappable even while bib pad is open -->
+      <!-- Big tap button \u2014 always at bottom (thumb zone), tappable even while bib pad is open -->
       <button class="btn-tap" id="marshal-tap-btn" onclick="marshalTap()"
         style="flex-shrink:0;border-radius:0;margin:0;width:100%">
         <span class="tap-main" id="marshal-clock-mini">0:00.00</span>
@@ -1192,9 +1195,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: XC ADMIN
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-admin-xc" class="screen">
   <div class="header">
     <div class="conn-dot" id="xc-admin-dot"></div><span id="xc-admin-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -1224,7 +1227,7 @@ const HTML = `<!DOCTYPE html>
           <select id="xc-event-sel"></select>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="xcAdminArm()">ARM RACE →</button>
+      <button class="btn btn-primary" onclick="xcAdminArm()">ARM RACE \u2192</button>
     </div>
 
     <!-- Live -->
@@ -1248,7 +1251,7 @@ const HTML = `<!DOCTYPE html>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <div class="card-title" style="margin-bottom:0;flex:1">Finishers <span id="xc-count-lbl" class="text-muted text-xs"></span></div>
         <label style="font-size:0.78rem;color:var(--muted);display:flex;align-items:center;gap:6px">
-          🏅 Qual spots
+          \u{1F3C5} Qual spots
           <input type="number" id="xc-qual-spots" value="10" min="0" max="99"
             style="width:52px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 6px;font-size:0.82rem;text-align:center">
         </label>
@@ -1258,9 +1261,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: XC OBSERVER
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-observer-xc" class="screen">
   <div class="header">
     <div class="conn-dot" id="xc-observer-dot"></div>
@@ -1277,9 +1280,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: VIDEO FINISH
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-video-finish" class="screen">
   <div class="header">
     <div class="conn-dot" id="vf-dot"></div><span id="vf-dot-lbl" style="font-size:0.65rem;font-weight:700;letter-spacing:.05em;color:var(--muted)"></span>
@@ -1289,7 +1292,7 @@ const HTML = `<!DOCTYPE html>
     </div>
     <div class="header-right">
       <span id="vf-badge" class="badge" style="display:none"></span>
-      <button class="btn btn-icon btn-sm" onclick="vfExit()">← Back</button>
+      <button class="btn btn-icon btn-sm" onclick="vfExit()">\u2190 Back</button>
     </div>
   </div>
   <div class="content">
@@ -1301,7 +1304,7 @@ const HTML = `<!DOCTYPE html>
     <!-- Status bar -->
     <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
       <div id="vf-status-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
-      <div id="vf-race-status" style="font-size:0.85rem;font-weight:600;color:var(--text);flex:1">Starting camera…</div>
+      <div id="vf-race-status" style="font-size:0.85rem;font-weight:600;color:var(--text);flex:1">Starting camera\u2026</div>
       <div id="vf-detect-count" style="font-size:0.78rem;color:var(--muted)"></div>
     </div>
 
@@ -1310,20 +1313,20 @@ const HTML = `<!DOCTYPE html>
       <canvas id="vf-slit-canvas" class="vf-slit-display"></canvas>
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:3px">
-      <span id="vf-slit-lbl-left" style="font-size:0.7rem;color:var(--muted)">← earlier</span>
+      <span id="vf-slit-lbl-left" style="font-size:0.7rem;color:var(--muted)">\u2190 earlier</span>
       <span style="font-size:0.7rem;color:var(--muted);font-weight:600">FINISH LINE PHOTO</span>
-      <span id="vf-slit-lbl-right" style="font-size:0.7rem;color:var(--muted)">now →</span>
+      <span id="vf-slit-lbl-right" style="font-size:0.7rem;color:var(--muted)">now \u2192</span>
     </div>
 
     <!-- Controls -->
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">
-      <button id="vf-cam-flip-btn" class="btn btn-secondary" style="font-size:0.8rem;padding:6px 10px" title="Switch camera" onclick="vfFlipCamera()">📷↕</button>
+      <button id="vf-cam-flip-btn" class="btn btn-secondary" style="font-size:0.8rem;padding:6px 10px" title="Switch camera" onclick="vfFlipCamera()">\u{1F4F7}\u2195</button>
       <div style="display:flex;align-items:center;gap:6px;flex:1">
         <span style="font-size:0.78rem;color:var(--muted);white-space:nowrap">Sensitivity</span>
         <input type="range" id="vf-sensitivity" min="1" max="10" value="6" style="flex:1;accent-color:var(--accent)">
         <span id="vf-sens-val" style="font-size:0.78rem;color:var(--muted);min-width:16px">6</span>
       </div>
-      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 10px" onclick="vfExportSlit()" title="Save finish line photo">💾 Photo</button>
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 10px" onclick="vfExportSlit()" title="Save finish line photo">\u{1F4BE} Photo</button>
     </div>
 
     <!-- Offset -->
@@ -1342,25 +1345,25 @@ const HTML = `<!DOCTYPE html>
         <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Finishes</div>
         <button class="btn btn-secondary" style="font-size:0.72rem;padding:4px 10px" onclick="vfManualAdd()">+ Add Manual</button>
       </div>
-      <div id="vf-mark-list"><div class="text-muted text-sm text-center mt-8">Waiting for race…</div></div>
+      <div id="vf-mark-list"><div class="text-muted text-sm text-center mt-8">Waiting for race\u2026</div></div>
     </div>
 
     <!-- Publish -->
     <div style="margin-top:16px">
-      <button id="vf-publish-btn" class="btn btn-primary" style="width:100%" onclick="vfPublish()">Publish Times →</button>
+      <button id="vf-publish-btn" class="btn btn-primary" style="width:100%" onclick="vfPublish()">Publish Times \u2192</button>
     </div>
 
   </div>
 </div>
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: JOIN PAGE (QR)
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-share" class="screen">
   <div class="header">
     <div class="logo-badge">SP</div>
     <div class="header-title" id="share-school-name">Join Page</div>
     <div class="header-right">
-      <button class="btn btn-icon btn-sm" onclick="enterRole('role')">← Back</button>
+      <button class="btn btn-icon btn-sm" onclick="enterRole('role')">\u2190 Back</button>
     </div>
   </div>
   <div class="content text-center">
@@ -1375,9 +1378,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      SCREEN: RESULTS
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="screen-results" class="screen">
   <div class="header">
     <div class="logo-badge">SP</div>
@@ -1391,9 +1394,9 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      OVERLAYS
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <div id="countdown-overlay">
   <div id="countdown-num" style="color:var(--text)">3</div>
   <div id="countdown-label">Get set...</div>
@@ -1411,33 +1414,33 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      FIREBASE SDK
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <script>
-    // Inlined QRCode generator (davidshimjs/qrcodejs 1.0.0) — no external dependency
+    // Inlined QRCode generator (davidshimjs/qrcodejs 1.0.0) \u2014 no external dependency
     var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this.parsedData=[];for(var b=[],d=0,e=this.data.length;e>d;d++){var f=this.data.charCodeAt(d);f>65536?(b[0]=240|(1835008&f)>>>18,b[1]=128|(258048&f)>>>12,b[2]=128|(4032&f)>>>6,b[3]=128|63&f):f>2048?(b[0]=224|(61440&f)>>>12,b[1]=128|(4032&f)>>>6,b[2]=128|63&f):f>128?(b[0]=192|(1984&f)>>>6,b[1]=128|63&f):b[0]=f,this.parsedData=this.parsedData.concat(b)}this.parsedData.length!=this.data.length&&(this.parsedData.unshift(191),this.parsedData.unshift(187),this.parsedData.unshift(239))}function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}function i(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);for(var c=0;c<a.length&&0==a[c];)c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}function j(a,b){this.totalCount=a,this.dataCount=b}function k(){this.buffer=[],this.length=0}function m(){return"undefined"!=typeof CanvasRenderingContext2D}function n(){var a=!1,b=navigator.userAgent;return/android/i.test(b)&&(a=!0,aMat=b.toString().match(/android ([0-9]\\.[0-9])/i),aMat&&aMat[1]&&(a=parseFloat(aMat[1]))),a}function r(a,b){for(var c=1,e=s(a),f=0,g=l.length;g>=f;f++){var h=0;switch(b){case d.L:h=l[f][0];break;case d.M:h=l[f][1];break;case d.Q:h=l[f][2];break;case d.H:h=l[f][3]}if(h>=e)break;c++}if(c>l.length)throw new Error("Too long data");return c}function s(a){var b=encodeURI(a).toString().replace(/\\%[0-9a-fA-F]{2}/g,"a");return b.length+(b.length!=a?3:0)}a.prototype={getLength:function(){return this.parsedData.length},write:function(a){for(var b=0,c=this.parsedData.length;c>b;b++)a.put(this.parsedData[b],8)}},b.prototype={addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw new Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,c){this.moduleCount=4*this.typeNumber+17,this.modules=new Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}this.setupPositionProbePattern(0,0),this.setupPositionProbePattern(this.moduleCount-7,0),this.setupPositionProbePattern(0,this.moduleCount-7),this.setupPositionAdjustPattern(),this.setupTimingPattern(),this.setupTypeInfo(a,c),this.typeNumber>=7&&this.setupTypeNumber(a),null==this.dataCache&&(this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList)),this.mapData(this.dataCache,c)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>=a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>=b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},createMovieClip:function(a,b,c){var d=a.createEmptyMovieClip(b,c),e=1;this.make();for(var f=0;f<this.modules.length;f++)for(var g=f*e,h=0;h<this.modules[f].length;h++){var i=h*e,j=this.modules[f][h];j&&(d.beginFill(0,100),d.moveTo(i,g),d.lineTo(i+e,g),d.lineTo(i+e,g+e),d.lineTo(i,g+e),d.endFill())}return d},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a][6]&&(this.modules[a][6]=0==a%2);for(var b=8;b<this.moduleCount-8;b++)null==this.modules[6][b]&&(this.modules[6][b]=0==b%2)},setupPositionAdjustPattern:function(){for(var a=f.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)this.modules[d+g][e+h]=-2==g||2==g||-2==h||2==h||0==g&&0==h?!0:!1}},setupTypeNumber:function(a){for(var b=f.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(var c=0;18>c;c++){var d=!a&&1==(1&b>>c);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}},setupTypeInfo:function(a,b){for(var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c),e=0;15>e;e++){var g=!a&&1==(1&d>>e);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}for(var e=0;15>e;e++){var g=!a&&1==(1&d>>e);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}this.modules[this.moduleCount-8][8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2)for(6==h&&h--;;){for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(1&a[g]>>>e));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}if(d+=c,0>d||this.moduleCount<=d){d-=c,c=-c;break}}}},b.PAD0=236,b.PAD1=17,b.createData=function(a,c,d){for(var e=j.getRSBlocks(a,c),g=new k,h=0;h<d.length;h++){var i=d[h];g.put(i.mode,4),g.put(i.getLength(),f.getLengthInBits(i.mode,a)),i.write(g)}for(var l=0,h=0;h<e.length;h++)l+=e[h].dataCount;if(g.getLengthInBits()>8*l)throw new Error("code length overflow. ("+g.getLengthInBits()+">"+8*l+")");for(g.getLengthInBits()+4<=8*l&&g.put(0,4);0!=g.getLengthInBits()%8;)g.putBit(!1);for(;;){if(g.getLengthInBits()>=8*l)break;if(g.put(b.PAD0,8),g.getLengthInBits()>=8*l)break;g.put(b.PAD1,8)}return b.createBytes(g,e)},b.createBytes=function(a,b){for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),j=0;j<b.length;j++){var k=b[j].dataCount,l=b[j].totalCount-k;d=Math.max(d,k),e=Math.max(e,l),g[j]=new Array(k);for(var m=0;m<g[j].length;m++)g[j][m]=255&a.buffer[m+c];c+=k;var n=f.getErrorCorrectPolynomial(l),o=new i(g[j],n.getLength()-1),p=o.mod(n);h[j]=new Array(n.getLength()-1);for(var m=0;m<h[j].length;m++){var q=m+p.getLength()-h[j].length;h[j][m]=q>=0?p.get(q):0}}for(var r=0,m=0;m<b.length;m++)r+=b[m].totalCount;for(var s=new Array(r),t=0,m=0;d>m;m++)for(var j=0;j<b.length;j++)m<g[j].length&&(s[t++]=g[j][m]);for(var m=0;e>m;m++)for(var j=0;j<b.length;j++)m<h[j].length&&(s[t++]=h[j][m]);return s};for(var c={MODE_NUMBER:1,MODE_ALPHA_NUM:2,MODE_8BIT_BYTE:4,MODE_KANJI:8},d={L:1,M:0,Q:3,H:2},e={PATTERN000:0,PATTERN001:1,PATTERN010:2,PATTERN011:3,PATTERN100:4,PATTERN101:5,PATTERN110:6,PATTERN111:7},f={PATTERN_POSITION_TABLE:[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<f.getBCHDigit(b)-f.getBCHDigit(f.G15);return(a<<10|b)^f.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<f.getBCHDigit(b)-f.getBCHDigit(f.G18);return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return f.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case e.PATTERN000:return 0==(b+c)%2;case e.PATTERN001:return 0==b%2;case e.PATTERN010:return 0==c%3;case e.PATTERN011:return 0==(b+c)%3;case e.PATTERN100:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case e.PATTERN101:return 0==b*c%2+b*c%3;case e.PATTERN110:return 0==(b*c%2+b*c%3)%2;case e.PATTERN111:return 0==(b*c%3+(b+c)%2)%2;default:throw new Error("bad maskPattern:"+a)}},getErrorCorrectPolynomial:function(a){for(var b=new i([1],0),c=0;a>c;c++)b=b.multiply(new i([1,g.gexp(c)],0));return b},getLengthInBits:function(a,b){if(b>=1&&10>b)switch(a){case c.MODE_NUMBER:return 10;case c.MODE_ALPHA_NUM:return 9;case c.MODE_8BIT_BYTE:return 8;case c.MODE_KANJI:return 8;default:throw new Error("mode:"+a)}else if(27>b)switch(a){case c.MODE_NUMBER:return 12;case c.MODE_ALPHA_NUM:return 11;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 10;default:throw new Error("mode:"+a)}else{if(!(41>b))throw new Error("type:"+b);switch(a){case c.MODE_NUMBER:return 14;case c.MODE_ALPHA_NUM:return 13;case c.MODE_8BIT_BYTE:return 16;case c.MODE_KANJI:return 12;default:throw new Error("mode:"+a)}}},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;b>d;d++)for(var e=0;b>e;e++){for(var f=0,g=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||d+h>=b))for(var i=-1;1>=i;i++)0>e+i||e+i>=b||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(var k=0,e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l}},g={glog:function(a){if(1>a)throw new Error("glog("+a+")");return g.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;a>=256;)a-=255;return g.EXP_TABLE[a]},EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)},h=0;8>h;h++)g.EXP_TABLE[h]=1<<h;for(var h=8;256>h;h++)g.EXP_TABLE[h]=g.EXP_TABLE[h-4]^g.EXP_TABLE[h-5]^g.EXP_TABLE[h-6]^g.EXP_TABLE[h-8];for(var h=0;255>h;h++)g.LOG_TABLE[g.EXP_TABLE[h]]=h;i.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=new Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=g.gexp(g.glog(this.get(c))+g.glog(a.get(d)));return new i(b,0)},mod:function(a){if(this.getLength()-a.getLength()<0)return this;for(var b=g.glog(this.get(0))-g.glog(a.get(0)),c=new Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.get(d);for(var d=0;d<a.getLength();d++)c[d]^=g.gexp(g.glog(a.get(d))+b);return new i(c,0).mod(a)}},j.RS_BLOCK_TABLE=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],j.getRSBlocks=function(a,b){var c=j.getRsBlockTable(a,b);if(void 0==c)throw new Error("bad rs block @ typeNumber:"+a+"/errorCorrectLevel:"+b);for(var d=c.length/3,e=[],f=0;d>f;f++)for(var g=c[3*f+0],h=c[3*f+1],i=c[3*f+2],k=0;g>k;k++)e.push(new j(h,i));return e},j.getRsBlockTable=function(a,b){switch(b){case d.L:return j.RS_BLOCK_TABLE[4*(a-1)+0];case d.M:return j.RS_BLOCK_TABLE[4*(a-1)+1];case d.Q:return j.RS_BLOCK_TABLE[4*(a-1)+2];case d.H:return j.RS_BLOCK_TABLE[4*(a-1)+3];default:return void 0}},k.prototype={get:function(a){var b=Math.floor(a/8);return 1==(1&this.buffer[b]>>>7-a%8)},put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(1&a>>>b-c-1))},getLengthInBits:function(){return this.length},putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}};var l=[[17,14,11,7],[32,26,20,14],[53,42,32,24],[78,62,46,34],[106,84,60,44],[134,106,74,58],[154,122,86,64],[192,152,108,84],[230,180,130,98],[271,213,151,119],[321,251,177,137],[367,287,203,155],[425,331,241,177],[458,362,258,194],[520,412,292,220],[586,450,322,250],[644,504,364,280],[718,560,394,310],[792,624,442,338],[858,666,482,382],[929,711,509,403],[1003,779,565,439],[1091,857,611,461],[1171,911,661,511],[1273,997,715,535],[1367,1059,751,593],[1465,1125,805,625],[1528,1190,868,658],[1628,1264,908,698],[1732,1370,982,742],[1840,1452,1030,790],[1952,1538,1112,842],[2068,1628,1168,898],[2188,1722,1228,958],[2303,1809,1283,983],[2431,1911,1351,1051],[2563,1989,1423,1093],[2699,2099,1499,1139],[2809,2213,1579,1219],[2953,2331,1663,1273]],o=function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){function g(a,b){var c=document.createElementNS("http://www.w3.org/2000/svg",a);for(var d in b)b.hasOwnProperty(d)&&c.setAttribute(d,b[d]);return c}var b=this._htOption,c=this._el,d=a.getModuleCount();Math.floor(b.width/d),Math.floor(b.height/d),this.clear();var h=g("svg",{viewBox:"0 0 "+String(d)+" "+String(d),width:"100%",height:"100%",fill:b.colorLight});h.setAttributeNS("http://www.w3.org/2000/xmlns/","xmlns:xlink","http://www.w3.org/1999/xlink"),c.appendChild(h),h.appendChild(g("rect",{fill:b.colorDark,width:"1",height:"1",id:"template"}));for(var i=0;d>i;i++)for(var j=0;d>j;j++)if(a.isDark(i,j)){var k=g("use",{x:String(i),y:String(j)});k.setAttributeNS("http://www.w3.org/1999/xlink","href","#template"),h.appendChild(k)}},a.prototype.clear=function(){for(;this._el.hasChildNodes();)this._el.removeChild(this._el.lastChild)},a}(),p="svg"===document.documentElement.tagName.toLowerCase(),q=p?o:m()?function(){function a(){this._elImage.src=this._elCanvas.toDataURL("image/png"),this._elImage.style.display="block",this._elCanvas.style.display="none"}function d(a,b){var c=this;if(c._fFail=b,c._fSuccess=a,null===c._bSupportDataURI){var d=document.createElement("img"),e=function(){c._bSupportDataURI=!1,c._fFail&&_fFail.call(c)},f=function(){c._bSupportDataURI=!0,c._fSuccess&&c._fSuccess.call(c)};return d.onabort=e,d.onerror=e,d.onload=f,d.src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",void 0}c._bSupportDataURI===!0&&c._fSuccess?c._fSuccess.call(c):c._bSupportDataURI===!1&&c._fFail&&c._fFail.call(c)}if(this._android&&this._android<=2.1){var b=1/window.devicePixelRatio,c=CanvasRenderingContext2D.prototype.drawImage;CanvasRenderingContext2D.prototype.drawImage=function(a,d,e,f,g,h,i,j){if("nodeName"in a&&/img/i.test(a.nodeName))for(var l=arguments.length-1;l>=1;l--)arguments[l]=arguments[l]*b;else"undefined"==typeof j&&(arguments[1]*=b,arguments[2]*=b,arguments[3]*=b,arguments[4]*=b);c.apply(this,arguments)}}var e=function(a,b){this._bIsPainted=!1,this._android=n(),this._htOption=b,this._elCanvas=document.createElement("canvas"),this._elCanvas.width=b.width,this._elCanvas.height=b.height,a.appendChild(this._elCanvas),this._el=a,this._oContext=this._elCanvas.getContext("2d"),this._bIsPainted=!1,this._elImage=document.createElement("img"),this._elImage.style.display="none",this._el.appendChild(this._elImage),this._bSupportDataURI=null};return e.prototype.draw=function(a){var b=this._elImage,c=this._oContext,d=this._htOption,e=a.getModuleCount(),f=d.width/e,g=d.height/e,h=Math.round(f),i=Math.round(g);b.style.display="none",this.clear();for(var j=0;e>j;j++)for(var k=0;e>k;k++){var l=a.isDark(j,k),m=k*f,n=j*g;c.strokeStyle=l?d.colorDark:d.colorLight,c.lineWidth=1,c.fillStyle=l?d.colorDark:d.colorLight,c.fillRect(m,n,f,g),c.strokeRect(Math.floor(m)+.5,Math.floor(n)+.5,h,i),c.strokeRect(Math.ceil(m)-.5,Math.ceil(n)-.5,h,i)}this._bIsPainted=!0},e.prototype.makeImage=function(){this._bIsPainted&&d.call(this,a)},e.prototype.isPainted=function(){return this._bIsPainted},e.prototype.clear=function(){this._oContext.clearRect(0,0,this._elCanvas.width,this._elCanvas.height),this._bIsPainted=!1},e.prototype.round=function(a){return a?Math.floor(1e3*a)/1e3:a},e}():function(){var a=function(a,b){this._el=a,this._htOption=b};return a.prototype.draw=function(a){for(var b=this._htOption,c=this._el,d=a.getModuleCount(),e=Math.floor(b.width/d),f=Math.floor(b.height/d),g=['<table style="border:0;border-collapse:collapse;">'],h=0;d>h;h++){g.push("<tr>");for(var i=0;d>i;i++)g.push('<td style="border:0;border-collapse:collapse;padding:0;margin:0;width:'+e+"px;height:"+f+"px;background-color:"+(a.isDark(h,i)?b.colorDark:b.colorLight)+';"></td>');g.push("</tr>")}g.push("</table>"),c.innerHTML=g.join("");var j=c.childNodes[0],k=(b.width-j.offsetWidth)/2,l=(b.height-j.offsetHeight)/2;k>0&&l>0&&(j.style.margin=l+"px "+k+"px")},a.prototype.clear=function(){this._el.innerHTML=""},a}();QRCode=function(a,b){if(this._htOption={width:256,height:256,typeNumber:4,colorDark:"#000000",colorLight:"#ffffff",correctLevel:d.H},"string"==typeof b&&(b={text:b}),b)for(var c in b)this._htOption[c]=b[c];"string"==typeof a&&(a=document.getElementById(a)),this._android=n(),this._el=a,this._oQRCode=null,this._oDrawing=new q(this._el,this._htOption),this._htOption.text&&this.makeCode(this._htOption.text)},QRCode.prototype.makeCode=function(a){this._oQRCode=new b(r(a,this._htOption.correctLevel),this._htOption.correctLevel),this._oQRCode.addData(a),this._oQRCode.make(),this._el.title=a,this._oDrawing.draw(this._oQRCode),this.makeImage()},QRCode.prototype.makeImage=function(){"function"==typeof this._oDrawing.makeImage&&(!this._android||this._android>=3)&&this._oDrawing.makeImage()},QRCode.prototype.clear=function(){this._oDrawing.clear()},QRCode.CorrectLevel=d}();
-  </script>
+  <\/script>
 
-<!-- ════════════════════════════════════════
+<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
      APP SCRIPT
-════════════════════════════════════════ -->
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <script>
 'use strict';
 
-// ── WebSocket shim (replaces Firebase + Realtime DB) ─────────────────────
-// ── WebSocket shim (replaces Firebase Realtime Database) ──────
+// \u2500\u2500 WebSocket shim (replaces Firebase + Realtime DB) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// \u2500\u2500 WebSocket shim (replaces Firebase Realtime Database) \u2500\u2500\u2500\u2500\u2500\u2500
 // v4: hibernatable DO backend + seq-based gap detection
-const WS_HOST = 'ws.carnivaltiming.com'; // Add CNAME ws→carnival-timing-ws.pgallivan.workers.dev in CF dashboard
+const WS_HOST = 'ws.carnivaltiming.com'; // Add CNAME ws\u2192carnival-timing-ws.pgallivan.workers.dev in CF dashboard
 let _ws=null,_wsCode=null,_wsReady=false,_reqId=0,_msgBuf=[];
 let _pendingReqs=new Map(), _subscriptions=new Map(), _reconnTimer=null;
 // seq tracking: last seq seen per path; if incoming seq > lastSeq+1 we missed
-// updates — re-subscribe to force a fresh snapshot from the DO.
+// updates \u2014 re-subscribe to force a fresh snapshot from the DO.
 const _lastSeq=new Map();
 
 function _nextId(){ return String(++_reqId); }
 
-// ── Pending-split safety net ──────────────────────────────────────────────
+// \u2500\u2500 Pending-split safety net \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function _savePendingSplit(lane, key, payload) {
   try {
     const q = JSON.parse(localStorage.getItem('_pendingSplits') || '[]');
@@ -1460,7 +1463,7 @@ async function _retryPendingSplits() {
       try {
         await cRef(\`race/current/splits/\${e.lane}/\${e.key}\`).set(e.payload);
         _clearPendingSplit(e.key);
-        toast('Saved split sent ✓');
+        toast('Saved split sent \u2713');
       } catch(err) {}
     }
   } catch(e) {}
@@ -1477,7 +1480,7 @@ function _wsConnectTo(code){
     _msgBuf.splice(0).forEach(m=>_ws.send(m));
     // Retry any splits that were lost during a previous disconnect
     setTimeout(_retryPendingSplits, 300);
-    // Re-subscribe to all paths — DO sends a fresh snapshot for each,
+    // Re-subscribe to all paths \u2014 DO sends a fresh snapshot for each,
     // which handles any gap accumulated during the disconnection.
     for(const p of _subscriptions.keys()) if(!p.startsWith('__'))
       _ws.send(JSON.stringify({type:'subscribe',path:p}));
@@ -1502,7 +1505,7 @@ function _wsConnectTo(code){
       if(msg.seq!=null){
         const last=_lastSeq.get(msg.path);
         if(last!=null && msg.seq > last+1 && _wsReady){
-          // Gap detected — re-subscribe immediately for a guaranteed fresh snapshot
+          // Gap detected \u2014 re-subscribe immediately for a guaranteed fresh snapshot
           _ws.send(JSON.stringify({type:'subscribe',path:msg.path}));
         }
         _lastSeq.set(msg.path, msg.seq);
@@ -1529,7 +1532,7 @@ const db={ref:(path)=>{
 }};
 const __fbAuthReady = Promise.resolve();
 
-// ── State ──
+// \u2500\u2500 State \u2500\u2500
 let _carnivalCodeVal = '';
 Object.defineProperty(window, 'carnivalCode', {
   get: () => _carnivalCodeVal,
@@ -1576,7 +1579,7 @@ function addProgramRow(age='', gender='boys', event='') {
     <input class="prog-event" data-pid="\${id}" placeholder="100m" value="\${event}"
       style="padding:7px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.82rem;width:100%">
     <button type="button" onclick="removeProgramRow(\${id})"
-      style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px;border-radius:6px">✕</button>\`;
+      style="background:none;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:4px;border-radius:6px">\u2715</button>\`;
   container.appendChild(row);
 }
 function removeProgramRow(id) {
@@ -1592,19 +1595,19 @@ function getProgramData() {
   })).filter(r => r.age && r.event);
 } // lanes DQ'd in current done panel
 
-// ── Event Lists ──
+// \u2500\u2500 Event Lists \u2500\u2500
 const EVENTS = {
-  track: ['100m Sprint','200m Sprint','400m','800m','1500m','4×100m Relay','Long Jump','Triple Jump','High Jump','Shot Put','Discus','Javelin'],
-  swim:  ['50m Freestyle','50m Backstroke','50m Breaststroke','50m Butterfly','100m Freestyle','100m Backstroke','100m Breaststroke','200m Freestyle','4×50m Freestyle Relay','4×50m Medley Relay'],
+  track: ['100m Sprint','200m Sprint','400m','800m','1500m','4\xD7100m Relay','Long Jump','Triple Jump','High Jump','Shot Put','Discus','Javelin'],
+  swim:  ['50m Freestyle','50m Backstroke','50m Breaststroke','50m Butterfly','100m Freestyle','100m Backstroke','100m Breaststroke','200m Freestyle','4\xD750m Freestyle Relay','4\xD750m Medley Relay'],
   xc:    ['Cross Country 2km','Cross Country 3km','Cross Country 4km','Cross Country 5km','Fun Run 1km','Fun Run 2km','Fun Run 3km'],
   mixed: ['100m Sprint','200m Sprint','400m','800m','50m Freestyle','50m Backstroke','Cross Country 2km','Cross Country 3km','Long Jump','High Jump']
 };
-const AGE_GROUPS = ['9 Years','10 Years','11 Years','12/13 Years','Open','Year 3/4','Year 5/6','Year 3–6'];
+const AGE_GROUPS = ['9 Years','10 Years','11 Years','12/13 Years','Open','Year 3/4','Year 5/6','Year 3\u20136'];
 const LANE_COUNT = 8;
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // UTILITIES
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function genId(n=8) {
   return Math.random().toString(36).substring(2, 2+n).toUpperCase();
 }
@@ -1617,7 +1620,7 @@ function genCode() {
 }
 
 function fmtMs(ms) {
-  if (ms == null || ms < 0) return '—';
+  if (ms == null || ms < 0) return '\u2014';
   const totalCs = Math.floor(ms / 10);
   const cs  = totalCs % 100;
   const totalSec = Math.floor(totalCs / 100);
@@ -1628,7 +1631,7 @@ function fmtMs(ms) {
 }
 
 function fmtSec(ms) {
-  if (ms == null) return '—';
+  if (ms == null) return '\u2014';
   return (ms / 1000).toFixed(2) + 's';
 }
 
@@ -1667,7 +1670,7 @@ function fbEnc(s) {
     .replace(/#/g,'__H__').replace(/\\$/g,'__$__');
 }
 
-// ── UI helpers ──
+// \u2500\u2500 UI helpers \u2500\u2500
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('screen-' + id);
@@ -1715,7 +1718,7 @@ function tapFlash() {
   setTimeout(()=>el.classList.remove('show'), 180);
 }
 
-// ── Clock sync ──
+// \u2500\u2500 Clock sync \u2500\u2500
 async function syncClock() {
   const snap = await db.ref('.info/serverTimeOffset').once('value');
   serverOffset = snap.val() || 0;
@@ -1726,7 +1729,7 @@ async function getServerTime() {
   return Date.now() + (snap.val() || 0);
 }
 
-// ── Wake lock ──
+// \u2500\u2500 Wake lock \u2500\u2500
 async function requestWakeLock() {
   try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }
   catch(e){}
@@ -1741,11 +1744,11 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('beforeunload', e => {
   if (raceState?.state === 'live') {
     e.preventDefault();
-    e.returnValue = 'A race is currently live — timing data may be lost if you leave.';
+    e.returnValue = 'A race is currently live \u2014 timing data may be lost if you leave.';
   }
 });
 
-// ── Firebase helpers ──
+// \u2500\u2500 Firebase helpers \u2500\u2500
 function cRef(path) { return db.ref(path); }
 
 function cleanListeners() {
@@ -1764,9 +1767,9 @@ function watchConn(dotId) {
   });
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // SETUP SCREEN
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function selectSport(s) {
   selSport = s;
   document.querySelectorAll('.sport-btn').forEach(b=>b.classList.remove('active'));
@@ -1779,13 +1782,13 @@ function selectTier(t) {
   document.querySelector(\`.pill[data-tier="\${t}"]\`).classList.add('active');
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // DEMO MODE
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 const DEMO_ATHLETES = ['Aiden Smith','Ben Carter','Chris Lee','Dana Park','Emma White','Finn Taylor','Gus Brown','Harper Jones'];
 
 async function startDemo() {
-  toast('Setting up demo…');
+  toast('Setting up demo\u2026');
   let code, snap;
   do {
     code = genCode();
@@ -1816,7 +1819,7 @@ async function startDemo() {
     });
     const banner = document.getElementById('admin-demo-banner');
     if (banner) banner.scrollIntoView({behavior:'smooth', block:'start'});
-    toast(\`Demo ready — \${code}. Share the code or QR with your timers, then arm the race.\`);
+    toast(\`Demo ready \u2014 \${code}. Share the code or QR with your timers, then arm the race.\`);
   }, 300);
 }
 
@@ -1877,7 +1880,7 @@ async function createCarnival() {
   await db.ref('meta').set(carnivalMeta);
   localStorage.setItem('fl_last_code', code);
 
-  toast(\`Carnival created — \${code}\`);
+  toast(\`Carnival created \u2014 \${code}\`);
   showRolePicker();
   // Admin auto-navigates to their control panel
   setTimeout(() => enterRole('admin'), 600);
@@ -1888,9 +1891,9 @@ function applyAccent(colour) {
   document.documentElement.style.setProperty('--accent', colour);
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // JOIN
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 async function joinCarnival(roleHint) {
   const code = document.getElementById('join-code-input').value.trim().toUpperCase();
   const name = document.getElementById('join-name-input').value.trim();
@@ -1901,7 +1904,7 @@ async function joinCarnival(roleHint) {
   carnivalCode = code; await _wsReady2(); const snap = await db.ref('meta').once('value');
   const errEl = document.getElementById('join-error');
   if (!snap.exists()) {
-    errEl.textContent = 'Carnival not found — check the code';
+    errEl.textContent = 'Carnival not found \u2014 check the code';
     errEl.classList.remove('hidden');
     return;
   }
@@ -1918,9 +1921,9 @@ async function joinCarnival(roleHint) {
   showRolePicker();
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // ROLE PICKER
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showRolePicker() {
   document.getElementById('role-school-name').textContent = carnivalMeta?.school || 'Carnival Timing';
   document.getElementById('role-carnival-name').textContent = carnivalMeta?.name || '';
@@ -1955,7 +1958,7 @@ function showRolePicker() {
     roles.push({ id:'observer-xc',icon:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',label:'XC Observer',   desc:'Watch finish order',    full: sport==='xc' });
   }
   if (['track','swim','mixed'].includes(sport)) {
-    roles.push({ id:'video-finish', icon:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>', label:'Video Finish', desc:'Slit camera — pro finish line photo + auto-detect + Roster pre-load', full:true });
+    roles.push({ id:'video-finish', icon:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>', label:'Video Finish', desc:'Slit camera \u2014 pro finish line photo + auto-detect + Roster pre-load', full:true });
   }
   roles.push({ id:'share',   icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>', label:'Join Page',  desc:'QR code for participants', full:true });
   roles.push({ id:'results', icon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', label:'Results',    desc:'View all results',          full:true });
@@ -1971,13 +1974,13 @@ function showRolePicker() {
 }
 
 
-// ═══════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // ADMIN PIN
-// ═══════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function _checkAdminPin(onSuccess) {
   const storedPin = carnivalMeta?.adminPin;
   if (!storedPin) {
-    // No PIN set client-side — server will auto-grant; offer to set one after entry
+    // No PIN set client-side \u2014 server will auto-grant; offer to set one after entry
     _send({type:'auth', pin: null})
       .then(r => { if (r.type === 'auth_ok') { onSuccess(); _offerSetPin(); } })
       .catch(() => { onSuccess(); _offerSetPin(); }); // fallback if WS not ready
@@ -1990,18 +1993,18 @@ function _checkAdminPin(onSuccess) {
       if (r.type === 'auth_ok') {
         onSuccess();
       } else if (r.message === 'too_many_attempts') {
-        toast('Too many failed attempts — reconnect and try again.');
+        toast('Too many failed attempts \u2014 reconnect and try again.');
       } else {
         toast('Incorrect PIN');
       }
     } catch {
-      toast('Connection error — try again.');
+      toast('Connection error \u2014 try again.');
     }
   });
 }
 
 async function _offerSetPin() {
-  // Non-blocking nudge — shown after admin loads, uses custom modal (no confirm())
+  // Non-blocking nudge \u2014 shown after admin loads, uses custom modal (no confirm())
   setTimeout(() => {
     if (carnivalMeta?.adminPin) return; // already set by now
     const el = document.createElement('div');
@@ -2013,7 +2016,7 @@ async function _offerSetPin() {
         <div style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Set a 4-digit PIN so only you can access Race Control on this carnival.</div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('offer-pin-modal')?.remove()">Skip</button>
-          <button class="btn btn-primary" style="flex:1" onclick="document.getElementById('offer-pin-modal')?.remove();_pinModal('Choose a 4-digit PIN',async(pin)=>{if(pin===null||pin.length<1)return;carnivalMeta={...(carnivalMeta||{}),adminPin:String(pin)};await cRef('meta').update({adminPin:String(pin)});toast('PIN set ✓');},true)">Set PIN</button>
+          <button class="btn btn-primary" style="flex:1" onclick="document.getElementById('offer-pin-modal')?.remove();_pinModal('Choose a 4-digit PIN',async(pin)=>{if(pin===null||pin.length<1)return;carnivalMeta={...(carnivalMeta||{}),adminPin:String(pin)};await cRef('meta').update({adminPin:String(pin)});toast('PIN set \u2713');},true)">Set PIN</button>
         </div>
       </div>\`;
     document.body.appendChild(el);
@@ -2030,7 +2033,7 @@ function _pinModal(title, callback, isNew) {
       <div id="pin-display" style="font-size:2rem;letter-spacing:.4em;font-family:monospace;min-height:2.5rem;margin-bottom:12px">____</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
         \${[1,2,3,4,5,6,7,8,9].map(n=>\`<button class="btn btn-secondary" style="font-size:1.2rem;padding:12px 0" onclick="_pinKey('\${n}')">\${n}</button>\`).join('')}
-        <button class="btn btn-secondary" style="font-size:1rem;padding:12px 0" onclick="_pinKey('del')">⌫</button>
+        <button class="btn btn-secondary" style="font-size:1rem;padding:12px 0" onclick="_pinKey('del')">\u232B</button>
         <button class="btn btn-secondary" style="font-size:1.2rem;padding:12px 0" onclick="_pinKey('0')">0</button>
         <button class="btn btn-secondary" style="font-size:1rem;padding:12px 0" onclick="_pinKey('ok')">OK</button>
       </div>
@@ -2040,7 +2043,7 @@ function _pinModal(title, callback, isNew) {
   let pinVal = '';
   function refresh() {
     const disp = document.getElementById('pin-display');
-    if (disp) disp.textContent = pinVal.split('').map(()=>'●').join(' ').padEnd(7,'_').replace(/ _ /g,' _ ') || '____';
+    if (disp) disp.textContent = pinVal.split('').map(()=>'\u25CF').join(' ').padEnd(7,'_').replace(/ _ /g,' _ ') || '____';
   }
   window._pinKey = (k) => {
     if (k === 'cancel') { el.remove(); delete window._pinKey; callback(null); return; }
@@ -2063,7 +2066,7 @@ function enterRole(role) {
     picker.style.marginTop = '0';
     const btns = document.getElementById('lane-pick-btns');
     btns.innerHTML =
-      \`<button class="btn btn-secondary" style="width:100%;margin-bottom:12px;font-size:0.9rem" onclick="showRolePicker()">← Back to roles</button>\` +
+      \`<button class="btn btn-secondary" style="width:100%;margin-bottom:12px;font-size:0.9rem" onclick="showRolePicker()">\u2190 Back to roles</button>\` +
       Array.from({length:LANE_COUNT},(_,i)=>i+1)
         .map(n=>\`<button class="btn btn-primary" style="min-height:64px;font-size:1.2rem;font-weight:700;flex:1;min-width:80px" onclick="enterTimerLane(\${n})">Lane \${n}</button>\`)
         .join('');
@@ -2089,9 +2092,9 @@ function enterTimerLane(n) {
   initTimerView(n);
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // TIMER VIEW (Lane Race)
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function initTimerView(lane) {
   requestWakeLock();
   syncClock();
@@ -2152,7 +2155,7 @@ function renderTimerView(lane, race) {
 
   const sportLabel = carnivalMeta?.sport==="swim" ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><path d="M2 20s2-2 5-2 5 2 7 2 5-2 7-2 3 1 3 1M2 16s2-2 5-2 5 2 7 2 5-2 7-2 3 1 3 1"/><circle cx="14" cy="5" r="2"/></svg>' : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
   document.getElementById('timer-athlete-event').innerHTML =
-    \`\${sportLabel} \${race.age||''} \${race.gender||''} · \${race.event||''}\`;
+    \`\${sportLabel} \${race.age||''} \${race.gender||''} \xB7 \${race.event||''}\`;
 
   const laneData = race.lanes?.[lane];
   document.getElementById('timer-athlete-name').textContent = laneData?.name || \`Lane \${lane}\`;
@@ -2198,37 +2201,37 @@ async function timerStop() {
   if (!raceState || raceState.state!=='live') { toast('Race not live'); return; }
   if (!myName) { toast('Enter your name first'); return; }
   const elapsed = nowServer() - raceState.startedAtServer;
-  if (elapsed < 500) { toast('Too quick — check start'); return; }
+  if (elapsed < 500) { toast('Too quick \u2014 check start'); return; }
   const key = fbEnc(myId);
   const splitPayload = { name: myName, elapsedMs: elapsed, stopAt: firebase.database.ServerValue.TIMESTAMP };
   _savePendingSplit(myLane, key, splitPayload);
   const splitBtn = document.getElementById('timer-stop-btn');
-  if (splitBtn) { splitBtn.textContent = 'Sending…'; splitBtn.setAttribute('disabled',''); }
+  if (splitBtn) { splitBtn.textContent = 'Sending\u2026'; splitBtn.setAttribute('disabled',''); }
   try {
     await cRef(\`race/current/splits/\${myLane}/\${key}\`).set(splitPayload);
     _clearPendingSplit(key);
-    if (splitBtn) { splitBtn.textContent = 'Sent ✓'; }
+    if (splitBtn) { splitBtn.textContent = 'Sent \u2713'; }
   } catch(err) {
-    if (splitBtn) { splitBtn.textContent = '⚠ Queued'; }
-    toast('WiFi issue — split saved, will retry');
+    if (splitBtn) { splitBtn.textContent = '\u26A0 Queued'; }
+    toast('WiFi issue \u2014 split saved, will retry');
   }
   vibrate([100]);
   flash('go', 300);
-  toast(\`Stopped — \${fmtSec(elapsed)}\`);
+  toast(\`Stopped \u2014 \${fmtSec(elapsed)}\`);
   // 3-second undo window
   _showTimerUndo(myLane, key, elapsed);
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // ADMIN VIEW (Lane Race)
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 
-// ── Roster pre-load modal ─────────────────────────────────────────────────
+// \u2500\u2500 Roster pre-load modal \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function openRosterModal() {
   const el = document.createElement('div');
   el.id = 'roster-modal';
   el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;padding-top:60px;overflow-y:auto';
-  const ph = '1, Jake Smith, Red\n2, Sam Jones, Blue\n3, Mia Brown, Green';
+  const ph = '1, Jake Smith, Red\\n2, Sam Jones, Blue\\n3, Mia Brown, Green';
   el.innerHTML = '<div style="background:var(--surface);border-radius:16px;padding:20px;max-width:420px;width:100%">'
     + '<div style="font-weight:700;font-size:1rem;margin-bottom:4px">Paste Athlete Roster</div>'
     + '<div style="color:var(--muted);font-size:.8rem;margin-bottom:10px">One per line: <strong>Lane, Name, House</strong><br>'
@@ -2236,7 +2239,7 @@ function openRosterModal() {
     + '<textarea id="roster-text" placeholder="' + ph + '" style="width:100%;min-height:160px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.85rem;font-family:monospace;resize:vertical"></textarea>'
     + '<div style="display:flex;gap:8px;margin-top:12px">'
     + '<button class="btn btn-primary" style="flex:1" onclick="applyRoster()">Apply to Lanes</button>'
-    + '<button class="btn btn-secondary" onclick="document.getElementById(\'roster-modal\').remove()">Cancel</button>'
+    + '<button class="btn btn-secondary" onclick="document.getElementById(\\'roster-modal\\').remove()">Cancel</button>'
     + '</div></div>';
   document.body.appendChild(el);
   el.addEventListener('click', e => { if (e.target === el) el.remove(); });
@@ -2245,7 +2248,7 @@ function openRosterModal() {
 function applyRoster() {
   const text = document.getElementById('roster-text')?.value.trim();
   if (!text) return;
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = text.split('\\n').map(l => l.trim()).filter(Boolean);
   let applied = 0;
   lines.forEach(line => {
     const parts = line.split(',').map(p => p.trim());
@@ -2334,7 +2337,7 @@ function initAdminView() {
       const total = sorted.reduce((s,r)=>s+r.pts,0);
       document.getElementById('admin-house-standings').innerHTML = sorted.map((r,i)=>\`
         <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
-          <span style="font-size:.9rem;min-width:18px">\${i===0&&total>0?'🥇':i===1&&total>0?'🥈':i===2&&total>0?'🥉':''}</span>
+          <span style="font-size:.9rem;min-width:18px">\${i===0&&total>0?'\u{1F947}':i===1&&total>0?'\u{1F948}':i===2&&total>0?'\u{1F949}':''}</span>
           <span style="flex:1;font-weight:\${i===0&&total>0?'700':'400'}">\${r.h}</span>
           <span style="font-weight:700;font-size:1.05rem;color:\${i===0&&total>0?'var(--accent)':'var(--text)'}">\${r.pts}</span>
         </div>\`).join('');
@@ -2383,7 +2386,7 @@ function renderAdminView(race) {
   }
 
   live.classList.remove('hidden'); done.classList.add('hidden');
-  document.getElementById('admin-race-lbl').textContent = \`\${race.age||''} \${race.gender||''} · \${race.event||''}\`;
+  document.getElementById('admin-race-lbl').textContent = \`\${race.age||''} \${race.gender||''} \xB7 \${race.event||''}\`;
 
   const badge  = document.getElementById('admin-state-badge');
   const goBtn  = document.getElementById('admin-go-btn');
@@ -2414,7 +2417,7 @@ function renderAdminView(race) {
       <div class="lane-num">\${n}</div>
       <div class="lane-name">\${lanes[n]?.name||\`Lane \${n}\`}</div>
       \${mean ? \`<div><span class="lane-time">\${fmtSec(mean)}</span> <span class="conf-\${conf.cls}">\${conf.label}</span></div>\`
-             : \`<span class="text-muted text-xs">\${race.state==='live'?'waiting…':'—'}</span>\`}
+             : \`<span class="text-muted text-xs">\${race.state==='live'?'waiting\u2026':'\u2014'}</span>\`}
     </div>\`;
   }).join('');
 
@@ -2437,7 +2440,7 @@ function toggleLaneStatus(lane, type) {
 function adminNextEvent() {
   const prog = carnivalMeta?.program||[];
   if (!prog.length) return;
-  if (programIndex >= prog.length) { toast('🏁 Program complete!'); return; }
+  if (programIndex >= prog.length) { toast('\u{1F3C1} Program complete!'); return; }
   const ev = prog[programIndex];
   // Set age
   const ageSel = document.getElementById('admin-age-sel');
@@ -2452,16 +2455,37 @@ function adminNextEvent() {
   programIndex++;
   const remaining = prog.length - programIndex;
   const nextBtn = document.getElementById('admin-next-event-btn');
-  if (nextBtn) nextBtn.textContent = remaining > 0 ? \`Next Event (\${remaining} left) →\` : 'Program Done';
-  toast(\`Event \${num}/\${prog.length}: \${ev.age} \${ev.gender} — \${ev.event}\`);
+  if (nextBtn) nextBtn.textContent = remaining > 0 ? \`Next Event (\${remaining} left) \u2192\` : 'Program Done';
+  toast(\`Event \${num}/\${prog.length}: \${ev.age} \${ev.gender} \u2014 \${ev.event}\`);
 }
+
+function _confirmModal(title, body, confirmLabel = 'Confirm') {
+  return new Promise(resolve => {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    el.innerHTML = \`
+      <div style="background:var(--surface,#1e1e2e);border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4)">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:8px;color:var(--text,#fff)">\${title}</div>
+        <div style="color:var(--muted,#aaa);font-size:.85rem;margin-bottom:20px">\${body}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" style="flex:1" id="_cm-cancel">Cancel</button>
+          <button class="btn btn-primary" style="flex:1" id="_cm-confirm">\${confirmLabel}</button>
+        </div>
+      </div>\`;
+    document.body.appendChild(el);
+    el.querySelector('#_cm-cancel').onclick  = () => { el.remove(); resolve(false); };
+    el.querySelector('#_cm-confirm').onclick = () => { el.remove(); resolve(true); };
+    el.addEventListener('click', e => { if (e.target === el) { el.remove(); resolve(false); } });
+  });
+}
+
 async function adminResetHousePoints() {
   if (!await _confirmModal('Reset house points?', 'This will clear all accumulated house points for this carnival.', 'Reset')) return;
   await cRef('housePoints').remove();
   toast('House points reset');
 }
 async function adminArm() {
-  if (!await _confirmModal('Arm this race?', 'All connected timers and the Starter will be notified.', 'ARM RACE →')) return;
+  if (!await _confirmModal('Arm this race?', 'All connected timers and the Starter will be notified.', 'ARM RACE \u2192')) return;
   const age   = document.getElementById('admin-age-sel').value;
   const event = document.getElementById('admin-event-sel').value;
   const lanes = {};
@@ -2602,12 +2626,12 @@ function _promptHeat(callback) {
       <div style="font-weight:700;font-size:1rem;margin-bottom:4px">Heat / Round</div>
       <div style="color:var(--muted);font-size:.82rem;margin-bottom:14px">Label this result (optional)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <button class="btn btn-secondary" onclick="_heatPick(' — Heat 1')">Heat 1</button>
-        <button class="btn btn-secondary" onclick="_heatPick(' — Heat 2')">Heat 2</button>
-        <button class="btn btn-secondary" onclick="_heatPick(' — Heat 3')">Heat 3</button>
-        <button class="btn btn-secondary" onclick="_heatPick(' — Final')">Final</button>
+        <button class="btn btn-secondary" onclick="_heatPick(' \u2014 Heat 1')">Heat 1</button>
+        <button class="btn btn-secondary" onclick="_heatPick(' \u2014 Heat 2')">Heat 2</button>
+        <button class="btn btn-secondary" onclick="_heatPick(' \u2014 Heat 3')">Heat 3</button>
+        <button class="btn btn-secondary" onclick="_heatPick(' \u2014 Final')">Final</button>
       </div>
-      <button class="btn btn-primary" style="width:100%" onclick="_heatPick('')">No label — publish as-is</button>
+      <button class="btn btn-primary" style="width:100%" onclick="_heatPick('')">No label \u2014 publish as-is</button>
     </div>\`;
   document.body.appendChild(el);
   window._heatPick = (suffix) => { el.remove(); delete window._heatPick; callback(suffix); };
@@ -2651,7 +2675,7 @@ function adminNewRace() {
 async function adminPublishFromDone() {
   if (!raceState || raceState.state !== 'done') return;
   const btn = document.getElementById('admin-done-publish-btn');
-  if (btn) { btn.setAttribute('disabled',''); btn.textContent = 'Publishing…'; }
+  if (btn) { btn.setAttribute('disabled',''); btn.textContent = 'Publishing\u2026'; }
   await adminPublish();
   if (btn) { btn.removeAttribute('disabled'); btn.textContent = 'Publish Results'; }
 }
@@ -2687,8 +2711,8 @@ function renderAdminDone(race) {
     <div class="lane-row" style="opacity:\${r.isDQ?0.45:1};transition:opacity .15s">
       <div class="medal \${r.isDQ?'pN':r.status==='dns'?'pN':r.status==='dnf'?'pN':medalCls(r.place)}" style="\${r.isDQ?'background:var(--warn);color:#fff':r.status?'background:var(--muted);color:#fff':''}">\${r.isDQ?'DQ':r.status?r.status.toUpperCase():(r.place)}</div>
       <div class="lane-name" onclick="\${!r.status?\`adminEditTime(\${i})\`:''}" style="flex:1;\${!r.status?'cursor:pointer':''}" \${!r.status?'title="Tap to edit time"':''}>\${r.name||\`Lane \${r.lane}\`}\${r.isDQ?'<span style="font-size:.7rem;color:var(--warn);margin-left:6px">DQ</span>':r.status?\`<span style="font-size:.7rem;color:var(--muted);margin-left:6px">\${r.status.toUpperCase()}</span>\`:''}</div>
-      <div class="lane-time font-mono" onclick="adminEditTime(\${i})" style="cursor:pointer">\${r.isDQ?'—':fmtSec(r.timeMs)}</div>
-      <button class="btn btn-sm" style="margin-left:6px;padding:2px 8px;font-size:.7rem;border:1px solid \${r.isDQ?'var(--warn)':'var(--border)'};color:\${r.isDQ?'var(--warn)':'var(--muted)'};background:transparent;border-radius:6px" onclick="adminToggleDQ('\${r.lane}')">\${r.isDQ?'✕ DQ':'DQ'}</button>
+      <div class="lane-time font-mono" onclick="adminEditTime(\${i})" style="cursor:pointer">\${r.isDQ?'\u2014':fmtSec(r.timeMs)}</div>
+      <button class="btn btn-sm" style="margin-left:6px;padding:2px 8px;font-size:.7rem;border:1px solid \${r.isDQ?'var(--warn)':'var(--border)'};color:\${r.isDQ?'var(--warn)':'var(--muted)'};background:transparent;border-radius:6px" onclick="adminToggleDQ('\${r.lane}')">\${r.isDQ?'\u2715 DQ':'DQ'}</button>
     </div>\`).join('') || '<div class="text-muted text-sm">No timed athletes</div>';
 }
 
@@ -2700,10 +2724,10 @@ function adminToggleDQ(lane) {
 
 function medalCls(p) { return p===1?'p1':p===2?'p2':p===3?'p3':'pN'; }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // STARTER VIEW
-// ════════════════════════════════════════
-// ── Starter audio state ──────────────────────────────────────────────────────
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// \u2500\u2500 Starter audio state \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let starterAudioCtx    = null;
 let starterAnalyser    = null;
 let starterMicStream   = null;
@@ -2728,7 +2752,7 @@ function initStarterView() {
     if (race.state==='armed') {
       w.classList.add('hidden'); a.classList.remove('hidden');
       document.getElementById('starter-race-info').textContent =
-        \`\${race.age||''} \${race.gender||''} · \${race.event||''}\`;
+        \`\${race.age||''} \${race.gender||''} \xB7 \${race.event||''}\`;
     } else {
       w.classList.remove('hidden'); a.classList.add('hidden');
       starterListenStop();
@@ -2737,7 +2761,7 @@ function initStarterView() {
   activeListeners.push(()=>raceRef.off());
 }
 
-// ── Manual GO (with countdown) ────────────────────────────────────────────────
+// \u2500\u2500 Manual GO (with countdown) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function starterGo() {
   document.getElementById('starter-go-btn').setAttribute('disabled','');
   showCountdown(async ()=>{
@@ -2746,7 +2770,7 @@ function starterGo() {
 }
 function starterRecall() { starterListenStop(); broadcastRecall(); }
 
-// ── Gun detection ─────────────────────────────────────────────────────────────
+// \u2500\u2500 Gun detection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function starterSetSens(s) {
   starterSensitivity = s;
   document.querySelectorAll('[data-sens]').forEach(b => {
@@ -2769,7 +2793,7 @@ async function starterListenStart() {
     starterNoiseCount = 0;
     document.getElementById('starter-listen-idle').classList.add('hidden');
     document.getElementById('starter-listen-active').classList.remove('hidden');
-    document.getElementById('starter-cal-lbl').textContent = 'Calibrating…';
+    document.getElementById('starter-cal-lbl').textContent = 'Calibrating\u2026';
     starterListenRafId = requestAnimationFrame(starterListenLoop);
   } catch(e) {
     toast('Microphone access denied');
@@ -2818,7 +2842,7 @@ function starterListenLoop() {
     const mult      = STARTER_SENS_MULT[starterSensitivity] || 5;
     const threshold = Math.max(0.06, starterNoiseFloor * mult);
     if (rms > threshold) {
-      // GUN DETECTED — show 1-second cancellable countdown
+      // GUN DETECTED \u2014 show 1-second cancellable countdown
       starterListenStop();
       starterGunCountdown();
       return;
@@ -2828,9 +2852,9 @@ function starterListenLoop() {
   starterListenRafId = requestAnimationFrame(starterListenLoop);
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // OBSERVER VIEW (Lane Race)
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function renderObserverResults(data) {
   const board = document.getElementById('observer-results-board');
   const list  = document.getElementById('observer-results-list');
@@ -2850,14 +2874,14 @@ function renderObserverResults(data) {
       return \`<div class="lane-row" style="padding:6px 4px;\${isDQ?'opacity:.45':''}" >
         <div class="medal \${isDQ?'pN':medalCls(pos)}" style="font-size:.8rem;\${isDQ?'background:var(--warn);color:#fff':''}">\${isDQ?'DQ':(pos)}</div>
         <div class="lane-name" style="font-size:.9rem">\${name}</div>
-        <div class="lane-time font-mono" style="font-size:.9rem">\${isDQ?'—':time}</div>
+        <div class="lane-time font-mono" style="font-size:.9rem">\${isDQ?'\u2014':time}</div>
       </div>\`;
     }).join('');
     return \`<div class="card" style="margin-bottom:8px;padding:10px 12px">
-      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">\${ev.age||''} \${ev.gender||''} · \${ev.event||''}</div>
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">\${ev.age||''} \${ev.gender||''} \xB7 \${ev.event||''}</div>
       \${rows}
-      \${ev.ai_summary?'<div style="margin-top:8px;padding:8px 10px;background:rgba(99,102,241,.1);border-radius:8px;font-size:.82rem;font-style:italic;color:var(--text)">🤖 '+ev.ai_summary.text+'</div>':''}
-      \${ev.ai_flags&&ev.ai_flags.flags&&ev.ai_flags.flags.some(f=>f.severity==='error'||f.severity==='warn')?'<div style="margin-top:4px;padding:6px 10px;background:rgba(245,158,11,.15);border-radius:8px;font-size:.78rem;color:var(--warn)">⚠️ '+ev.ai_flags.flags.filter(f=>f.severity!=='info').map(f=>'Lane '+f.lane+': '+f.issue).join(' · ')+'</div>':''}
+      \${ev.ai_summary?'<div style="margin-top:8px;padding:8px 10px;background:rgba(99,102,241,.1);border-radius:8px;font-size:.82rem;font-style:italic;color:var(--text)">\u{1F916} '+ev.ai_summary.text+'</div>':''}
+      \${ev.ai_flags&&ev.ai_flags.flags&&ev.ai_flags.flags.some(f=>f.severity==='error'||f.severity==='warn')?'<div style="margin-top:4px;padding:6px 10px;background:rgba(245,158,11,.15);border-radius:8px;font-size:.78rem;color:var(--warn)">\u26A0\uFE0F '+ev.ai_flags.flags.filter(f=>f.severity!=='info').map(f=>'Lane '+f.lane+': '+f.issue).join(' \xB7 ')+'</div>':''}
     </div>\`;
   }).join('');
 }
@@ -2892,7 +2916,7 @@ function renderObserverView(race) {
   }
   waiting.classList.add('hidden');
   document.getElementById('observer-event-lbl').textContent=
-    \`\${race.age||''} \${race.gender||''} · \${race.event||''}\`;
+    \`\${race.age||''} \${race.gender||''} \xB7 \${race.event||''}\`;
 
   const lanes  = race.lanes||{};
   const splits = race.splits||{};
@@ -2914,14 +2938,14 @@ function renderObserverView(race) {
       <div class="lane-name">\${d.name}</div>
       \${d.mean
         ? \`<div><span class="lane-time font-mono">\${fmtSec(d.mean)}</span> <span class="conf-\${d.conf.cls}">\${d.conf.label}</span></div>\`
-        : \`<span class="text-muted text-xs">\${race.state==='live'?'…':'—'}</span>\`}
+        : \`<span class="text-muted text-xs">\${race.state==='live'?'\u2026':'\u2014'}</span>\`}
     </div>\`;
   }).join('');
 }
 
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // COUNTDOWN
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function showCountdown(onGo) {
   if (countdownRunning) return;
   countdownRunning = true;
@@ -2931,9 +2955,9 @@ function showCountdown(onGo) {
   overlay.classList.add('active');
 
   [
-    { n:'3', l:'Get set…',      d:0 },
-    { n:'2', l:'Ready…',        d:1000 },
-    { n:'1', l:'On your marks…',d:2000 },
+    { n:'3', l:'Get set\u2026',      d:0 },
+    { n:'2', l:'Ready\u2026',        d:1000 },
+    { n:'1', l:'On your marks\u2026',d:2000 },
     { n:'GO',l:'',              d:3000, go:true }
   ].forEach(({n,l,d,go})=>{
     setTimeout(()=>{
@@ -2955,20 +2979,20 @@ function flashRecall() {
   overlay.classList.add('active');
   numEl.innerHTML = '<span style="display:inline-block;width:0.8em;height:0.8em;background:var(--danger);border-radius:50%;vertical-align:middle"></span>';
   numEl.style.color  = 'var(--danger)';
-  lblEl.textContent  = 'FALSE START — RECALL';
+  lblEl.textContent  = 'FALSE START \u2014 RECALL';
   vibrate([200,80,200,80,200]);
   flash('recall', 1800);
   setTimeout(()=>overlay.classList.remove('active'), 2000);
 }
 
-// ════════════════════════════════════════
-// CROSS COUNTRY — MARSHAL VIEW
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// CROSS COUNTRY \u2014 MARSHAL VIEW
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 let bibPendingKey   = null;
 let bibPendingQueue = [];    // [{key, place, elapsed}]
 let bibValue        = '';
 let xcCamStream     = null;  // active getUserMedia stream
-const xcPhotos      = new Map(); // key → dataURL of best burst frame
+const xcPhotos      = new Map(); // key \u2192 dataURL of best burst frame
 let _ocrWorker      = null;  // reusable Tesseract worker
 
 async function xcInitCamera() {
@@ -2982,13 +3006,13 @@ async function xcInitCamera() {
     v.srcObject = xcCamStream;
     await v.play().catch(()=>{});
   } catch(e) {
-    xcCamStream = null; // camera unavailable (deny or no camera) — silently degrade
+    xcCamStream = null; // camera unavailable (deny or no camera) \u2014 silently degrade
   }
 }
 
 async function xcCapturePhoto(key) {
   // Start camera if not running
-  if (!xcCamStream) xcInitCamera(); // fire and forget — first tap may miss
+  if (!xcCamStream) xcInitCamera(); // fire and forget \u2014 first tap may miss
   xcPhotos.set(key, null); // placeholder
 
   const video  = document.getElementById('xc-cam');
@@ -3014,7 +3038,7 @@ async function runBibOCR() {
   const photoDataUrl = xcPhotos.get(bibPendingKey);
   if (!photoDataUrl) { toast('No photo captured'); return; }
   const btn = document.getElementById('ocr-btn');
-  if (btn) btn.textContent = '⏳';
+  if (btn) btn.textContent = '\u23F3';
   try {
     if (!_ocrWorker) {
       _ocrWorker = await Tesseract.createWorker('eng');
@@ -3025,14 +3049,14 @@ async function runBibOCR() {
     if (digits && confidence > 55) {
       bibValue = digits;
       document.getElementById('marshal-bib-display').textContent = bibValue;
-      if (btn) btn.textContent = '✓ ' + digits;
+      if (btn) btn.textContent = '\u2713 ' + digits;
       toast('Bib ' + digits + ' detected (' + Math.round(confidence) + '% conf)');
     } else {
-      if (btn) btn.textContent = '🔍 Auto';
-      toast('Could not read bib — enter manually');
+      if (btn) btn.textContent = '\u{1F50D} Auto';
+      toast('Could not read bib \u2014 enter manually');
     }
   } catch(e) {
-    if (btn) btn.textContent = '🔍 Auto';
+    if (btn) btn.textContent = '\u{1F50D} Auto';
     toast('OCR error');
   }
 }
@@ -3067,13 +3091,13 @@ function renderMarshalView(xc) {
     live.classList.add('hidden'); waiting.classList.remove('hidden');
     const msg = document.getElementById('marshal-wait-msg');
     if (xc?.state==='armed') {
-      msg.innerHTML = \`Race armed — waiting for GO<br>
-        <span style="color:var(--accent);font-weight:700;font-size:1.1rem">\${xc.age||''} \${xc.gender||''} · \${xc.event||''}</span>\`;
+      msg.innerHTML = \`Race armed \u2014 waiting for GO<br>
+        <span style="color:var(--accent);font-weight:700;font-size:1.1rem">\${xc.age||''} \${xc.gender||''} \xB7 \${xc.event||''}</span>\`;
     } else { msg.textContent='Waiting for race to start...'; }
     return;
   }
   live.classList.remove('hidden'); waiting.classList.add('hidden');
-  document.getElementById('marshal-event-lbl').textContent = \`\${xc.age||''} \${xc.gender||''} · \${xc.event||''}\`;
+  document.getElementById('marshal-event-lbl').textContent = \`\${xc.age||''} \${xc.gender||''} \xB7 \${xc.event||''}\`;
   renderMarshalFinishes(xc);
 }
 
@@ -3084,7 +3108,7 @@ function renderMarshalFinishes(xc) {
     .sort((a,b)=>(a[1].tapAt||0)-(b[1].tapAt||0));
 
   if (!entries.length) {
-    list.innerHTML = '<div class="text-muted text-sm text-center" style="padding:12px 0">No finishes yet — tap above</div>';
+    list.innerHTML = '<div class="text-muted text-sm text-center" style="padding:12px 0">No finishes yet \u2014 tap above</div>';
     return;
   }
 
@@ -3120,7 +3144,7 @@ async function marshalTap() {
     tapAt:       firebase.database.ServerValue.TIMESTAMP
   });
 
-  toast(\`\${ordinal(place)} — \${fmtMs(elapsed)}\`);
+  toast(\`\${ordinal(place)} \u2014 \${fmtMs(elapsed)}\`);
 
   // Queue bib entry
   bibPendingQueue.push({ key, place, elapsed });
@@ -3133,7 +3157,7 @@ let _xcAutoConfirmTimer = null; // FIX 2: auto-confirm countdown handle
 function xcCancelAutoConfirm() {
   if (_xcAutoConfirmTimer) { clearInterval(_xcAutoConfirmTimer); _xcAutoConfirmTimer = null; }
   const btn = document.getElementById('ocr-btn');
-  if (btn) btn.textContent = '🔍 Auto';
+  if (btn) btn.textContent = '\u{1F50D} Auto';
 }
 
 function showNextBib() {
@@ -3142,7 +3166,7 @@ function showNextBib() {
   const { key, place, elapsed, autoDetected } = bibPendingQueue[0];
   bibPendingKey = key;
   bibValue      = '';
-  document.getElementById('marshal-bib-for').textContent     = \`\${autoDetected ? '🤖 Auto-detected' : 'Bib for'} \${ordinal(place)} — \${fmtMs(elapsed)}\`;
+  document.getElementById('marshal-bib-for').textContent     = \`\${autoDetected ? '\u{1F916} Auto-detected' : 'Bib for'} \${ordinal(place)} \u2014 \${fmtMs(elapsed)}\`;
   document.getElementById('marshal-bib-display').textContent = '_';
   document.getElementById('marshal-bib-pad').classList.remove('hidden');
   document.getElementById('marshal-finishes-wrap').style.paddingBottom = '0';
@@ -3157,17 +3181,17 @@ function showNextBib() {
       img.src = photo; img.style.display = 'block';
       if (ph) ph.style.display = 'none';
       const btn = document.getElementById('ocr-btn');
-      if (btn) btn.textContent = '🔍 Auto';
+      if (btn) btn.textContent = '\u{1F50D} Auto';
       // FIX 2: auto-fire OCR for auto-detected finishes
       if (autoDetected) xcAutoOCRAndConfirm(key);
     } else if (photo === null) {
-      if (ph) { ph.style.display=''; ph.textContent='📷 Capturing…'; }
+      if (ph) { ph.style.display=''; ph.textContent='\u{1F4F7} Capturing\u2026'; }
       img.style.display = 'none';
       setTimeout(updatePhoto, 350);
     } else {
       if (ph) { ph.style.display=''; ph.textContent='No camera'; }
       img.style.display = 'none';
-      // No photo — still auto-confirm after delay for autoDetected (bib unknown)
+      // No photo \u2014 still auto-confirm after delay for autoDetected (bib unknown)
       if (autoDetected) xcStartAutoConfirmCountdown(null);
     }
   };
@@ -3179,7 +3203,7 @@ async function xcAutoOCRAndConfirm(key) {
   const photoDataUrl = xcPhotos.get(key);
   if (!photoDataUrl) { xcStartAutoConfirmCountdown(null); return; }
   const btn = document.getElementById('ocr-btn');
-  if (btn) btn.textContent = '⏳ OCR…';
+  if (btn) btn.textContent = '\u23F3 OCR\u2026';
   try {
     if (!_ocrWorker) {
       _ocrWorker = await Tesseract.createWorker('eng');
@@ -3190,14 +3214,14 @@ async function xcAutoOCRAndConfirm(key) {
     if (digits && confidence > 55) {
       bibValue = digits;
       document.getElementById('marshal-bib-display').textContent = bibValue;
-      if (btn) btn.textContent = '✓ ' + digits;
+      if (btn) btn.textContent = '\u2713 ' + digits;
       xcStartAutoConfirmCountdown(digits);
     } else {
-      if (btn) btn.textContent = '🔍 Auto';
-      xcStartAutoConfirmCountdown(null); // no bib read — still auto-confirm (skip)
+      if (btn) btn.textContent = '\u{1F50D} Auto';
+      xcStartAutoConfirmCountdown(null); // no bib read \u2014 still auto-confirm (skip)
     }
   } catch(e) {
-    if (btn) btn.textContent = '🔍 Auto';
+    if (btn) btn.textContent = '\u{1F50D} Auto';
     xcStartAutoConfirmCountdown(null);
   }
 }
@@ -3208,11 +3232,11 @@ function xcStartAutoConfirmCountdown(detectedBib) {
   _xcAutoConfirmTimer = setInterval(() => {
     secs--;
     if (secs > 0) {
-      if (btn && detectedBib) btn.textContent = \`✓ \${detectedBib} (\${secs}s)\`;
+      if (btn && detectedBib) btn.textContent = \`\u2713 \${detectedBib} (\${secs}s)\`;
       else if (btn) btn.textContent = \`Skip (\${secs}s)\`;
     } else {
       xcCancelAutoConfirm();
-      // Marshal didn't intervene — auto-confirm (or auto-skip if no bib)
+      // Marshal didn't intervene \u2014 auto-confirm (or auto-skip if no bib)
       if (bibPendingKey) bibConfirm();
     }
   }, 1000);
@@ -3228,18 +3252,18 @@ function updateTapBtnLabel() {
   const sub = document.getElementById('marshal-tap-sub');
   if (!sub) return;
   const n = bibPendingQueue.length;
-  sub.textContent = n > 0 ? \`TAP FINISH  ·  +\${n} queued\` : 'TAP FINISH';
+  sub.textContent = n > 0 ? \`TAP FINISH  \xB7  +\${n} queued\` : 'TAP FINISH';
 }
 
 function bibDigit(d) {
-  xcCancelAutoConfirm(); // marshal is intervening — stop countdown
+  xcCancelAutoConfirm(); // marshal is intervening \u2014 stop countdown
   if (bibValue.length >= 4) return;
   bibValue += d;
   document.getElementById('marshal-bib-display').textContent = bibValue || '_';
 }
 
 function bibBack() {
-  xcCancelAutoConfirm(); // marshal is intervening — stop countdown
+  xcCancelAutoConfirm(); // marshal is intervening \u2014 stop countdown
   bibValue = bibValue.slice(0,-1);
   document.getElementById('marshal-bib-display').textContent = bibValue || '_';
 }
@@ -3297,9 +3321,9 @@ async function marshalUndo() {
     ]);
 }
 
-// ════════════════════════════════════════
-// CROSS COUNTRY — ADMIN VIEW
-// ════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// CROSS COUNTRY \u2014 ADMIN VIEW
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 function initXCAdminView() {
   requestWakeLock(); syncClock();
   watchConn('xc-admin-dot');
@@ -3331,7 +3355,7 @@ function selectXCGender(g) {
 }
 
 async function xcAdminArm() {
-  if (!await _confirmModal('Arm this XC race?', 'All connected timers and the Starter will be notified.', 'ARM RACE →')) return;
+  if (!await _confirmModal('Arm this XC race?', 'All connected timers and the Starter will be notified.', 'ARM RACE \u2192')) return;
   const age  = document.getElementById('xc-age-sel').value;
   const event= document.getElementById('xc-event-sel').value;
   await cRef('xc/current').set({
@@ -3373,11 +3397,11 @@ async function xcAdminPublish() {
 
   if (!await _confirmModal(
     'Publish XC Results',
-    \`\${sorted.length} finisher\${sorted.length!==1?'s':''} · \${numQual} qualifier spot\${numQual!==1?'s':''}\`,
-    'PUBLISH →'
+    \`\${sorted.length} finisher\${sorted.length!==1?'s':''} \xB7 \${numQual} qualifier spot\${numQual!==1?'s':''}\`,
+    'PUBLISH \u2192'
   )) return;
 
-  toast('Publishing & generating cards…');
+  toast('Publishing & generating cards\u2026');
 
   // Generate finish cards for finishers with photos
   const cards = {};
@@ -3411,7 +3435,7 @@ async function xcAdminPublish() {
   });
   await cRef('xc/current').update({state:'done'});
 
-  const qualMsg = numQual ? \` · \${Math.min(numQual, sorted.length)} qualifier\${numQual!==1?'s':''} flagged\` : '';
+  const qualMsg = numQual ? \` \xB7 \${Math.min(numQual, sorted.length)} qualifier\${numQual!==1?'s':''} flagged\` : '';
   toast('XC published!' + qualMsg);
 
   // Offer to view finish cards if any were generated
@@ -3421,7 +3445,7 @@ async function xcAdminPublish() {
   }
 }
 
-// ── Finish card generator ────────────────────────────────────
+// \u2500\u2500 Finish card generator \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, event, school }) {
   const W = 400, H = 620;
   const c   = document.createElement('canvas');
@@ -3451,7 +3475,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     } catch(e) {
-      // No photo fallback — teal gradient background
+      // No photo fallback \u2014 teal gradient background
       const g2 = ctx.createLinearGradient(0, 0, W, H*0.5);
       g2.addColorStop(0, '#0d1117'); g2.addColorStop(1, '#0d4040');
       ctx.fillStyle = g2;
@@ -3466,7 +3490,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
     ctx.fillStyle = '#30363d';
     ctx.font = '64px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🏃', W/2, H*0.32);
+    ctx.fillText('\u{1F3C3}', W/2, H*0.32);
   }
 
   const baseY = H * 0.64;
@@ -3475,7 +3499,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
   ctx.fillStyle = '#14b8a6';
   ctx.fillRect(0, baseY - 4, W, 4);
 
-  // Place text — gold / silver / bronze / teal
+  // Place text \u2014 gold / silver / bronze / teal
   const placeColors = ['#FFD700','#C0C0C0','#CD7F32'];
   const placeText   = ['1ST','2ND','3RD'][place-1] || (place + 'TH');
   ctx.fillStyle  = placeColors[place-1] || '#14b8a6';
@@ -3489,7 +3513,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
   // Name
   ctx.fillStyle = '#f0f6fc';
   ctx.font      = 'bold 34px Arial';
-  const displayName = name.length > 20 ? name.slice(0,19) + '…' : name;
+  const displayName = name.length > 20 ? name.slice(0,19) + '\u2026' : name;
   ctx.fillText(displayName, W/2, baseY + 120);
 
   // Time
@@ -3500,7 +3524,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
   // Event info
   ctx.fillStyle = '#8b949e';
   ctx.font      = '17px Arial';
-  ctx.fillText(\`\${age} \${gender}  ·  \${event}\`, W/2, baseY + 186);
+  ctx.fillText(\`\${age} \${gender}  \xB7  \${event}\`, W/2, baseY + 186);
 
   // School
   if (school) {
@@ -3521,7 +3545,7 @@ async function generateFinishCard({ place, name, elapsedMs, photo, age, gender, 
   return c.toDataURL('image/jpeg', 0.82);
 }
 
-// ── Show finish cards slideshow after publish ────────────────
+// \u2500\u2500 Show finish cards slideshow after publish \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function showFinishCards(cards, sorted, xc) {
   let idx = 0;
   const keys = Object.keys(cards).map(Number).sort((a,b)=>a-b);
@@ -3535,12 +3559,12 @@ function showFinishCards(cards, sorted, xc) {
     const [, f] = sorted[place-1] || sorted[0];
     overlay.innerHTML = \`
       <img src="\${cards[place]}" style="max-width:min(320px,85vw);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.6)">
-      <div style="color:#f0f6fc;font-size:0.9rem;text-align:center;opacity:0.7">\${place} of \${keys.length} · tap to share</div>
+      <div style="color:#f0f6fc;font-size:0.9rem;text-align:center;opacity:0.7">\${place} of \${keys.length} \xB7 tap to share</div>
       <div class="card-actions">
-        \${idx > 0 ? '<button class="btn btn-secondary btn-sm" id="_fc-prev">← Prev</button>' : ''}
-        <button class="btn btn-primary btn-sm" id="_fc-share">Share 📤</button>
-        \${idx < keys.length-1 ? '<button class="btn btn-secondary btn-sm" id="_fc-next">Next →</button>' : ''}
-        <button class="btn btn-secondary btn-sm" id="_fc-close">✕ Close</button>
+        \${idx > 0 ? '<button class="btn btn-secondary btn-sm" id="_fc-prev">\u2190 Prev</button>' : ''}
+        <button class="btn btn-primary btn-sm" id="_fc-share">Share \u{1F4E4}</button>
+        \${idx < keys.length-1 ? '<button class="btn btn-secondary btn-sm" id="_fc-next">Next \u2192</button>' : ''}
+        <button class="btn btn-secondary btn-sm" id="_fc-close">\u2715 Close</button>
       </div>\`;
 
     // Bind buttons
@@ -3555,7 +3579,7 @@ function showFinishCards(cards, sorted, xc) {
       const blob     = await (await fetch(dataUrl)).blob();
       const file     = new File([blob], \`finish-\${xc.age}-\${xc.gender}-place\${place}.jpg\`, {type:'image/jpeg'});
       if (navigator.canShare && navigator.canShare({files:[file]})) {
-        navigator.share({ files:[file], title: \`\${ordinal(place)} Place — \${xc.age} \${xc.gender}\` }).catch(()=>{});
+        navigator.share({ files:[file], title: \`\${ordinal(place)} Place \u2014 \${xc.age} \${xc.gender}\` }).catch(()=>{});
       } else {
         const a = document.createElement('a');
         a.href = dataUrl; a.download = file.name; a.click();
@@ -3576,7 +3600,7 @@ function renderXCAdminView(xc) {
   }
   setup.classList.add('hidden'); live.classList.remove('hidden');
 
-  document.getElementById('xc-race-lbl').textContent = \`\${xc.age||''} \${xc.gender||''} · \${xc.event||''}\`;
+  document.getElementById('xc-race-lbl').textContent = \`\${xc.age||''} \${xc.gender||''} \xB7 \${xc.event||''}\`;
   const badge  = document.getElementById('xc-state-badge');
   const goBtn  = document.getElementById('xc-go-btn');
   const pubBtn = document.getElementById('xc-publish-btn');
@@ -3602,16 +3626,16 @@ function renderXCAdminView(xc) {
   document.getElementById('xc-finishers-list').innerHTML = entries.map(([k,f],i)=>\`
     <div class="result-row" style="display:flex;align-items:center;gap:6px">
       <span class="place-badge">\${ordinal(i+1)}</span>
-      \${f.photo ? '<span style="font-size:0.8rem" title="Photo captured">📷</span>' : ''}
-      <span class="result-name" style="flex:1">\${f.name||(f.bib?'Bib '+f.bib:'—')}</span>
-      \${qualN > 0 && (i+1) <= qualN ? '<span class="qualifier-chip">🏅 QUAL</span>' : ''}
+      \${f.photo ? '<span style="font-size:0.8rem" title="Photo captured">\u{1F4F7}</span>' : ''}
+      <span class="result-name" style="flex:1">\${f.name||(f.bib?'Bib '+f.bib:'\u2014')}</span>
+      \${qualN > 0 && (i+1) <= qualN ? '<span class="qualifier-chip">\u{1F3C5} QUAL</span>' : ''}
       <span class="result-time">\${fmtMs(f.elapsedMs)}</span>
     </div>\`).join('');
 }
 
 async function exportCSV() {
   const btn = event && event.currentTarget;
-  if (btn) { btn.setAttribute('disabled',''); btn.textContent='Exporting…'; }
+  if (btn) { btn.setAttribute('disabled',''); btn.textContent='Exporting\u2026'; }
   try {
     const snap = await cRef('results').once('value');
     const results = snap.val() || {};
@@ -3640,10 +3664,10 @@ async function exportCSV() {
   if (btn) { btn.removeAttribute('disabled'); btn.textContent='Export CSV'; }
 }
 
-// ════════════════════════════════════════
-// ── VIDEO FINISH ─────────────────────────────────────────────────────────────
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// \u2500\u2500 VIDEO FINISH \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 // STATE
-// ── Video Finish: slit camera state ──────────────────────────────────────────
+// \u2500\u2500 Video Finish: slit camera state \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let vfStream        = null;
 let vfRaceStartMs   = 0;
 let vfOfflineMode   = false;
@@ -3659,7 +3683,7 @@ const VF_SLIT_W     = 5400;    // ~90s at 60fps
 const VF_SLIT_H     = 200;
 let vfSlitPos       = 0;        // columns written
 let vfGoColumn      = -1;       // column where GO fired
-let vfSlitX         = 0.5;     // slit line position (0–1)
+let vfSlitX         = 0.5;     // slit line position (0\u20131)
 let vfBgAccum       = null;    // Float32Array[VF_SLIT_H] background model
 let vfBgN           = 0;
 let vfLastDetectCol = -999;
@@ -3669,11 +3693,11 @@ function vfGetOffset()      { return parseInt(document.getElementById('vf-offset
 function vfGetProgress()    { return parseInt(document.getElementById('vf-progress-input')?.value||2,10)||2; }
 function vfGetSensitivity() { return parseInt(document.getElementById('vf-sensitivity')?.value||6,10)||6; }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// \u2500\u2500 Init \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function initVideoFinish() {
   requestWakeLock(); syncClock();
 
-  // Init slit canvas (OffscreenCanvas not available in all mobile browsers — use regular canvas)
+  // Init slit canvas (OffscreenCanvas not available in all mobile browsers \u2014 use regular canvas)
   vfSlitInternal = document.createElement('canvas');
   vfSlitInternal.width  = VF_SLIT_W;
   vfSlitInternal.height = VF_SLIT_H;
@@ -3722,12 +3746,12 @@ function initVideoFinish() {
       vfOfflineMode = false;
       if (vfLiveState === 'calibrating' || vfLiveState === 'ready') {
         vfLiveState = 'detecting';
-        vfSetStatus('🔴 Race live — detecting crossings', '#ef4444');
+        vfSetStatus('\u{1F534} Race live \u2014 detecting crossings', '#ef4444');
       }
     } else if (rc.state === 'armed') {
       vfRaceStartMs = 0; vfGoColumn = -1;
       if (vfLiveState === 'detecting' || vfLiveState === 'done') vfLiveState = 'ready';
-      vfSetStatus('⚡ Armed — waiting for GO', '#eab308');
+      vfSetStatus('\u26A1 Armed \u2014 waiting for GO', '#eab308');
     }
   });
   activeListeners.push(() => ref.off());
@@ -3752,28 +3776,28 @@ function vfStartCamera() {
     vid.srcObject = stream; vid.play();
     vid.addEventListener('playing', () => {
       vfLiveState = 'calibrating';
-      vfSetStatus('Calibrating…', '#6b7280');
-      toast('Camera ready — calibrating…');
+      vfSetStatus('Calibrating\u2026', '#6b7280');
+      toast('Camera ready \u2014 calibrating\u2026');
       if (!vfLiveRafId) vfLiveRafId = requestAnimationFrame(vfLiveFrame);
     }, { once: true });
   }).catch(err => {
     const msg = err?.name === 'NotFoundError'   ? 'No camera found on this device'
-              : err?.name === 'NotAllowedError' ? 'Camera access denied — check browser permissions'
+              : err?.name === 'NotAllowedError' ? 'Camera access denied \u2014 check browser permissions'
               : 'Camera error: ' + (err?.message || err);
-    toast(msg); vfSetStatus('⚠ ' + msg, '#ef4444');
+    toast(msg); vfSetStatus('\u26A0 ' + msg, '#ef4444');
     const canvas = document.getElementById('vf-live-canvas');
     if (canvas) {
       canvas.style.display = 'none';
       const errDiv = document.createElement('div');
       errDiv.id = 'vf-cam-error';
       errDiv.style.cssText = 'text-align:center;padding:32px 16px;background:var(--surface-2);border-radius:12px;margin-bottom:10px';
-      errDiv.innerHTML = \`<div style="font-size:2rem;margin-bottom:8px">📷</div><div style="color:var(--danger);font-weight:600;margin-bottom:16px">\${msg}</div><button class="btn btn-primary" onclick="vfRetryCamera()">Retry Camera</button>\`;
+      errDiv.innerHTML = \`<div style="font-size:2rem;margin-bottom:8px">\u{1F4F7}</div><div style="color:var(--danger);font-weight:600;margin-bottom:16px">\${msg}</div><button class="btn btn-primary" onclick="vfRetryCamera()">Retry Camera</button>\`;
       canvas.parentNode.insertBefore(errDiv, canvas);
     }
   });
 }
 
-// ── Slit line drag ────────────────────────────────────────────────────────────
+// \u2500\u2500 Slit line drag \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfDragStart(e) {
   e.preventDefault(); vfDragging = true; vfDragMove(e);
 }
@@ -3788,7 +3812,7 @@ function vfDragMove(e) {
 }
 function vfDragEnd() { vfDragging = false; }
 
-// ── Main RAF loop ─────────────────────────────────────────────────────────────
+// \u2500\u2500 Main RAF loop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfLiveFrame() {
   vfLiveRafId = null;
   if (vfLiveState === 'idle') return;
@@ -3823,7 +3847,7 @@ function vfLiveFrame() {
     vfBuildBg(scaledCol);
     if (vfBgN >= 90) {
       vfLiveState = vfRaceStartMs ? 'detecting' : 'ready';
-      vfSetStatus(vfRaceStartMs ? '🔴 Detecting…' : '✓ Ready — waiting for GO',
+      vfSetStatus(vfRaceStartMs ? '\u{1F534} Detecting\u2026' : '\u2713 Ready \u2014 waiting for GO',
                   vfRaceStartMs ? '#ef4444' : '#22c55e');
       toast('Ready!');
     }
@@ -3853,7 +3877,7 @@ function vfLiveFrame() {
   vfLiveRafId = requestAnimationFrame(vfLiveFrame);
 }
 
-// ── Live camera overlay with draggable slit line ──────────────────────────────
+// \u2500\u2500 Live camera overlay with draggable slit line \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfDrawLiveOverlay(offscr) {
   const canvas = document.getElementById('vf-live-canvas');
   if (!canvas) return;
@@ -3878,7 +3902,7 @@ function vfDrawLiveOverlay(offscr) {
   ctx.beginPath(); ctx.arc(sx, h >> 1, 16, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.shadowBlur = 0; ctx.stroke();
   ctx.fillStyle = '#fff'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-  ctx.fillText('⇔', sx, (h >> 1) + 5);
+  ctx.fillText('\u21D4', sx, (h >> 1) + 5);
   // Label
   ctx.textAlign = 'left'; ctx.font = 'bold 12px sans-serif';
   ctx.fillStyle = lineColor;
@@ -3886,7 +3910,7 @@ function vfDrawLiveOverlay(offscr) {
   ctx.restore();
 }
 
-// ── Scale pixel column to target height ───────────────────────────────────────
+// \u2500\u2500 Scale pixel column to target height \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfScaleColumn(rawCol, srcH, dstH) {
   const out = new ImageData(1, dstH);
   for (let y = 0; y < dstH; y++) {
@@ -3900,7 +3924,7 @@ function vfScaleColumn(rawCol, srcH, dstH) {
   return out;
 }
 
-// ── Background model ──────────────────────────────────────────────────────────
+// \u2500\u2500 Background model \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfBuildBg(col) {
   const n = vfBgN;
   for (let y = 0; y < VF_SLIT_H; y++) {
@@ -3918,19 +3942,19 @@ function vfAdaptBg(col, rate) {
   }
 }
 
-// ── Crossing detection ────────────────────────────────────────────────────────
+// \u2500\u2500 Crossing detection \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfCheckCrossing(col) {
   if (!vfBgAccum || vfBgN < 10 || !vfRaceStartMs) return;
-  const debounce = Math.max(20, 60 - vfGetSensitivity() * 4); // 20–56 frames
+  const debounce = Math.max(20, 60 - vfGetSensitivity() * 4); // 20\u201356 frames
   if (vfSlitPos - vfLastDetectCol < debounce) return;
 
   const nowMs    = nowServer();
   const elapsed  = nowMs - vfRaceStartMs - vfGetOffset();
   if (elapsed < 300) return; // ignore first 300ms (GO noise)
 
-  const sens      = vfGetSensitivity();              // 1–10
-  const threshold = Math.max(6, 38 - sens * 3);     // 8 (sens=10) – 35 (sens=1)
-  const minRows   = Math.round(VF_SLIT_H * (0.35 - sens * 0.02)); // 15%–33% of height
+  const sens      = vfGetSensitivity();              // 1\u201310
+  const threshold = Math.max(6, 38 - sens * 3);     // 8 (sens=10) \u2013 35 (sens=1)
+  const minRows   = Math.round(VF_SLIT_H * (0.35 - sens * 0.02)); // 15%\u201333% of height
 
   let diffCount = 0;
   for (let y = 0; y < VF_SLIT_H; y++) {
@@ -3965,7 +3989,7 @@ function vfCaptureStill() {
   } catch(e) { return null; }
 }
 
-// ── Slit canvas markers ───────────────────────────────────────────────────────
+// \u2500\u2500 Slit canvas markers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfDrawGoMarker() {
   if (!vfSlitICtx || vfGoColumn < 0) return;
   vfSlitICtx.save();
@@ -3990,7 +4014,7 @@ function vfMarkCrossing(col, elapsedMs, place) {
   vfSlitICtx.restore();
 }
 
-// ── Render slit display canvas ────────────────────────────────────────────────
+// \u2500\u2500 Render slit display canvas \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfRenderSlit() {
   const display = document.getElementById('vf-slit-canvas');
   if (!display || !vfSlitICtx) return;
@@ -4007,9 +4031,9 @@ function vfRenderSlit() {
   ctx.drawImage(vfSlitInternal, srcX, 0, showCols, VF_SLIT_H, 0, 0, dw, dh);
 }
 
-// ── Export slit image as PNG ──────────────────────────────────────────────────
+// \u2500\u2500 Export slit image as PNG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfExportSlit() {
-  if (!vfSlitInternal || vfSlitPos === 0) { toast('No slit image yet — wait for the race'); return; }
+  if (!vfSlitInternal || vfSlitPos === 0) { toast('No slit image yet \u2014 wait for the race'); return; }
   const used = Math.min(vfSlitPos, VF_SLIT_W);
   const tmp = document.createElement('canvas');
   tmp.width = used; tmp.height = VF_SLIT_H;
@@ -4021,7 +4045,7 @@ function vfExportSlit() {
   toast('Finish line photo saved!');
 }
 
-// ── Results list ──────────────────────────────────────────────────────────────
+// \u2500\u2500 Results list \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfRenderDetections() {
   const list = document.getElementById('vf-mark-list');
   if (!list) return;
@@ -4044,7 +4068,7 @@ function vfRemove(i) {
   vfRenderDetections();
 }
 
-// ── Publish ───────────────────────────────────────────────────────────────────
+// \u2500\u2500 Publish \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function vfPublish() {
   if (!vfDetections.length) { toast('Nothing to publish'); return; }
   const payload = {};
@@ -4061,10 +4085,10 @@ async function vfPublish() {
   document.getElementById('vf-publish-btn').disabled = true;
 }
 
-// ── Camera flip & retry ───────────────────────────────────────────────────────
+// \u2500\u2500 Camera flip & retry \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfFlipCamera() {
   vfFacingMode2 = (vfFacingMode2 === 'environment') ? 'user' : 'environment';
-  toast(\`Switching to \${vfFacingMode2 === 'user' ? 'front' : 'back'} camera…\`);
+  toast(\`Switching to \${vfFacingMode2 === 'user' ? 'front' : 'back'} camera\u2026\`);
   const errDiv = document.getElementById('vf-cam-error');
   if (errDiv) errDiv.remove();
   const canvas = document.getElementById('vf-live-canvas');
@@ -4079,11 +4103,11 @@ function vfRetryCamera() {
   if (errDiv) errDiv.remove();
   const canvas = document.getElementById('vf-live-canvas');
   if (canvas) canvas.style.display = '';
-  vfSetStatus('Starting camera…', 'var(--muted)');
+  vfSetStatus('Starting camera\u2026', 'var(--muted)');
   vfStartCamera();
 }
 
-// ── Cleanup ───────────────────────────────────────────────────────────────────
+// \u2500\u2500 Cleanup \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfExit() {
   if (vfLiveRafId) { cancelAnimationFrame(vfLiveRafId); vfLiveRafId = null; }
   if (vfStream)    { vfStream.getTracks().forEach(t=>t.stop()); vfStream = null; }
@@ -4094,7 +4118,7 @@ function vfExit() {
   enterRole('role');
 }
 
-// ── Manual add ────────────────────────────────────────────────────────────────
+// \u2500\u2500 Manual add \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function vfManualAdd() {
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
@@ -4128,7 +4152,7 @@ function vfManualSubmit(btn) {
   toast(\`Manual finish added: \${fmtMs(Math.round(ms))}\`);
 }
 
-// ── TASK 9: Athlete name persistence ─────────────────────────
+// \u2500\u2500 TASK 9: Athlete name persistence \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function _laneKey(age, gender, event) {
   return \`ct_lanes_\${age}_\${gender}_\${event}\`.replace(/\\s+/g,'_');
 }
@@ -4144,7 +4168,7 @@ function _loadLaneNames(age, gender, event) {
       const n = inp.dataset.lane;
       if (lanes[n]?.name) inp.value = lanes[n].name;
     });
-    toast('Names loaded from last heat ↑');
+    toast('Names loaded from last heat \u2191');
   } catch(e){}
 }
 
@@ -4163,7 +4187,7 @@ function _attachLaneNameAutoLoad() {
 // Call after a short delay so initAdminView has run
 const _origInitAdminView = typeof initAdminView === 'function' ? initAdminView : null;
 
-// ── TASK 10: Timer undo ───────────────────────────────────────
+// \u2500\u2500 TASK 10: Timer undo \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let _timerUndoTimer = null;
 
 function _showTimerUndo(lane, splitKey, elapsedMs) {
@@ -4181,7 +4205,7 @@ function _showTimerUndo(lane, splitKey, elapsedMs) {
   const undoBtn = document.createElement('button');
   undoBtn.className = 'btn btn-secondary';
   undoBtn.style.cssText = 'font-size:0.85rem;padding:6px 16px;color:var(--accent);border-color:var(--accent)';
-  undoBtn.textContent = '↩ Undo';
+  undoBtn.textContent = '\u21A9 Undo';
   bar.appendChild(timeLeft);
   bar.appendChild(undoBtn);
   document.body.appendChild(bar);
@@ -4201,16 +4225,16 @@ function _showTimerUndo(lane, splitKey, elapsedMs) {
       await cRef(\`race/current/splits/\${lane}/\${splitKey}\`).remove();
       const splitBtn = document.getElementById('timer-stop-btn');
       if (splitBtn) { splitBtn.textContent = 'STOP'; splitBtn.removeAttribute('disabled'); }
-      toast('↩ Stop undone — tap STOP again when ready');
+      toast('\u21A9 Stop undone \u2014 tap STOP again when ready');
     } catch(e) {
-      toast('Could not undo — split already synced');
+      toast('Could not undo \u2014 split already synced');
     }
   };
 
   _timerUndoTimer = setTimeout(() => { clearInterval(tick); bar.remove(); }, 3000);
 }
 
-// ── TASK 12: Results export ───────────────────────────────────
+// \u2500\u2500 TASK 12: Results export \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function adminExportCSV() {
   if (!raceState) { toast('No race data'); return; }
   const lanes  = raceState.lanes  || {};
@@ -4255,7 +4279,7 @@ function adminPrintResults() {
   let place = 1;
   results.forEach(r => { r.place = place++; });
 
-  const medals = ['🥇','🥈','🥉'];
+  const medals = ['\u{1F947}','\u{1F948}','\u{1F949}'];
   const rows   = results.map(r =>
     \`<tr><td style="text-align:center;font-size:1.4rem">\${medals[r.place-1]||r.place}</td><td>\${r.lane}</td><td style="font-weight:600">\${r.name}</td><td style="font-family:monospace;font-size:1.1rem">\${fmtSec(r.timeMs)}</td></tr>\`
   ).join('');
@@ -4268,13 +4292,13 @@ function adminPrintResults() {
   <h2>\${raceState.age||''} \${raceState.gender||''} &mdash; \${new Date().toLocaleDateString('en-AU')}</h2>
   <table><thead><tr><th>Place</th><th>Lane</th><th>Athlete</th><th>Time</th></tr></thead><tbody>\${rows}</tbody></table>
   <p style="margin-top:32px;font-size:.75rem;color:#aaa">Generated by Carnival Timing &mdash; carnivaltiming.com</p>
-  <button onclick="window.print()" style="margin-top:16px;padding:10px 24px;font-size:1rem;cursor:pointer">🖨 Print</button>
+  <button onclick="window.print()" style="margin-top:16px;padding:10px 24px;font-size:1rem;cursor:pointer">\u{1F5A8} Print</button>
   
 <div id="ct-footer" style="position:fixed;bottom:0;left:0;right:0;background:rgba(13,27,62,0.92);backdrop-filter:blur(6px);color:rgba(255,255,255,0.5);font-size:11px;text-align:center;padding:6px 16px;z-index:100;display:flex;justify-content:center;gap:16px;align-items:center;flex-wrap:wrap;">
-  <span>© 2026 Luck Dragon Pty Ltd</span>
-  <span>·</span>
+  <span>\xA9 2026 Luck Dragon Pty Ltd</span>
+  <span>\xB7</span>
   <a href="/privacy" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">Privacy</a>
-  <span>·</span>
+  <span>\xB7</span>
   <a href="https://schoolsportportal.com.au" style="color:rgba(255,255,255,0.5);text-decoration:none;" target="_blank">School Sport Portal</a>
 </div>
 </body></html>\`);
@@ -4284,9 +4308,9 @@ function adminPrintResults() {
 // Attach lane-name autoload after DOM is ready
 setTimeout(_attachLaneNameAutoLoad, 1500);
 
-// ════════════════════════════════════════════════════════
-//  CT v8.5.1 — Auto Finish Line Detection
-// ════════════════════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+//  CT v8.5.1 \u2014 Auto Finish Line Detection
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 let xcAutoDetectMode = false;
 let xcAutoPlaceCounter = 0; // local counter, incremented immediately to avoid race
 let _xcResizeListener = null; // FIX 3: track resize listener for cleanup
@@ -4299,7 +4323,7 @@ let xcDiffThreshold  = 22;     // controlled by sensitivity slider
 const XC_COOLDOWN_MS = 2800;   // min ms between auto-detections
 const XC_SAMPLES     = 80;     // pixels sampled along finish line
 
-// ── Mode toggle ─────────────────────────────────────────
+// \u2500\u2500 Mode toggle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function xcStartAutoMode() {
   xcAutoDetectMode = true;
   document.getElementById('marshal-tap-btn').style.display    = 'none';
@@ -4308,8 +4332,8 @@ function xcStartAutoMode() {
   document.getElementById('xc-detect-status').textContent     = 'Draw your finish line to begin';
   xcInitCamera().then(() => {
     if (!xcCamStream) {
-      // Camera denied — show message but still allow manual tap fallback
-      toast('Camera access denied — auto-detect requires camera permission');
+      // Camera denied \u2014 show message but still allow manual tap fallback
+      toast('Camera access denied \u2014 auto-detect requires camera permission');
       xcStopAutoMode();
       return;
     }
@@ -4327,7 +4351,7 @@ function xcStopAutoMode() {
   document.getElementById('xc-line-setup-overlay').style.display = 'none';
 }
 
-// ── Line setup ───────────────────────────────────────────
+// \u2500\u2500 Line setup \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function xcShowLineSetup() {
   const overlay = document.getElementById('xc-line-setup-overlay');
   overlay.style.display = 'flex';
@@ -4339,7 +4363,7 @@ function xcShowLineSetup() {
   const vid = document.getElementById('xc-setup-vid');
   if (xcCamStream) { vid.srcObject = xcCamStream; vid.play().catch(()=>{}); }
 
-  // Resize canvas to match overlay — FIX 3: remove old listener before adding
+  // Resize canvas to match overlay \u2014 FIX 3: remove old listener before adding
   const canvas = document.getElementById('xc-line-canvas-overlay');
   if (_xcResizeListener) window.removeEventListener('resize', _xcResizeListener);
   _xcResizeListener = () => { canvas.width = overlay.clientWidth; canvas.height = overlay.clientHeight; xcDrawLine(); };
@@ -4366,7 +4390,7 @@ function xcLineSetupTap(e, canvas) {
     document.getElementById('xc-line-instruction').textContent = 'Now tap the RIGHT edge';
   } else if (!xcLineP2) {
     xcLineP2 = {x, y};
-    document.getElementById('xc-line-instruction').textContent = '✅ Line set — ready to detect';
+    document.getElementById('xc-line-instruction').textContent = '\u2705 Line set \u2014 ready to detect';
     document.getElementById('xc-start-detect-btn').style.display = '';
   }
   xcDrawLine();
@@ -4420,7 +4444,7 @@ function xcDrawLine() {
   }
 }
 
-// ── Detection loop ───────────────────────────────────────
+// \u2500\u2500 Detection loop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function xcStartDetect() {
   if (!xcLineP1 || !xcLineP2) return;
   xcCloseLineSetup();
@@ -4428,7 +4452,7 @@ function xcStartDetect() {
   xcLastTrigger    = 0;
   // FIX 4: sync local counter with current Firebase finish count before starting
   xcAutoPlaceCounter = Object.keys(xcState?.finishes || {}).length;
-  document.getElementById('xc-detect-status').textContent = '🔴 Detecting — runners auto-recorded';
+  document.getElementById('xc-detect-status').textContent = '\u{1F534} Detecting \u2014 runners auto-recorded';
   xcDetectInterval = setInterval(xcAnalyseFrame, 110); // ~9 fps
 }
 
@@ -4438,7 +4462,7 @@ function xcStopDetect() {
   xcPrevSamples    = null;
 }
 
-// Offscreen canvas for detection — never touches xc-cap
+// Offscreen canvas for detection \u2014 never touches xc-cap
 let _xcDetectCanvas = null;
 
 function xcAnalyseFrame() {
@@ -4488,12 +4512,12 @@ function xcLineDiff(a, b) {
   return s / a.length;
 }
 
-// ── Auto-trigger a finish ────────────────────────────────
+// \u2500\u2500 Auto-trigger a finish \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function xcAutoFinish() {
   if (!xcState || xcState.state !== 'live') return;
 
   const elapsed = nowServer() - xcState.startedAtServer;
-  // FIX 4: increment local counter immediately — don't read Firebase state
+  // FIX 4: increment local counter immediately \u2014 don't read Firebase state
   // (Firebase snapshot may lag, causing two fast finishes to get the same place)
   xcAutoPlaceCounter++;
   const place = xcAutoPlaceCounter;
@@ -4516,12 +4540,12 @@ async function xcAutoFinish() {
     autoDetected: true,
   });
 
-  document.getElementById('xc-detect-status').textContent = \`⚡ #\${place} detected — \${fmtMs(elapsed)}\`;
+  document.getElementById('xc-detect-status').textContent = \`\u26A1 #\${place} detected \u2014 \${fmtMs(elapsed)}\`;
   setTimeout(() => {
-    if (xcDetectInterval) document.getElementById('xc-detect-status').textContent = '🔴 Detecting — runners auto-recorded';
+    if (xcDetectInterval) document.getElementById('xc-detect-status').textContent = '\u{1F534} Detecting \u2014 runners auto-recorded';
   }, 2000);
 
-  // Queue bib entry — but try OCR first with auto-confirm
+  // Queue bib entry \u2014 but try OCR first with auto-confirm
   bibPendingQueue.push({ key, place, elapsed, autoDetected: true });
   if (!bibPendingKey) showNextBib();
 }
@@ -4540,9 +4564,9 @@ function xcDetectBeep() {
   } catch(e) {}
 }
 
-// ════════════════════════════════════════════════════════
-//  CT v8.8 — Option B: In-App Video Recorder
-// ════════════════════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+//  CT v8.8 \u2014 Option B: In-App Video Recorder
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 let _xcMediaRecorder    = null;
 let _xcRecChunks        = [];
 let _xcRecStartTime     = 0;
@@ -4560,7 +4584,7 @@ async function xcStartRecording() {
   // Ensure camera is running
   if (!xcCamStream) {
     await xcInitCamera();
-    if (!xcCamStream) { toast('Camera not available — grant permission first'); return; }
+    if (!xcCamStream) { toast('Camera not available \u2014 grant permission first'); return; }
   }
   if (typeof MediaRecorder === 'undefined') { toast('Video recording not supported on this browser'); return; }
   try {
@@ -4575,7 +4599,7 @@ async function xcStartRecording() {
 
     // Update UI
     const btn = document.getElementById('xc-rec-btn');
-    if (btn) { btn.textContent = '🔴'; btn.style.borderColor = '#ef4444'; btn.style.color = '#ef4444'; }
+    if (btn) { btn.textContent = '\u{1F534}'; btn.style.borderColor = '#ef4444'; btn.style.color = '#ef4444'; }
     const bar = document.getElementById('xc-rec-bar');
     if (bar) bar.style.display = 'flex';
 
@@ -4584,10 +4608,10 @@ async function xcStartRecording() {
       const mm = String(Math.floor(secs / 60)).padStart(2, '0');
       const ss = String(secs % 60).padStart(2, '0');
       const el = document.getElementById('xc-rec-status');
-      if (el) el.textContent = '● REC ' + mm + ':' + ss;
+      if (el) el.textContent = '\u25CF REC ' + mm + ':' + ss;
     }, 1000);
 
-    toast('📹 Recording started');
+    toast('\u{1F4F9} Recording started');
   } catch(e) {
     toast('Recording failed: ' + (e.message || e));
     _xcMediaRecorder = null;
@@ -4600,10 +4624,10 @@ function xcStopRecording() {
   clearInterval(_xcRecTimerInterval);
   _xcRecTimerInterval = null;
   const btn = document.getElementById('xc-rec-btn');
-  if (btn) { btn.textContent = '📹'; btn.style.borderColor = ''; btn.style.color = ''; }
+  if (btn) { btn.textContent = '\u{1F4F9}'; btn.style.borderColor = ''; btn.style.color = ''; }
   const bar = document.getElementById('xc-rec-bar');
   if (bar) bar.style.display = 'none';
-  toast('Saving video…');
+  toast('Saving video\u2026');
 }
 
 function xcSaveRecording() {
@@ -4617,42 +4641,491 @@ function xcSaveRecording() {
   const a    = document.createElement('a');
   a.href = url; a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
-  toast('✅ Saved: ' + name);
+  toast('\u2705 Saved: ' + name);
   _xcRecChunks = []; _xcMediaRecorder = null;
 }
 
 
-</script>
+
+// ══════════════════════════════════════════════════
+// URL AUTO-CREATE (deep-link from sportcarnival.com.au)
+// Usage: carnivaltiming.com?school=X&event=Y&sport=track&houses=Red,Blue&colour=%2314b8a6&code=WPS-2026
+// ══════════════════════════════════════════════════
+async function checkAutoCreate() {
+  const params = new URLSearchParams(window.location.search);
+  const school = params.get('school');
+  const event  = params.get('event');
+  if (!school || !event) return;
+
+  const sport      = params.get('sport')   || 'track';
+  const tier       = params.get('tier')    || 'school';
+  const colour     = params.get('colour')  || '#14b8a6';
+  const housesRaw  = params.get('houses')  || '';
+  const houses     = housesRaw ? housesRaw.split(',').map(h => h.trim()).filter(Boolean) : [];
+  const accessCode = params.get('code');
+
+  // Apply sport/tier globals so admin panel shows correct sport
+  selSport = sport;
+  selTier  = tier;
+
+  // Store access code for any future paywall checks
+  if (accessCode) localStorage.setItem('ct_access_v1', accessCode);
+
+  // Show home screen briefly then auto-create
+  showScreen('home');
+  applyAccent(colour);
+  toast('Setting up carnival…', 3000);
+  await new Promise(r => setTimeout(r, 900));
+
+  // Find a unique 4-letter code
+  let cCode, snap;
+  do {
+    cCode = genCode();
+    carnivalCode = cCode; await _wsReady2(); snap = await db.ref('meta').once('value');
+  } while (snap.exists());
+
+  carnivalCode = cCode;
+  carnivalMeta = {
+    school, name: event, sport, tier, colour,
+    houses, program: [],
+    createdAt: firebase.database.ServerValue.TIMESTAMP
+  };
+  await db.ref('meta').set(carnivalMeta);
+  localStorage.setItem('fl_last_code', cCode);
+  toast(\`Carnival ready — \${cCode}\`, 3500);
+  showRolePicker();
+  setTimeout(() => enterRole('admin'), 700);
+}
+
+// Run URL auto-create after Firebase/app has initialised
+setTimeout(checkAutoCreate, 1200);
+
+<\/script>
 `;
-const HEADERS = {
-  'Content-Type': 'text/html; charset=utf-8',
-  'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-  'X-CT-Version': 'v8.8.0',
-  'X-Frame-Options': 'SAMEORIGIN',
-  'X-Content-Type-Options': 'nosniff',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(self), microphone=(self), geolocation=()',
-  'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; frame-ancestors 'self';",
-};
+var PRIVACY_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy \u2014 Luck Dragon</title>
+<meta name="robots" content="index, follow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}
+a{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}
+.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}
+.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}
+.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}
+.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}
+.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+.section{margin-bottom:40px}
+h2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+h3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}
+p{font-size:14px;color:#334155;margin-bottom:10px}
+ul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}
+ul li{margin-bottom:5px}
+.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}
+.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.product{background:#f1f5f9;border-radius:10px;padding:14px 16px}
+.product .name{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.product .desc{font-size:12px;color:#64748b}
+.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}
+footer{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}
+footer a{color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="badge">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p>How Luck Dragon collects, uses, and protects your information across all our school sport products.</p>
+</div>
+<div class="container">
+  <p class="updated">Last updated: 1 May 2026 &nbsp;\xB7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>
 
-const PRIVACY_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Privacy Policy \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;font-size:13px;color:#1e40af;margin:16px 0}\n.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.product{background:#f1f5f9;border-radius:10px;padding:14px 16px}\n.product .name{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}\n.product .desc{font-size:12px;color:#64748b}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Privacy Policy</h1>\n  <p>How Luck Dragon collects, uses, and protects your information across all our school sport products.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    <strong>The short version:</strong> We collect only what we need to run school sport. Student data is stored securely in Australia and never sold, shared with advertisers, or used for any purpose outside school sport coordination.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Who We Are</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) operates three school sport products:</p>\n      <div class=\"products\">\n        <div class=\"product\"><div class=\"name\">School Sport Portal</div><div class=\"desc\">schoolsportportal.com.au \u2014 school, district &amp; division portals</div></div>\n        <div class=\"product\"><div class=\"name\">Carnival Timing</div><div class=\"desc\">carnivaltiming.com \u2014 live race timing for carnivals</div></div>\n        <div class=\"product\"><div class=\"name\">SportCarnival</div><div class=\"desc\">sportcarnival.com.au \u2014 carnival results and draw management</div></div>\n      </div>\n      <p>This Privacy Policy applies to all three products. For questions, contact us at <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. What Data We Collect</h2>\n    <div class=\"card\">\n      <h3>Student Performance Data (Carnival Timing &amp; School Sport Portal)</h3>\n      <p>When a school coordinator uses our timing tools, we store:</p>\n      <ul>\n        <li>First name and last initial (never full surnames publicly)</li>\n        <li>Age group and gender category</li>\n        <li>Race/event times and placing</li>\n        <li>School name and district</li>\n        <li>House group (where entered)</li>\n      </ul>\n      <p>Full names are only visible to signed-in coordinators. Public result views show first name + last initial + school only.</p>\n\n      <h3>Coordinator Account Data</h3>\n      <ul>\n        <li>Email address (for account access and notifications)</li>\n        <li>School name and role</li>\n        <li>Access code and subscription status (Carnival Timing)</li>\n      </ul>\n\n      <h3>Contact Form Submissions (School Sport Portal)</h3>\n      <ul>\n        <li>Name, email address, school, and message content</li>\n        <li>Used only to respond to your enquiry</li>\n      </ul>\n\n      <h3>Technical Data</h3>\n      <ul>\n        <li>Browser type and device (Cloudflare analytics only \u2014 no cookies placed)</li>\n        <li>Pages visited and time on site (aggregate, not individual tracking)</li>\n        <li>IP address (retained by Cloudflare per their standard policy, not accessed by us)</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. How We Use Your Data</h2>\n    <div class=\"card\">\n      <p>We use data only for the following purposes:</p>\n      <ul>\n        <li><strong>Displaying carnival results</strong> \u2014 showing times and placings to school staff and parents</li>\n        <li><strong>Selecting representative teams</strong> \u2014 surfacing top performers at district, division and region level</li>\n        <li><strong>Account management</strong> \u2014 validating access codes and processing subscriptions</li>\n        <li><strong>Responding to enquiries</strong> \u2014 replying to contact form submissions</li>\n        <li><strong>Improving our products</strong> \u2014 fixing bugs, improving reliability, adding features</li>\n      </ul>\n      <p>We do <strong>not</strong> use data for advertising, profiling, or any purpose unrelated to school sport.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. Data Storage &amp; Security</h2>\n    <div class=\"card\">\n      <p>All data is stored in Australia using the following services:</p>\n      <ul>\n        <li><strong>Cloudflare Workers &amp; KV</strong> \u2014 edge infrastructure with Australian data residency</li>\n        <li><strong>Cloudflare Workers WebSocket</strong> \u2014 Cloudflare global edge (Australian PoPs)</li>\n      </ul>\n      <p>Access to student data requires coordinator authentication. Public-facing result pages display only anonymised data (first name + last initial). We use HTTPS across all services. No passwords are stored \u2014 access is managed via Cloudflare Access and single-use codes.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Data Retention</h2>\n    <div class=\"card\">\n      <p>Carnival result data is retained for a maximum of 3 years to support historical team selection records. Contact form submissions are retained for 12 months. You may request deletion of any data we hold about your school at any time by emailing <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Sharing of Data</h2>\n    <div class=\"card\">\n      <p>We do not sell, rent, or share personal data with third parties, except:</p>\n      <ul>\n        <li><strong>Stripe</strong> \u2014 payment processing for Carnival Timing subscriptions. Stripe handles card data directly; we never see or store payment card numbers.</li>\n        <li><strong>Resend</strong> \u2014 transactional email delivery for contact form replies and access code emails.</li>\n        <li><strong>Cloudflare</strong> \u2014 infrastructure provider. Cloudflare processes request data per their own Privacy Policy.</li>\n      </ul>\n      <p>All third-party providers are bound by data processing agreements and applicable privacy law.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Australian Privacy Act Compliance</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd is committed to compliance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs). In particular:</p>\n      <ul>\n        <li><strong>APP 1</strong> \u2014 This policy is publicly available and describes our data practices</li>\n        <li><strong>APP 3</strong> \u2014 We collect only information reasonably necessary for our school sport functions</li>\n        <li><strong>APP 6</strong> \u2014 Data is used only for the primary purpose of collection</li>\n        <li><strong>APP 8</strong> \u2014 Cross-border disclosures are limited to service providers with equivalent protections</li>\n        <li><strong>APP 11</strong> \u2014 We take reasonable steps to protect data from misuse, loss, and unauthorised access</li>\n        <li><strong>APP 12/13</strong> \u2014 Individuals and schools may access and correct data held about them on request</li>\n      </ul>\n      <p>As our products are used in Victorian government school settings, we also have regard to the <em>Privacy and Data Protection Act 2014</em> (Vic) and Department of Education guidelines for school data management.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Children's Privacy</h2>\n    <div class=\"card\">\n      <p>Our products are designed for use by school sport coordinators and PE teachers, not directly by children. Students do not create accounts or directly interact with our platforms. Student data is entered by authorised school staff only. Public result views are limited to non-identifying information (first name, last initial, school, time).</p>\n      <p>Schools are responsible for obtaining any required parental consents in accordance with their own privacy policies and department requirements before entering student data.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Your Rights</h2>\n    <div class=\"card\">\n      <p>You (or your school) may at any time:</p>\n      <ul>\n        <li>Request a copy of data we hold about your school</li>\n        <li>Request correction of inaccurate data</li>\n        <li>Request deletion of your school's data</li>\n        <li>Opt out of any communications from us</li>\n      </ul>\n      <p>To exercise any of these rights, email <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>. We will respond within 30 days.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Changes to This Policy</h2>\n    <div class=\"card\">\n      <p>We may update this Privacy Policy from time to time. Material changes will be notified to active subscribers by email. The \"Last updated\" date at the top of this page reflects the most recent revision. Continued use of our products after changes constitutes acceptance of the updated policy.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Contact &amp; Complaints</h2>\n    <div class=\"card\">\n      <p>For privacy enquiries or complaints:</p>\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd, ABN 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n      <p>If you are not satisfied with our response to a complaint, you may contact the <a href=\"https://www.oaic.gov.au\" target=\"_blank\" rel=\"noopener\">Office of the Australian Information Commissioner (OAIC)</a>.</p>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>\n</footer>\n</body>\n</html>";
-const TERMS_HTML = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Terms of Service \u2014 Luck Dragon</title>\n<meta name=\"robots\" content=\"index, follow\">\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}\na{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}\n.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}\n.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}\n.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}\n.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}\n.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}\n.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}\n.section{margin-bottom:40px}\nh2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}\nh3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}\np{font-size:14px;color:#334155;margin-bottom:10px}\nul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}\nul li{margin-bottom:5px}\n.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}\n.highlight{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;font-size:13px;color:#92400e;margin:16px 0}\n.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}\n.price-card{background:#f1f5f9;border-radius:10px;padding:16px;text-align:center}\n.price-card .plan{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:4px}\n.price-card .amount{font-size:24px;font-weight:900;color:#0d1b3e}\n.price-card .period{font-size:11px;color:#94a3b8;margin-top:2px}\n.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}\nfooter{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}\nfooter a{color:rgba(255,255,255,.7)}\n</style>\n</head>\n<body>\n<div class=\"hero\">\n  <div class=\"badge\">Legal</div>\n  <h1>Terms of Service</h1>\n  <p>The terms that govern your use of School Sport Portal, Carnival Timing, and SportCarnival.</p>\n</div>\n<div class=\"container\">\n  <p class=\"updated\">Last updated: 1 May 2026 &nbsp;\u00b7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>\n\n  <div class=\"highlight\">\n    By using any Luck Dragon product, you agree to these terms. If you are using our products on behalf of a school, you confirm you have authority to bind the school to these terms.\n  </div>\n\n  <div class=\"section\">\n    <h2>1. Our Products</h2>\n    <div class=\"card\">\n      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) provides three school sport software products:</p>\n      <ul>\n        <li><strong>School Sport Portal</strong> (schoolsportportal.com.au) \u2014 school, district, and division sport information portals for Australian primary schools</li>\n        <li><strong>Carnival Timing</strong> (carnivaltiming.com) \u2014 real-time race timing and results management for school athletics, swimming, and cross country carnivals</li>\n        <li><strong>SportCarnival</strong> (sportcarnival.com.au) \u2014 carnival draw and results management tools</li>\n      </ul>\n      <p>These Terms of Service apply to all three products and any associated services.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>2. Eligibility &amp; Account Access</h2>\n    <div class=\"card\">\n      <p>Our products are intended for use by:</p>\n      <ul>\n        <li>PE teachers, sport coordinators, and school administrators at Australian primary and secondary schools</li>\n        <li>District, division, and regional sport coordinators</li>\n        <li>Parents and community members viewing published results (read-only)</li>\n      </ul>\n      <p>You must be 18 years or older to create an account or purchase a subscription. Students do not create accounts and do not directly use our platforms \u2014 all student data is entered by authorised school staff.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>3. Carnival Timing \u2014 Pricing &amp; Subscriptions</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a paid product. Current pricing:</p>\n      <div class=\"pricing\">\n        <div class=\"price-card\"><div class=\"plan\">Per Carnival</div><div class=\"amount\">$49</div><div class=\"period\">One-time, per event</div></div>\n        <div class=\"price-card\"><div class=\"plan\">Annual</div><div class=\"amount\">$149</div><div class=\"period\">Per year, unlimited carnivals</div></div>\n      </div>\n      <h3>Payment</h3>\n      <p>Payments are processed securely by Stripe. We do not store card details. All prices are in AUD and include GST where applicable.</p>\n      <h3>Access Codes</h3>\n      <p>On successful payment, you receive an access code by email. This code is linked to your school and grants access to the Carnival Timing app for the purchased period. Access codes are non-transferable.</p>\n      <h3>Refunds</h3>\n      <p>Per-carnival purchases ($49): if you experience a technical failure that prevents you from running your carnival and we are unable to resolve it, we will issue a full refund. Change-of-mind refunds are not available once an access code has been used to enter athlete data.</p>\n      <p>Annual subscriptions ($149): a full refund is available within 14 days of purchase if no carnival data has been entered. After 14 days or after use, no refund is available.</p>\n      <p>To request a refund, email <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a> with your access code and reason.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>4. School Sport Portal \u2014 Pricing</h2>\n    <div class=\"card\">\n      <p>School Sport Portal is priced at <strong>$1 per student per year</strong> for schools with a managed portal. District and division portals are priced separately \u2014 contact us for a quote. A free demo portal is available at <a href=\"https://schoolsportportal.com.au/demo-school\">schoolsportportal.com.au/demo-school</a>.</p>\n      <p>SportCarnival is currently free to use. Future paid features will be announced with at least 30 days notice to existing users.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>5. Acceptable Use</h2>\n    <div class=\"card\">\n      <p>You agree not to:</p>\n      <ul>\n        <li>Enter false or fabricated student data, results, or times</li>\n        <li>Share access codes with schools or individuals not covered by your subscription</li>\n        <li>Attempt to reverse-engineer, copy, or reproduce our software or designs</li>\n        <li>Use our products for any purpose other than legitimate school sport coordination</li>\n        <li>Scrape, bulk-download, or systematically extract data from our platforms</li>\n        <li>Attempt to access accounts or data belonging to other schools</li>\n      </ul>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>6. Student Data Responsibility</h2>\n    <div class=\"card\">\n      <p>Schools are responsible for:</p>\n      <ul>\n        <li>Ensuring they have appropriate authority to enter student data into our systems</li>\n        <li>Complying with their own school and departmental privacy policies when using our products</li>\n        <li>Notifying us promptly if student data needs to be corrected or removed</li>\n        <li>Keeping their access credentials secure</li>\n      </ul>\n      <p>We act as a data processor on behalf of schools for student performance data. Schools remain the data controller under the <em>Privacy Act 1988</em> (Cth) and relevant state legislation.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>7. Accuracy of Results</h2>\n    <div class=\"card\">\n      <p>Carnival Timing is a software tool designed to assist with manual race timing. We make no guarantee that recorded times are officially accurate for purposes beyond school sport carnivals. Results recorded by our system should be verified by a qualified official before being used for any formal selection, record-keeping, or competitive purpose beyond the school carnival level.</p>\n      <p>Luck Dragon Pty Ltd accepts no liability for decisions made by schools, districts, divisions, or regions based on timing data recorded using our products.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>8. Service Availability</h2>\n    <div class=\"card\">\n      <p>We aim for high availability but do not guarantee uninterrupted access. Our products run on Cloudflare's global network, which has strong uptime guarantees, but maintenance, updates, or unexpected outages may occur. We are not liable for losses arising from service unavailability.</p>\n      <p>If a paid service is unavailable on the day of your carnival due to our error, we will provide a refund as described in Section 3.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>9. Intellectual Property</h2>\n    <div class=\"card\">\n      <p>All software, designs, text, and branding on our platforms are owned by Luck Dragon Pty Ltd. You may not copy, reproduce, or create derivative works from any part of our products without prior written consent. Student performance data entered by schools remains the property of the relevant school.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>10. Limitation of Liability</h2>\n    <div class=\"card\">\n      <p>To the maximum extent permitted by Australian law, Luck Dragon Pty Ltd's total liability to you for any claim arising from your use of our products is limited to the amount you paid us in the 12 months preceding the claim (or $100 if you have not paid us anything).</p>\n      <p>We are not liable for indirect, incidental, or consequential losses including lost data, missed carnival events, or decisions made based on our results.</p>\n      <p>Nothing in these terms excludes rights you have under Australian consumer law that cannot be excluded by contract.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>11. Governing Law</h2>\n    <div class=\"card\">\n      <p>These Terms of Service are governed by the laws of Victoria, Australia. Any disputes will be subject to the non-exclusive jurisdiction of the courts of Victoria.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>12. Changes to These Terms</h2>\n    <div class=\"card\">\n      <p>We may update these terms from time to time. Active subscribers will be notified of material changes by email at least 14 days before they take effect. Continued use of our products after that date constitutes acceptance of the updated terms.</p>\n    </div>\n  </div>\n\n  <div class=\"section\">\n    <h2>13. Contact</h2>\n    <div class=\"card\">\n      <ul>\n        <li><strong>Email:</strong> <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a></li>\n        <li><strong>Company:</strong> Luck Dragon Pty Ltd</li>\n        <li><strong>ABN:</strong> 64 697 434 898</li>\n        <li><strong>Location:</strong> Victoria, Australia</li>\n      </ul>\n    </div>\n  </div>\n</div>\n<footer>\n  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;\n  <a href=\"/privacy\">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href=\"/terms\">Terms of Service</a> &nbsp;&middot;&nbsp;\n  <a href=\"mailto:info@sportportal.com.au\">info@sportportal.com.au</a>\n</footer>\n</body>\n</html>";
+  <div class="highlight">
+    <strong>The short version:</strong> We collect only what we need to run school sport. Student data is stored securely in Australia and never sold, shared with advertisers, or used for any purpose outside school sport coordination.
+  </div>
 
-export default {
+  <div class="section">
+    <h2>1. Who We Are</h2>
+    <div class="card">
+      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) operates three school sport products:</p>
+      <div class="products">
+        <div class="product"><div class="name">School Sport Portal</div><div class="desc">schoolsportportal.com.au \u2014 school, district &amp; division portals</div></div>
+        <div class="product"><div class="name">Carnival Timing</div><div class="desc">carnivaltiming.com \u2014 live race timing for carnivals</div></div>
+        <div class="product"><div class="name">SportCarnival</div><div class="desc">sportcarnival.com.au \u2014 carnival results and draw management</div></div>
+      </div>
+      <p>This Privacy Policy applies to all three products. For questions, contact us at <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a>.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>2. What Data We Collect</h2>
+    <div class="card">
+      <h3>Student Performance Data (Carnival Timing &amp; School Sport Portal)</h3>
+      <p>When a school coordinator uses our timing tools, we store:</p>
+      <ul>
+        <li>First name and last initial (never full surnames publicly)</li>
+        <li>Age group and gender category</li>
+        <li>Race/event times and placing</li>
+        <li>School name and district</li>
+        <li>House group (where entered)</li>
+      </ul>
+      <p>Full names are only visible to signed-in coordinators. Public result views show first name + last initial + school only.</p>
+
+      <h3>Coordinator Account Data</h3>
+      <ul>
+        <li>Email address (for account access and notifications)</li>
+        <li>School name and role</li>
+        <li>Access code and subscription status (Carnival Timing)</li>
+      </ul>
+
+      <h3>Contact Form Submissions (School Sport Portal)</h3>
+      <ul>
+        <li>Name, email address, school, and message content</li>
+        <li>Used only to respond to your enquiry</li>
+      </ul>
+
+      <h3>Technical Data</h3>
+      <ul>
+        <li>Browser type and device (Cloudflare analytics only \u2014 no cookies placed)</li>
+        <li>Pages visited and time on site (aggregate, not individual tracking)</li>
+        <li>IP address (retained by Cloudflare per their standard policy, not accessed by us)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>3. How We Use Your Data</h2>
+    <div class="card">
+      <p>We use data only for the following purposes:</p>
+      <ul>
+        <li><strong>Displaying carnival results</strong> \u2014 showing times and placings to school staff and parents</li>
+        <li><strong>Selecting representative teams</strong> \u2014 surfacing top performers at district, division and region level</li>
+        <li><strong>Account management</strong> \u2014 validating access codes and processing subscriptions</li>
+        <li><strong>Responding to enquiries</strong> \u2014 replying to contact form submissions</li>
+        <li><strong>Improving our products</strong> \u2014 fixing bugs, improving reliability, adding features</li>
+      </ul>
+      <p>We do <strong>not</strong> use data for advertising, profiling, or any purpose unrelated to school sport.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>4. Data Storage &amp; Security</h2>
+    <div class="card">
+      <p>All data is stored in Australia using the following services:</p>
+      <ul>
+        <li><strong>Cloudflare Workers &amp; KV</strong> \u2014 edge infrastructure with Australian data residency</li>
+        <li><strong>Cloudflare Workers WebSocket</strong> \u2014 Cloudflare global edge (Australian PoPs)</li>
+      </ul>
+      <p>Access to student data requires coordinator authentication. Public-facing result pages display only anonymised data (first name + last initial). We use HTTPS across all services. No passwords are stored \u2014 access is managed via Cloudflare Access and single-use codes.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. Data Retention</h2>
+    <div class="card">
+      <p>Carnival result data is retained for a maximum of 3 years to support historical team selection records. Contact form submissions are retained for 12 months. You may request deletion of any data we hold about your school at any time by emailing <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a>.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>6. Sharing of Data</h2>
+    <div class="card">
+      <p>We do not sell, rent, or share personal data with third parties, except:</p>
+      <ul>
+        <li><strong>Stripe</strong> \u2014 payment processing for Carnival Timing subscriptions. Stripe handles card data directly; we never see or store payment card numbers.</li>
+        <li><strong>Resend</strong> \u2014 transactional email delivery for contact form replies and access code emails.</li>
+        <li><strong>Cloudflare</strong> \u2014 infrastructure provider. Cloudflare processes request data per their own Privacy Policy.</li>
+      </ul>
+      <p>All third-party providers are bound by data processing agreements and applicable privacy law.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>7. Australian Privacy Act Compliance</h2>
+    <div class="card">
+      <p>Luck Dragon Pty Ltd is committed to compliance with the <em>Privacy Act 1988</em> (Cth) and the Australian Privacy Principles (APPs). In particular:</p>
+      <ul>
+        <li><strong>APP 1</strong> \u2014 This policy is publicly available and describes our data practices</li>
+        <li><strong>APP 3</strong> \u2014 We collect only information reasonably necessary for our school sport functions</li>
+        <li><strong>APP 6</strong> \u2014 Data is used only for the primary purpose of collection</li>
+        <li><strong>APP 8</strong> \u2014 Cross-border disclosures are limited to service providers with equivalent protections</li>
+        <li><strong>APP 11</strong> \u2014 We take reasonable steps to protect data from misuse, loss, and unauthorised access</li>
+        <li><strong>APP 12/13</strong> \u2014 Individuals and schools may access and correct data held about them on request</li>
+      </ul>
+      <p>As our products are used in Victorian government school settings, we also have regard to the <em>Privacy and Data Protection Act 2014</em> (Vic) and Department of Education guidelines for school data management.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>8. Children's Privacy</h2>
+    <div class="card">
+      <p>Our products are designed for use by school sport coordinators and PE teachers, not directly by children. Students do not create accounts or directly interact with our platforms. Student data is entered by authorised school staff only. Public result views are limited to non-identifying information (first name, last initial, school, time).</p>
+      <p>Schools are responsible for obtaining any required parental consents in accordance with their own privacy policies and department requirements before entering student data.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>9. Your Rights</h2>
+    <div class="card">
+      <p>You (or your school) may at any time:</p>
+      <ul>
+        <li>Request a copy of data we hold about your school</li>
+        <li>Request correction of inaccurate data</li>
+        <li>Request deletion of your school's data</li>
+        <li>Opt out of any communications from us</li>
+      </ul>
+      <p>To exercise any of these rights, email <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a>. We will respond within 30 days.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>10. Changes to This Policy</h2>
+    <div class="card">
+      <p>We may update this Privacy Policy from time to time. Material changes will be notified to active subscribers by email. The "Last updated" date at the top of this page reflects the most recent revision. Continued use of our products after changes constitutes acceptance of the updated policy.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>11. Contact &amp; Complaints</h2>
+    <div class="card">
+      <p>For privacy enquiries or complaints:</p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a></li>
+        <li><strong>Company:</strong> Luck Dragon Pty Ltd, ABN 64 697 434 898</li>
+        <li><strong>Location:</strong> Victoria, Australia</li>
+      </ul>
+      <p>If you are not satisfied with our response to a complaint, you may contact the <a href="https://www.oaic.gov.au" target="_blank" rel="noopener">Office of the Australian Information Commissioner (OAIC)</a>.</p>
+    </div>
+  </div>
+</div>
+<footer>
+  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;
+  <a href="/privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="/terms">Terms of Service</a> &nbsp;&middot;&nbsp;
+  <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a>
+</footer>
+</body>
+</html>`;
+var TERMS_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service \u2014 Luck Dragon</title>
+<meta name="robots" content="index, follow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#0f172a;line-height:1.7}
+a{color:#1a56db;text-decoration:none}a:hover{text-decoration:underline}
+.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);color:#fff;padding:56px 24px 72px;text-align:center;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:36px;background:#f8fafc;clip-path:ellipse(55% 100% at 50% 100%)}
+.badge{display:inline-block;background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:14px}
+.hero h1{font-size:clamp(26px,5vw,40px);font-weight:900;letter-spacing:-.02em;margin-bottom:10px}
+.hero p{font-size:14px;opacity:.78;max-width:520px;margin:0 auto}
+.container{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+.section{margin-bottom:40px}
+h2{font-size:18px;font-weight:800;color:#0d1b3e;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+h3{font-size:14px;font-weight:700;color:#0f172a;margin:18px 0 6px}
+p{font-size:14px;color:#334155;margin-bottom:10px}
+ul{font-size:14px;color:#334155;padding-left:20px;margin-bottom:10px}
+ul li{margin-bottom:5px}
+.card{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:16px}
+.highlight{background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px 18px;font-size:13px;color:#92400e;margin:16px 0}
+.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.price-card{background:#f1f5f9;border-radius:10px;padding:16px;text-align:center}
+.price-card .plan{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:4px}
+.price-card .amount{font-size:24px;font-weight:900;color:#0d1b3e}
+.price-card .period{font-size:11px;color:#94a3b8;margin-top:2px}
+.updated{font-size:12px;color:#94a3b8;margin-bottom:32px}
+footer{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:12px}
+footer a{color:rgba(255,255,255,.7)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="badge">Legal</div>
+  <h1>Terms of Service</h1>
+  <p>The terms that govern your use of School Sport Portal, Carnival Timing, and SportCarnival.</p>
+</div>
+<div class="container">
+  <p class="updated">Last updated: 1 May 2026 &nbsp;\xB7&nbsp; Luck Dragon Pty Ltd (ABN 64 697 434 898)</p>
+
+  <div class="highlight">
+    By using any Luck Dragon product, you agree to these terms. If you are using our products on behalf of a school, you confirm you have authority to bind the school to these terms.
+  </div>
+
+  <div class="section">
+    <h2>1. Our Products</h2>
+    <div class="card">
+      <p>Luck Dragon Pty Ltd (ABN 64 697 434 898) provides three school sport software products:</p>
+      <ul>
+        <li><strong>School Sport Portal</strong> (schoolsportportal.com.au) \u2014 school, district, and division sport information portals for Australian primary schools</li>
+        <li><strong>Carnival Timing</strong> (carnivaltiming.com) \u2014 real-time race timing and results management for school athletics, swimming, and cross country carnivals</li>
+        <li><strong>SportCarnival</strong> (sportcarnival.com.au) \u2014 carnival draw and results management tools</li>
+      </ul>
+      <p>These Terms of Service apply to all three products and any associated services.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>2. Eligibility &amp; Account Access</h2>
+    <div class="card">
+      <p>Our products are intended for use by:</p>
+      <ul>
+        <li>PE teachers, sport coordinators, and school administrators at Australian primary and secondary schools</li>
+        <li>District, division, and regional sport coordinators</li>
+        <li>Parents and community members viewing published results (read-only)</li>
+      </ul>
+      <p>You must be 18 years or older to create an account or purchase a subscription. Students do not create accounts and do not directly use our platforms \u2014 all student data is entered by authorised school staff.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>3. Carnival Timing \u2014 Pricing &amp; Subscriptions</h2>
+    <div class="card">
+      <p>Carnival Timing is a paid product. Current pricing:</p>
+      <div class="pricing">
+        <div class="price-card"><div class="plan">Per Carnival</div><div class="amount">$49</div><div class="period">One-time, per event</div></div>
+        <div class="price-card"><div class="plan">Annual</div><div class="amount">$149</div><div class="period">Per year, unlimited carnivals</div></div>
+      </div>
+      <h3>Payment</h3>
+      <p>Payments are processed securely by Stripe. We do not store card details. All prices are in AUD and include GST where applicable.</p>
+      <h3>Access Codes</h3>
+      <p>On successful payment, you receive an access code by email. This code is linked to your school and grants access to the Carnival Timing app for the purchased period. Access codes are non-transferable.</p>
+      <h3>Refunds</h3>
+      <p>Per-carnival purchases ($49): if you experience a technical failure that prevents you from running your carnival and we are unable to resolve it, we will issue a full refund. Change-of-mind refunds are not available once an access code has been used to enter athlete data.</p>
+      <p>Annual subscriptions ($149): a full refund is available within 14 days of purchase if no carnival data has been entered. After 14 days or after use, no refund is available.</p>
+      <p>To request a refund, email <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a> with your access code and reason.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>4. School Sport Portal \u2014 Pricing</h2>
+    <div class="card">
+      <p>School Sport Portal is priced at <strong>$1 per student per year</strong> for schools with a managed portal. District and division portals are priced separately \u2014 contact us for a quote. A free demo portal is available at <a href="https://schoolsportportal.com.au/demo-school">schoolsportportal.com.au/demo-school</a>.</p>
+      <p>SportCarnival is currently free to use. Future paid features will be announced with at least 30 days notice to existing users.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. Acceptable Use</h2>
+    <div class="card">
+      <p>You agree not to:</p>
+      <ul>
+        <li>Enter false or fabricated student data, results, or times</li>
+        <li>Share access codes with schools or individuals not covered by your subscription</li>
+        <li>Attempt to reverse-engineer, copy, or reproduce our software or designs</li>
+        <li>Use our products for any purpose other than legitimate school sport coordination</li>
+        <li>Scrape, bulk-download, or systematically extract data from our platforms</li>
+        <li>Attempt to access accounts or data belonging to other schools</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>6. Student Data Responsibility</h2>
+    <div class="card">
+      <p>Schools are responsible for:</p>
+      <ul>
+        <li>Ensuring they have appropriate authority to enter student data into our systems</li>
+        <li>Complying with their own school and departmental privacy policies when using our products</li>
+        <li>Notifying us promptly if student data needs to be corrected or removed</li>
+        <li>Keeping their access credentials secure</li>
+      </ul>
+      <p>We act as a data processor on behalf of schools for student performance data. Schools remain the data controller under the <em>Privacy Act 1988</em> (Cth) and relevant state legislation.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>7. Accuracy of Results</h2>
+    <div class="card">
+      <p>Carnival Timing is a software tool designed to assist with manual race timing. We make no guarantee that recorded times are officially accurate for purposes beyond school sport carnivals. Results recorded by our system should be verified by a qualified official before being used for any formal selection, record-keeping, or competitive purpose beyond the school carnival level.</p>
+      <p>Luck Dragon Pty Ltd accepts no liability for decisions made by schools, districts, divisions, or regions based on timing data recorded using our products.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>8. Service Availability</h2>
+    <div class="card">
+      <p>We aim for high availability but do not guarantee uninterrupted access. Our products run on Cloudflare's global network, which has strong uptime guarantees, but maintenance, updates, or unexpected outages may occur. We are not liable for losses arising from service unavailability.</p>
+      <p>If a paid service is unavailable on the day of your carnival due to our error, we will provide a refund as described in Section 3.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>9. Intellectual Property</h2>
+    <div class="card">
+      <p>All software, designs, text, and branding on our platforms are owned by Luck Dragon Pty Ltd. You may not copy, reproduce, or create derivative works from any part of our products without prior written consent. Student performance data entered by schools remains the property of the relevant school.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>10. Limitation of Liability</h2>
+    <div class="card">
+      <p>To the maximum extent permitted by Australian law, Luck Dragon Pty Ltd's total liability to you for any claim arising from your use of our products is limited to the amount you paid us in the 12 months preceding the claim (or $100 if you have not paid us anything).</p>
+      <p>We are not liable for indirect, incidental, or consequential losses including lost data, missed carnival events, or decisions made based on our results.</p>
+      <p>Nothing in these terms excludes rights you have under Australian consumer law that cannot be excluded by contract.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>11. Governing Law</h2>
+    <div class="card">
+      <p>These Terms of Service are governed by the laws of Victoria, Australia. Any disputes will be subject to the non-exclusive jurisdiction of the courts of Victoria.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>12. Changes to These Terms</h2>
+    <div class="card">
+      <p>We may update these terms from time to time. Active subscribers will be notified of material changes by email at least 14 days before they take effect. Continued use of our products after that date constitutes acceptance of the updated terms.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>13. Contact</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a></li>
+        <li><strong>Company:</strong> Luck Dragon Pty Ltd</li>
+        <li><strong>ABN:</strong> 64 697 434 898</li>
+        <li><strong>Location:</strong> Victoria, Australia</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<footer>
+  &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;
+  <a href="/privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="/terms">Terms of Service</a> &nbsp;&middot;&nbsp;
+  <a href="mailto:info@sportportal.com.au">info@sportportal.com.au</a>
+</footer>
+</body>
+</html>`;
+var worker_default = {
   async fetch(req, env, ctx) {
     const _path = new URL(req.url).pathname;
-    if (_path === '/privacy') return new Response(PRIVACY_HTML, {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=3600'}});
-    if (_path === '/terms')   return new Response(TERMS_HTML,   {status:200,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'public, max-age=3600'}});
+    if (_path === "/privacy") return new Response(PRIVACY_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+    if (_path === "/terms") return new Response(TERMS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
     return new Response(HTML, { headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-      'X-CT-Version': 'v8.8.0',
-      'X-Frame-Options': 'SAMEORIGIN',
-      'X-Content-Type-Options': 'nosniff',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'camera=(self), microphone=(self), geolocation=()',
-      'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; frame-ancestors 'self';",
-    }});
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-CT-Version": "v8.9.0",
+      "X-Frame-Options": "SAMEORIGIN",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
+      "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; frame-ancestors 'self';"
+    } });
   }
 };
+export {
+  worker_default as default
+};
+//# sourceMappingURL=worker.js.map
 
+
+--16ed25e12f7a97eaa07fcf088e830b0e7368087f01fdd53b73401798022f--
