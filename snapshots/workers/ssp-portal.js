@@ -1,7 +1,14 @@
+--0806aa45d818f8ae2a224329fdea8c21fd7fa6a0c1cd5305c3c1b6c367ee
+Content-Disposition: form-data; name="ssp-portal-clean.js"
+
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// worker.js
+// ssp-portal-clean.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __defProp22 = Object.defineProperty;
+var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
 var ADMIN_SEC_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
@@ -13,10 +20,12 @@ async function hashPassword(password) {
   const keyMat = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 1e3, hash: "SHA-256" }, keyMat, 256);
-  const toHex = /* @__PURE__ */ __name((b) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join(""), "toHex");
+  const toHex = /* @__PURE__ */ __name22((b) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join(""), "toHex");
   return `pbkdf2:${toHex(salt)}:${toHex(new Uint8Array(bits))}`;
 }
 __name(hashPassword, "hashPassword");
+__name2(hashPassword, "hashPassword");
+__name22(hashPassword, "hashPassword");
 async function verifyPassword(password, stored) {
   try {
     const [, saltHex, hashHex] = stored.split(":");
@@ -31,6 +40,8 @@ async function verifyPassword(password, stored) {
   }
 }
 __name(verifyPassword, "verifyPassword");
+__name2(verifyPassword, "verifyPassword");
+__name22(verifyPassword, "verifyPassword");
 async function createSession(db, schoolId) {
   const token = crypto.randomUUID() + "-" + crypto.randomUUID();
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3).toISOString();
@@ -39,6 +50,8 @@ async function createSession(db, schoolId) {
   return token;
 }
 __name(createSession, "createSession");
+__name2(createSession, "createSession");
+__name22(createSession, "createSession");
 async function getSession(db, req) {
   const cookie = req.headers.get("Cookie") || "";
   const match = cookie.match(/ssp_session=([^;]+)/);
@@ -49,10 +62,14 @@ async function getSession(db, req) {
   return { token, schoolId: row.school_id };
 }
 __name(getSession, "getSession");
+__name2(getSession, "getSession");
+__name22(getSession, "getSession");
 async function getSchool(db, schoolId) {
   return db.prepare("SELECT * FROM schools WHERE id = ?").bind(schoolId).first();
 }
 __name(getSchool, "getSchool");
+__name2(getSchool, "getSchool");
+__name22(getSchool, "getSchool");
 async function sendSetupEmail(resendKey, school, setupToken) {
   const setupUrl = `https://schoolsportportal.com.au/setup?token=${setupToken}`;
   const html = `<!DOCTYPE html>
@@ -84,6 +101,8 @@ async function sendSetupEmail(resendKey, school, setupToken) {
   });
 }
 __name(sendSetupEmail, "sendSetupEmail");
+__name2(sendSetupEmail, "sendSetupEmail");
+__name22(sendSetupEmail, "sendSetupEmail");
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
@@ -96,8 +115,10 @@ function parseCSV(text) {
   }).filter((r) => r[headers[0]]);
 }
 __name(parseCSV, "parseCSV");
+__name2(parseCSV, "parseCSV");
+__name22(parseCSV, "parseCSV");
 function normaliseStudent(row, schoolId) {
-  const get = /* @__PURE__ */ __name((...keys) => {
+  const get = /* @__PURE__ */ __name22((...keys) => {
     for (const k of keys) if (row[k]) return row[k];
     return "";
   }, "get");
@@ -111,6 +132,8 @@ function normaliseStudent(row, schoolId) {
   return { id: crypto.randomUUID(), school_id: schoolId, first_name: firstName, last_name_initial: lastInitial, year_level: yearLevel, house, dob, gender: ["M", "F", "X"].includes(gender) ? gender : "" };
 }
 __name(normaliseStudent, "normaliseStudent");
+__name2(normaliseStudent, "normaliseStudent");
+__name22(normaliseStudent, "normaliseStudent");
 var STYLE = `
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -172,6 +195,40 @@ function loginPage(error = "") {
 </body></html>`;
 }
 __name(loginPage, "loginPage");
+__name2(loginPage, "loginPage");
+__name22(loginPage, "loginPage");
+function accountPickerPage(email, password, accounts, error = "") {
+  const cards = accounts.map((s) => {
+    const icon = s.account_type === "district" ? "\u{1F3EB}" : s.account_type === "division" ? "\u{1F3E2}" : s.account_type === "region" ? "\u{1F5FA}\uFE0F" : "\u{1F3EB}";
+    const typLabel = s.account_type === "district" ? "District" : s.account_type === "division" ? "Division" : s.account_type === "region" ? "Region" : "School";
+    return `<button type="submit" name="school_id" value="${s.id}" class="btn btn-primary" style="width:100%;justify-content:flex-start;gap:12px;padding:14px 18px;margin-bottom:10px;font-size:1rem">
+      <span style="font-size:1.4rem">${icon}</span>
+      <span>
+        <strong style="display:block">${s.name}</strong>
+        <span style="font-size:0.8rem;opacity:0.8">${typLabel}</span>
+      </span>
+    </button>`;
+  }).join("");
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose Account \u2014 School Sport Portal</title>${STYLE}</head>
+<body>
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-logo"><div class="emoji">\u{1F464}</div><h1>Choose account</h1><p style="color:#64748b;font-size:.85rem;margin-top:4px">Multiple accounts found for ${email}</p></div>
+    ${error ? `<div class="alert alert-error">${error}</div>` : ""}
+    <form method="POST" action="/login">
+      <input type="hidden" name="email" value="${email}">
+      <input type="hidden" name="password" value="${password}">
+      ${cards}
+    </form>
+    <p style="text-align:center;margin-top:16px"><a href="/login" style="color:#94a3b8;font-size:.8rem">\u2190 Back to login</a></p>
+  </div>
+</div>
+</body></html>`;
+}
+__name(accountPickerPage, "accountPickerPage");
+__name2(accountPickerPage, "accountPickerPage");
+__name22(accountPickerPage, "accountPickerPage");
 function setupPage(token, error = "") {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Set Up Account \u2014 School Sport Portal</title>${STYLE}</head>
@@ -192,6 +249,8 @@ function setupPage(token, error = "") {
 </body></html>`;
 }
 __name(setupPage, "setupPage");
+__name2(setupPage, "setupPage");
+__name22(setupPage, "setupPage");
 function topbar(school, activePage = "") {
   const nav = [
     ["/", "Dashboard"],
@@ -205,6 +264,8 @@ function topbar(school, activePage = "") {
   </div>`;
 }
 __name(topbar, "topbar");
+__name2(topbar, "topbar");
+__name22(topbar, "topbar");
 function dashboardPage(school, stats) {
   const portalUrl = `https://schoolsportportal.com.au/${school.id}`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -250,6 +311,8 @@ ${topbar(school, "Dashboard")}
 </body></html>`;
 }
 __name(dashboardPage, "dashboardPage");
+__name2(dashboardPage, "dashboardPage");
+__name22(dashboardPage, "dashboardPage");
 function studentsPage(school, students, msg = "") {
   const rows = students.map((s) => `<tr>
     <td>${s.first_name} ${s.last_name_initial ? s.last_name_initial + "." : ""}</td>
@@ -288,6 +351,8 @@ ${topbar(school, "Students")}
 </body></html>`;
 }
 __name(studentsPage, "studentsPage");
+__name2(studentsPage, "studentsPage");
+__name22(studentsPage, "studentsPage");
 function uploadPage(school, error = "") {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Upload Students \u2014 ${school.name}</title>${STYLE}</head>
@@ -325,6 +390,8 @@ Noah,P,3,Wattle,M,2016-01-05</pre>
 </body></html>`;
 }
 __name(uploadPage, "uploadPage");
+__name2(uploadPage, "uploadPage");
+__name22(uploadPage, "uploadPage");
 function carnivalsPage(school, carnivals, msg = "") {
   const typeLabel = { cross_country: "Cross Country", swimming: "Swimming", athletics: "Athletics", other: "Other" };
   const statusBadge = { upcoming: "#dbeafe:#1d4ed8", active: "#dcfce7:#16a34a", complete: "#f1f5f9:#64748b" };
@@ -369,6 +436,8 @@ ${topbar(school, "Carnivals")}
 </body></html>`;
 }
 __name(carnivalsPage, "carnivalsPage");
+__name2(carnivalsPage, "carnivalsPage");
+__name22(carnivalsPage, "carnivalsPage");
 function exportPage(school, qualifiers) {
   const rows = qualifiers.map((q) => `<tr>
     <td>${q.first_name} ${q.last_name_initial ? q.last_name_initial + "." : ""}</td>
@@ -406,16 +475,103 @@ ${topbar(school, "Export")}
 </body></html>`;
 }
 __name(exportPage, "exportPage");
+__name2(exportPage, "exportPage");
+__name22(exportPage, "exportPage");
+function orgTopbar(school, orgType, activePage) {
+  const typeLabels = { district: "\u{1F3EB} District", division: "\u{1F3DF}\uFE0F Division", region: "\u{1F5FA}\uFE0F Region", state: "\u{1F1E6}\u{1F1FA} State" };
+  const typeLabel = typeLabels[orgType] || "Admin";
+  const nav = `<a href="/admin" style="color:${activePage === "Dashboard" ? "#fff" : "#94a3b8"}">Dashboard</a>
+    <a href="https://carnivaltiming.com" target="_blank" style="color:#fcd34d;margin-left:20px">\u{1F3C1} Carnival Timing \u2197</a>
+    <a href="/logout" style="color:#ef4444;margin-left:24px">Log out</a>`;
+  return `<div class="topbar" style="background:#1e293b;padding:16px 24px;display:flex;justify-content:space-between;align-items:center"><h1 style="color:#fff;margin:0;font-size:1.1rem">${typeLabel}: ${school.name}</h1><nav style="display:flex;align-items:center;gap:8px">${nav}</nav></div>`;
+}
+__name(orgTopbar, "orgTopbar");
+function districtDashboardPage(school, distSchools) {
+  const allActive = distSchools.length > 0 && distSchools.every((s) => s.active);
+  const schoolRows = distSchools.length === 0 ? '<tr><td colspan="4" style="color:#64748b;padding:16px">No schools linked to this district yet.</td></tr>' : distSchools.map((s) => `<tr>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${s.name}</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${s.subscription_type || "free"}</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${s.student_count || 0}</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155"><span style="background:${s.active ? "#16a34a" : "#dc2626"};color:#fff;padding:2px 8px;border-radius:9999px;font-size:0.75rem">${s.active ? "Active" : "Inactive"}</span></td>
+      </tr>`).join("");
+  const featureBanner = allActive ? `<div style="background:#166534;color:#bbf7d0;padding:12px 16px;border-radius:8px;margin-bottom:20px">\u2705 All schools active \u2014 district features unlocked</div>` : `<div style="background:#7c2d12;color:#fed7aa;padding:12px 16px;border-radius:8px;margin-bottom:20px">\u26A0\uFE0F District features unlock when all schools have active subscriptions (${distSchools.filter((s) => s.active).length}/${distSchools.length} active)</div>`;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>District Dashboard \u2014 ${school.name}</title>
+  <style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0}
+  .content{padding:24px;max-width:960px;margin:0 auto}
+  table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden}
+  th{background:#334155;padding:12px 16px;text-align:left;font-size:0.8rem;text-transform:uppercase;color:#94a3b8}
+  a{color:#60a5fa;text-decoration:none}</style></head><body>
+  ${orgTopbar(school, "district", "Dashboard")}
+  <div class="content">
+    <h2 style="color:#fff;margin:0 0 16px">District Dashboard</h2>
+    ${featureBanner}
+    <table><thead><tr><th>School</th><th>Plan</th><th>Students</th><th>Status</th></tr></thead>
+    <tbody>${schoolRows}</tbody></table>
+    <div style="margin-top:24px;padding:16px;background:#1e293b;border-radius:8px">
+      <h3 style="margin:0 0 8px;color:#fff">\u{1F3C1} Carnival Timing</h3>
+      <p style="margin:0;color:#94a3b8">Manage your carnival timing across all district schools at <a href="https://carnivaltiming.com" target="_blank">carnivaltiming.com</a></p>
+    </div>
+  </div></body></html>`;
+}
+__name(districtDashboardPage, "districtDashboardPage");
+function divisionDashboardPage(school, districts) {
+  const districtRows = districts.length === 0 ? '<tr><td colspan="3" style="color:#64748b;padding:16px">No districts found in this division.</td></tr>' : districts.map((d) => `<tr>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.name}</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.school_count || 0} schools active</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155"><span style="background:${d.active ? "#16a34a" : "#475569"};color:#fff;padding:2px 8px;border-radius:9999px;font-size:0.75rem">${d.active ? "Active" : "Pending"}</span></td>
+      </tr>`).join("");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Division Dashboard \u2014 ${school.name}</title>
+  <style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0}
+  .content{padding:24px;max-width:960px;margin:0 auto}
+  table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden}
+  th{background:#334155;padding:12px 16px;text-align:left;font-size:0.8rem;text-transform:uppercase;color:#94a3b8}
+  a{color:#60a5fa;text-decoration:none}</style></head><body>
+  ${orgTopbar(school, "division", "Dashboard")}
+  <div class="content">
+    <h2 style="color:#fff;margin:0 0 16px">Division Dashboard</h2>
+    <table><thead><tr><th>District</th><th>Schools</th><th>Status</th></tr></thead>
+    <tbody>${districtRows}</tbody></table>
+    <div style="margin-top:24px;padding:16px;background:#1e293b;border-radius:8px">
+      <h3 style="margin:0 0 8px;color:#fff">\u{1F3C1} Carnival Timing</h3>
+      <p style="margin:0;color:#94a3b8">Division-wide carnival management at <a href="https://carnivaltiming.com" target="_blank">carnivaltiming.com</a></p>
+    </div>
+  </div></body></html>`;
+}
+__name(divisionDashboardPage, "divisionDashboardPage");
+function regionDashboardPage(school, divisions) {
+  const divisionRows = divisions.length === 0 ? '<tr><td colspan="3" style="color:#64748b;padding:16px">No divisions found in this region.</td></tr>' : divisions.map((d) => `<tr>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.name}</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.div_count || 0} divisions</td>
+        <td style="padding:12px 16px;border-bottom:1px solid #334155"><span style="background:${d.active ? "#16a34a" : "#475569"};color:#fff;padding:2px 8px;border-radius:9999px;font-size:0.75rem">${d.active ? "Active" : "Pending"}</span></td>
+      </tr>`).join("");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Region Dashboard \u2014 ${school.name}</title>
+  <style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0}
+  .content{padding:24px;max-width:960px;margin:0 auto}
+  table{width:100%;border-collapse:collapse;background:#1e293b;border-radius:8px;overflow:hidden}
+  th{background:#334155;padding:12px 16px;text-align:left;font-size:0.8rem;text-transform:uppercase;color:#94a3b8}
+  a{color:#60a5fa;text-decoration:none}</style></head><body>
+  ${orgTopbar(school, "region", "Dashboard")}
+  <div class="content">
+    <h2 style="color:#fff;margin:0 0 16px">Region Dashboard</h2>
+    <table><thead><tr><th>Division</th><th>Structure</th><th>Status</th></tr></thead>
+    <tbody>${divisionRows}</tbody></table>
+    <div style="margin-top:24px;padding:16px;background:#1e293b;border-radius:8px">
+      <h3 style="margin:0 0 8px;color:#fff">\u{1F3C1} Carnival Timing</h3>
+      <p style="margin:0;color:#94a3b8">Region-wide carnival management at <a href="https://carnivaltiming.com" target="_blank">carnivaltiming.com</a></p>
+    </div>
+  </div></body></html>`;
+}
+__name(regionDashboardPage, "regionDashboardPage");
 async function _adminFetch(request, env) {
   const url = new URL(request.url);
-  const path = url.pathname;
+  let path = url.pathname;
   const method = request.method;
-  const respond = /* @__PURE__ */ __name((body, status = 200, extra = {}) => new Response(body, {
+  const respond = /* @__PURE__ */ __name22((body, status = 200, extra = {}) => new Response(body, {
     status,
     headers: { "Content-Type": "text/html; charset=utf-8", ...ADMIN_SEC_HEADERS, ...extra }
   }), "respond");
-  const redirect = /* @__PURE__ */ __name((loc) => new Response(null, { status: 302, headers: { Location: loc, ...ADMIN_SEC_HEADERS } }), "redirect");
-  const setCookieRedirect = /* @__PURE__ */ __name((loc, token) => new Response(null, {
+  const redirect = /* @__PURE__ */ __name22((loc) => new Response(null, { status: 302, headers: { Location: loc, ...ADMIN_SEC_HEADERS } }), "redirect");
+  const setCookieRedirect = /* @__PURE__ */ __name22((loc, token) => new Response(null, {
     status: 302,
     headers: {
       Location: loc,
@@ -423,7 +579,7 @@ async function _adminFetch(request, env) {
       ...ADMIN_SEC_HEADERS
     }
   }), "setCookieRedirect");
-  const clearCookieRedirect = /* @__PURE__ */ __name((loc) => new Response(null, {
+  const clearCookieRedirect = /* @__PURE__ */ __name22((loc) => new Response(null, {
     status: 302,
     headers: {
       Location: loc,
@@ -440,24 +596,40 @@ async function _adminFetch(request, env) {
       if (!email || !password) return respond(loginPage("Please enter your email and password."));
       const rateLimitOk = await checkLoginRateLimit(env, email);
       if (!rateLimitOk) return respond(loginPage("Too many login attempts. Please try again in an hour."));
-      const school = await env.SSP_DB.prepare("SELECT * FROM schools WHERE email = ? AND active = 1").bind(email).first();
-      if (!school || !school.password_hash) return respond(loginPage("Invalid email or password."));
-      const ok = await verifyPassword(password, school.password_hash);
-      if (!ok) return respond(loginPage("Invalid email or password."));
-      const token = await createSession(env.SSP_DB, school.id);
-      return setCookieRedirect("/admin", token);
+      const schoolId = (form.get("school_id") || "").trim();
+      const { results: allSchools } = await env.DB.prepare("SELECT * FROM schools WHERE email = ? AND active = 1").bind(email).all();
+      if (!allSchools || allSchools.length === 0) return respond(loginPage("Invalid email or password."));
+      let validAccounts;
+      if (schoolId) {
+        const target = allSchools.find((s) => s.id === schoolId);
+        if (!target || !target.password_hash) return respond(loginPage("Invalid email or password."));
+        const ok = await verifyPassword(password, target.password_hash);
+        if (!ok) return respond(loginPage("Invalid email or password."));
+        validAccounts = [target];
+      } else {
+        validAccounts = [];
+        for (const s of allSchools) {
+          if (s.password_hash && await verifyPassword(password, s.password_hash)) validAccounts.push(s);
+        }
+        if (validAccounts.length === 0) return respond(loginPage("Invalid email or password."));
+      }
+      if (validAccounts.length === 1) {
+        const token = await createSession(env.DB, validAccounts[0].id);
+        return setCookieRedirect("/" + validAccounts[0].id + "/admin", token);
+      }
+      return respond(accountPickerPage(email, password, validAccounts));
     }
   }
   if (path === "/logout") {
-    const sess = await getSession(env.SSP_DB, request);
-    if (sess) await env.SSP_DB.prepare("DELETE FROM sessions WHERE token = ?").bind(sess.token).run();
+    const sess = await getSession(env.DB, request);
+    if (sess) await env.DB.prepare("DELETE FROM sessions WHERE token = ?").bind(sess.token).run();
     return clearCookieRedirect("/login");
   }
   if (path === "/setup") {
     const token = url.searchParams.get("token") || "";
     if (method === "GET") {
       if (!token) return redirect("/login");
-      const school = await env.SSP_DB.prepare("SELECT id FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(token).first();
+      const school = await env.DB.prepare("SELECT id FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(token).first();
       if (!school) return respond(setupPage("", "This setup link has expired or is invalid. Email info@schoolsportportal.com.au for a new one."));
       return respond(setupPage(token));
     }
@@ -468,12 +640,12 @@ async function _adminFetch(request, env) {
       const pw2 = form.get("password2") || "";
       if (pw.length < 8) return respond(setupPage(tok, "Password must be at least 8 characters."));
       if (pw !== pw2) return respond(setupPage(tok, "Passwords do not match."));
-      const school = await env.SSP_DB.prepare("SELECT * FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(tok).first();
+      const school = await env.DB.prepare("SELECT * FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(tok).first();
       if (!school) return respond(setupPage(tok, "This setup link has expired. Email info@schoolsportportal.com.au for a new one."));
       const hash = await hashPassword(pw);
-      await env.SSP_DB.prepare("UPDATE schools SET password_hash = ?, setup_token = NULL, setup_token_expires = NULL, updated_at = datetime('now') WHERE id = ?").bind(hash, school.id).run();
-      const sessionToken = await createSession(env.SSP_DB, school.id);
-      return setCookieRedirect("/admin", sessionToken);
+      await env.DB.prepare("UPDATE schools SET password_hash = ?, setup_token = NULL, setup_token_expires = NULL, updated_at = datetime('now') WHERE id = ?").bind(hash, school.id).run();
+      const sessionToken = await createSession(env.DB, school.id);
+      return setCookieRedirect("/" + school.id + "/admin", sessionToken);
     }
   }
   if (path === "/admin/api/provision" && method === "POST") {
@@ -489,7 +661,7 @@ async function _adminFetch(request, env) {
     if (!sid || !sname || !semail) return new Response(JSON.stringify({ ok: false, error: "Missing fields" }), { status: 400, headers: { "Content-Type": "application/json" } });
     const setupToken2 = crypto.randomUUID();
     const setupExpires2 = new Date(Date.now() + 48 * 60 * 60 * 1e3).toISOString();
-    await env.SSP_DB.prepare("INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, active) VALUES (?, ?, ?, ?, ?, 1)").bind(sid, sname, semail, setupToken2, setupExpires2).run();
+    await env.DB.prepare("INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, active) VALUES (?, ?, ?, ?, ?, 1)").bind(sid, sname, semail, setupToken2, setupExpires2).run();
     if (env.RESEND_API_KEY) {
       const sc = { id: sid, name: sname, email: semail };
       await sendSetupEmail(env.RESEND_API_KEY, sc, setupToken2);
@@ -501,9 +673,9 @@ async function _adminFetch(request, env) {
     const pin = request.headers.get("X-Pin");
     if (pin !== env.AGENT_PIN) return new Response("{}", { status: 403 });
     const schoolId2 = path.split("/").pop();
-    const schoolData2 = await env.SSP_DB.prepare("SELECT id, name, suburb, state, student_count FROM schools WHERE id = ? AND active = 1").bind(schoolId2).first();
+    const schoolData2 = await env.DB.prepare("SELECT id, name, suburb, state, student_count FROM schools WHERE id = ? AND active = 1").bind(schoolId2).first();
     if (!schoolData2) return new Response("{}", { status: 404, headers: { "Content-Type": "application/json" } });
-    const { results: stu2 } = await env.SSP_DB.prepare("SELECT first_name, last_name_initial, year_level, house, gender FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(schoolId2).all();
+    const { results: stu2 } = await env.DB.prepare("SELECT first_name, last_name_initial, year_level, house, gender FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(schoolId2).all();
     return new Response(JSON.stringify({ school: schoolData2, students: stu2 }), { headers: { "Content-Type": "application/json" } });
   }
   if (path === "/stripe-webhook" && method === "POST") {
@@ -528,7 +700,7 @@ async function _adminFetch(request, env) {
         const tok = crypto.randomUUID();
         const exp = new Date(Date.now() + 48 * 60 * 60 * 1e3).toISOString();
         try {
-          await env.SSP_DB.prepare(
+          await env.DB.prepare(
             "INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, student_count, subscription_type, active, created_at) VALUES (?, ?, ?, ?, ?, ?, 'paid', 1, datetime('now'))"
           ).bind(sId, sName || sId, sEmail, tok, exp, sCount).run();
           if (env.RESEND_API_KEY) {
@@ -555,21 +727,45 @@ async function _adminFetch(request, env) {
     const thanksHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Thanks \u2014 School Sport Portal</title><style>body{font-family:sans-serif;max-width:600px;margin:80px auto;text-align:center;color:#1a3a4a;padding:0 20px}h1{color:#00a86b;font-size:2.5em}p{font-size:1.1em;line-height:1.6}a{color:#00a86b;font-weight:bold}</style></head><body><h1>Payment confirmed!</h1><p>Your School Sport Portal is being set up.</p><p>Check your email for a link to set your password and get started.</p><p><a href="/">\u2190 Back to home</a></p></body></html>';
     return new Response(thanksHtml, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   }
+  const _orgAdminMatch = path.match(/^\/[a-z0-9][a-z0-9-]*(\/admin(?:\/.*)?$)/);
+  if (_orgAdminMatch) path = _orgAdminMatch[1];
   if (path.startsWith("/admin")) {
-    const sess = await getSession(env.SSP_DB, request);
+    const sess = await getSession(env.DB, request);
     if (!sess) return redirect("/login");
-    const school = await getSchool(env.SSP_DB, sess.schoolId);
+    const school = await getSchool(env.DB, sess.schoolId);
     if (!school) return redirect("/login");
     if (path === "/admin" || path === "/admin/") {
+      if (school.account_type === "district" && school.is_admin) {
+        const { results: distSchools } = await env.DB.prepare(
+          "SELECT id, name, subscription_type, active, student_count FROM schools WHERE district_id = ? ORDER BY name"
+        ).bind(school.id).all();
+        return respond(districtDashboardPage(school, distSchools));
+      }
+      if (school.account_type === "division" && school.is_admin) {
+        const org = await env.DB.prepare("SELECT * FROM organisations WHERE id = ?").bind(school.id).first();
+        const parentId = org ? org.id : school.id;
+        const { results: districts } = await env.DB.prepare(
+          "SELECT o.*, (SELECT COUNT(*) FROM schools s WHERE s.district_id = o.id AND s.active = 1) as school_count FROM organisations o WHERE o.parent_id = ? ORDER BY o.name"
+        ).bind(parentId).all();
+        return respond(divisionDashboardPage(school, districts));
+      }
+      if (school.account_type === "region" && school.is_admin) {
+        const org = await env.DB.prepare("SELECT * FROM organisations WHERE id = ?").bind(school.id).first();
+        const parentId = org ? org.id : school.id;
+        const { results: divisions } = await env.DB.prepare(
+          "SELECT o.*, (SELECT COUNT(*) FROM organisations d WHERE d.parent_id = o.id) as div_count FROM organisations o WHERE o.parent_id = ? ORDER BY o.name"
+        ).bind(parentId).all();
+        return respond(regionDashboardPage(school, divisions));
+      }
       const [stuRow, carRow, qualRow] = await Promise.all([
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM students WHERE school_id = ? AND active = 1").bind(school.id).first(),
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM carnivals WHERE school_id = ?").bind(school.id).first(),
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(school.id).first()
+        env.DB.prepare("SELECT COUNT(*) as n FROM students WHERE school_id = ? AND active = 1").bind(school.id).first(),
+        env.DB.prepare("SELECT COUNT(*) as n FROM carnivals WHERE school_id = ?").bind(school.id).first(),
+        env.DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(school.id).first()
       ]);
       return respond(dashboardPage(school, { students: stuRow?.n || 0, carnivals: carRow?.n || 0, qualifiers: qualRow?.n || 0 }));
     }
     if (path === "/admin/students" && method === "GET") {
-      const { results: students } = await env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
+      const { results: students } = await env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
       return respond(studentsPage(school, students, url.searchParams.get("msg") || ""));
     }
     if (path === "/admin/students/upload" && method === "GET") {
@@ -585,24 +781,24 @@ async function _adminFetch(request, env) {
         if (rows.length === 0) return respond(uploadPage(school, "CSV appears empty or invalid. Check the format."));
         const students = rows.map((r) => normaliseStudent(r, school.id)).filter(Boolean);
         if (students.length === 0) return respond(uploadPage(school, "Could not find a first_name column. Check the CSV headers."));
-        await env.SSP_DB.prepare("UPDATE students SET active = 0 WHERE school_id = ?").bind(school.id).run();
-        const stmt = env.SSP_DB.prepare("INSERT INTO students (id, school_id, first_name, last_name_initial, year_level, house, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        await env.DB.prepare("UPDATE students SET active = 0 WHERE school_id = ?").bind(school.id).run();
+        const stmt = env.DB.prepare("INSERT INTO students (id, school_id, first_name, last_name_initial, year_level, house, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         const batch = students.map((s) => stmt.bind(s.id, s.school_id, s.first_name, s.last_name_initial, s.year_level, s.house, s.dob, s.gender));
-        await env.SSP_DB.batch(batch);
-        await env.SSP_DB.prepare("UPDATE schools SET student_count = ?, updated_at = datetime('now') WHERE id = ?").bind(students.length, school.id).run();
+        await env.DB.batch(batch);
+        await env.DB.prepare("UPDATE schools SET student_count = ?, updated_at = datetime('now') WHERE id = ?").bind(students.length, school.id).run();
         return redirect(`/admin/students?msg=\u2705 Uploaded ${students.length} students successfully`);
       } catch (e) {
         return respond(uploadPage(school, `Upload failed: ${e.message}`));
       }
     }
     if (path === "/admin/students/download") {
-      const { results: students } = await env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
+      const { results: students } = await env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
       const header = "first_name,last_name_initial,year_level,house,gender,dob\n";
       const csv = header + students.map((s) => [s.first_name, s.last_name_initial, s.year_level, s.house, s.gender, s.dob].join(",")).join("\n");
       return new Response(csv, { headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="${school.id}-students.csv"`, ...ADMIN_SEC_HEADERS } });
     }
     if (path === "/admin/carnivals" && method === "GET") {
-      const { results: carnivals } = await env.SSP_DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(school.id).all();
+      const { results: carnivals } = await env.DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(school.id).all();
       return respond(carnivalsPage(school, carnivals, url.searchParams.get("msg") || ""));
     }
     if (path === "/admin/carnivals" && method === "POST") {
@@ -612,11 +808,11 @@ async function _adminFetch(request, env) {
       const date = form.get("date") || "";
       if (!name) return redirect("/admin/carnivals");
       const id = crypto.randomUUID();
-      await env.SSP_DB.prepare("INSERT INTO carnivals (id, school_id, name, type, date) VALUES (?, ?, ?, ?, ?)").bind(id, school.id, name, type, date).run();
+      await env.DB.prepare("INSERT INTO carnivals (id, school_id, name, type, date) VALUES (?, ?, ?, ?, ?)").bind(id, school.id, name, type, date).run();
       return redirect(`/admin/carnivals?msg=\u2705 Carnival "${name}" created`);
     }
     if (path === "/admin/export" && method === "GET") {
-      const { results: qualifiers } = await env.SSP_DB.prepare(`
+      const { results: qualifiers } = await env.DB.prepare(`
           SELECT s.first_name, s.last_name_initial, s.year_level, s.gender, s.dob,
                  r.event, r.place, c.name as carnival_name
           FROM results r
@@ -628,7 +824,7 @@ async function _adminFetch(request, env) {
       return respond(exportPage(school, qualifiers));
     }
     if (path === "/admin/export/csv") {
-      const { results: qualifiers } = await env.SSP_DB.prepare(`
+      const { results: qualifiers } = await env.DB.prepare(`
           SELECT s.first_name, s.last_name_initial, s.year_level, s.gender, s.dob,
                  r.event, r.place, c.name as carnival_name, c.date as carnival_date
           FROM results r
@@ -647,6 +843,8 @@ async function _adminFetch(request, env) {
   return new Response("<h1>Not found</h1>", { status: 404 });
 }
 __name(_adminFetch, "_adminFetch");
+__name2(_adminFetch, "_adminFetch");
+__name22(_adminFetch, "_adminFetch");
 var LEGAL_PAGES = { "cookies": `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1913,10 +2111,10 @@ var INDEX_HTML = `<!DOCTYPE html>
   <p style="margin-top:6px;font-size:.8rem">Student data is stored securely in Australia and never sold or shared. <a href="/privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="/terms" style="color:rgba(255,255,255,.7);text-decoration:none;font-size:.8rem">Terms of Service</a> &nbsp;&middot;&nbsp; </p>
 </footer>
 
-<script>(function(){if(localStorage.getItem("ssp_cookies_ack")==="1")return;var d=document.createElement("div");d.id="ssp-cookie-banner";d.style.cssText="position:fixed;bottom:0;left:0;right:0;background:#0d1b3e;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;z-index:9999;font-family:-apple-system,sans-serif;font-size:13px;box-shadow:0 -4px 20px rgba(0,0,0,.2)";d.innerHTML='<span>We use one essential session cookie when you sign in to a private staff portal. No tracking, no advertising. <a href=\\"/cookies\\" style=\\"color:#fcd34d;text-decoration:underline\\">Cookie Policy</a>.</span><button onclick=\\"localStorage.setItem(&quot;ssp_cookies_ack&quot;,&quot;1&quot;);document.getElementById(&quot;ssp-cookie-banner&quot;).remove()\\" style=\\"background:#f59e0b;color:#0d1b3e;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px\\">OK, got it</button>';document.body.appendChild(d);})();<\/script>
 <script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
+async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We'll be in touch within one school day. Check your email \u2014 you've got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn't send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school's details \u2192';}return false;}
 <\/script>
+<script>(function(){if(localStorage.getItem("ssp_cookies_ack")==="1")return;var d=document.createElement("div");d.id="ssp-cookie-banner";d.style.cssText="position:fixed;bottom:0;left:0;right:0;background:#0d1b3e;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;z-index:9999;font-family:-apple-system,sans-serif;font-size:13px;box-shadow:0 -4px 20px rgba(0,0,0,.2)";d.innerHTML='<span>We use one essential session cookie when you sign in to a private staff portal. No tracking, no advertising. <a href=\\"/cookies\\" style=\\"color:#fcd34d;text-decoration:underline\\">Cookie Policy</a>.</span><button onclick=\\"localStorage.setItem(&quot;ssp_cookies_ack&quot;,&quot;1&quot;);document.getElementById(&quot;ssp-cookie-banner&quot;).remove()\\" style=\\"background:#f59e0b;color:#0d1b3e;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px\\">OK, got it</button>';document.body.appendChild(d);})();<\/script>
 </body>
 </html>
 `;
@@ -2176,9 +2374,6 @@ var DEMO_SCHOOL = `<!DOCTYPE html>
   <p>schoolsportportal.com.au/demo-school &nbsp;\xB7&nbsp; Riverside District &nbsp;\xB7&nbsp; Eastbay Division</p>
 </footer>
 
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
 </body>
 </html>
 
@@ -2308,9 +2503,6 @@ var DEMO_DISTRICT = `<!DOCTYPE html>
 </main>
 
 <footer class="site-footer">schoolsportportal.com.au/demo-district \xB7 Riverside District \xB7 Eastbay Division \xB7 fictional data</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
 </body>
 </html>
 `;
@@ -2445,9 +2637,6 @@ var DEMO_DIVISION = `<!DOCTYPE html>
 </main>
 
 <footer class="site-footer">schoolsportportal.com.au/demo-division \xB7 Eastbay Division \xB7 Central Coast Region \xB7 fictional data</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
 </body>
 </html>
 `;
@@ -2574,9 +2763,6 @@ var DEMO_REGION = `<!DOCTYPE html>
 </main>
 
 <footer class="site-footer">schoolsportportal.com.au/demo-region \xB7 Central Coast Region \xB7 fictional data</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
 </body>
 </html>
 `;
@@ -2833,14 +3019,11 @@ var WPS_HTML = `<!DOCTYPE html>
   <p>schoolsportportal.com.au/williamstownps &nbsp;\xB7&nbsp; Williamstown District &nbsp;\xB7&nbsp; Hobsons Bay Division</p>
 </footer>
 
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
 
 <div class="section" id="xc-results-section">
-    <p class="section-title">District Cross Country 2026 — Live Results</p>
+    <p class="section-title">District Cross Country 2026 \xE2\u20AC\u201D Live Results</p>
     <div id="xc-status" class="notice" style="margin-bottom:12px">
-      <span>⏳</span><span id="xc-status-text">Loading results…</span>
+      <span>\xE2\x8F\xB3</span><span id="xc-status-text">Loading results\xE2\u20AC\xA6</span>
     </div>
     <div id="xc-races"></div>
   </div>
@@ -2853,7 +3036,7 @@ async function submitContactForm(e){e.preventDefault();const form=document.getEl
     const RACE_LABELS = {'10-girls':'9/10 Girls','10-boys':'9/10 Boys','11-girls':'11 Girls','11-boys':'11 Boys','12-girls':'12/13 Girls','12-boys':'12/13 Boys'};
     const RACE_ORDER = ['10-girls','10-boys','11-girls','11-boys','12-girls','12-boys'];
 
-    function fmtMs(ms){if(!ms)return'—';const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+    function fmtMs(ms){if(!ms)return'\xE2\u20AC\u201D';const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 
     async function load(){
       try{
@@ -2865,7 +3048,7 @@ async function submitContactForm(e){e.preventDefault();const form=document.getEl
         const racesEl=document.getElementById('xc-races');
 
         if(!keys.length){
-          statusEl.textContent='No results published yet — check back during the carnival (Thu 7 May).';
+          statusEl.textContent='No results published yet \xE2\u20AC\u201D check back during the carnival (Thu 7 May).';
           return;
         }
 
@@ -2892,7 +3075,7 @@ async function submitContactForm(e){e.preventDefault();const form=document.getEl
             html+=\`<table style="width:100%;border-collapse:collapse;font-size:.85rem">
               <thead><tr style="color:#64748b;font-size:.78rem"><th style="text-align:left;padding:4px 6px">Place</th><th style="text-align:left;padding:4px 6px">Name</th><th style="text-align:left;padding:4px 6px">Time</th><th style="text-align:left;padding:4px 6px">Qual</th></tr></thead><tbody>\`;
             for(const p of wpsPlaces){
-              const q=p.place<=10?'<span style="color:#16a34a;font-weight:700">✓ Div</span>':'';
+              const q=p.place<=10?'<span style="color:#16a34a;font-weight:700">\xE2\u0153\u201C Div</span>':'';
               html+=\`<tr style="border-top:1px solid #f1f5f9"><td style="padding:5px 6px;font-weight:700">\${p.place}</td><td style="padding:5px 6px">\${p.name||'Bib '+p.bib}</td><td style="padding:5px 6px;color:#64748b">\${fmtMs(p.elapsedMs)}</td><td style="padding:5px 6px">\${q}</td></tr>\`;
             }
             html+=\`</tbody></table>\`;
@@ -2908,7 +3091,7 @@ async function submitContactForm(e){e.preventDefault();const form=document.getEl
     load();
     setInterval(load, 30000); // refresh every 30s
   })();
-  </script>
+  <\/script>
 </body>
 </html>
 
@@ -3281,80 +3464,7 @@ footer a{color:rgba(255,255,255,.7)}
   &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;
   <a href="/privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="/terms">Terms of Service</a> &nbsp;&middot;&nbsp;
   <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> &nbsp;&middot;&nbsp; <a href="https://sportportal.com.au" target="_blank" rel="noopener">sportportal.com.au</a>
-</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
-
-<section class="section" id="xc-qualifiers-section">
-    <p class="section-title">Cross Country — District Qualifiers</p>
-    <div style="color:#64748b;font-size:.82rem;margin-bottom:12px">Top 10 from each race at Williamstown District XC (Thu 7 May) progress to Hobsons Bay Division Carnival — Werribee Racecourse, Thu 28 May.</div>
-    <div id="hb-xc-status" class="notice" style="margin-bottom:12px">
-      <span>⏳</span><span id="hb-xc-status-text">Loading qualifiers…</span>
-    </div>
-    <div id="hb-xc-races"></div>
-  </section>
-
-  <script>
-  (function(){
-    const API='https://carnival-results.pgallivan.workers.dev';
-    const CODE='WD26';
-    const RACE_LABELS={'10-girls':'9/10 Girls','10-boys':'9/10 Boys','11-girls':'11 Girls','11-boys':'11 Boys','12-girls':'12/13 Girls','12-boys':'12/13 Boys'};
-    const RACE_ORDER=['10-girls','10-boys','11-girls','11-boys','12-girls','12-boys'];
-    const SCHOOL_COLOURS={'wps':'#f57f17','altona':'#1565c0','ng':'#2e7d32','nl':'#6a1b9a','seaholme':'#00838f','st-marys':'#c62828','wnps':'#4527a0','sacred-heart':'#ad1457'};
-
-    function fmtMs(ms){if(!ms)return'—';const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-
-    async function load(){
-      try{
-        const r=await fetch(API+'/api/results/'+CODE);
-        const d=await r.json();
-        const results=d.results||{};
-        const keys=Object.keys(results);
-        const statusEl=document.getElementById('hb-xc-status-text');
-        const racesEl=document.getElementById('hb-xc-races');
-
-        if(!keys.length){
-          statusEl.textContent='Results will appear here as races are published on the day (Thu 7 May).';
-          return;
-        }
-
-        document.getElementById('hb-xc-status').style.background='#f0fdf4';
-        document.getElementById('hb-xc-status').style.borderColor='#bbf7d0';
-        statusEl.textContent='Qualifiers updating live as races are published.';
-
-        let html='';
-        for(const key of RACE_ORDER){
-          const data=results[key];
-          if(!data)continue;
-          const places=(data.places||[]).slice(0,10);
-          const pub=data.publishedAt?new Date(data.publishedAt).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}):'';
-          html+=\`<div style="margin-bottom:16px;background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-            <div style="font-weight:700;font-size:.95rem;margin-bottom:8px">\${RACE_LABELS[key]||key} <span style="font-size:.78rem;font-weight:400;color:#94a3b8">\${pub?'Pub '+pub:''}</span></div>
-            <table style="width:100%;border-collapse:collapse;font-size:.85rem">
-              <thead><tr style="color:#64748b;font-size:.78rem"><th style="text-align:left;padding:4px 6px">Place</th><th style="text-align:left;padding:4px 6px">Name</th><th style="text-align:left;padding:4px 6px">School</th><th style="text-align:left;padding:4px 6px">Time</th></tr></thead>
-              <tbody>\`;
-          for(const p of places){
-            html+=\`<tr style="border-top:1px solid #f1f5f9">
-              <td style="padding:5px 6px;font-weight:700;color:\${p.place<=3?'#b45309':''}">\${p.place}</td>
-              <td style="padding:5px 6px">\${p.name||'Bib '+p.bib}</td>
-              <td style="padding:5px 6px;font-size:.8rem;color:#64748b">\${p.school||''}</td>
-              <td style="padding:5px 6px;color:#64748b">\${fmtMs(p.elapsedMs)}</td>
-            </tr>\`;
-          }
-          html+=\`</tbody></table></div>\`;
-        }
-        racesEl.innerHTML=html||'<p style="color:#94a3b8">No results yet.</p>';
-      }catch(e){
-        document.getElementById('hb-xc-status-text').textContent='Unable to load. Try refreshing.';
-      }
-    }
-
-    load();
-    setInterval(load, 30000);
-  })();
-  </script>
-</body>
+</footer></body>
 </html>`;
 var TERMS_HTML_SSP = `<!DOCTYPE html>
 <html lang="en">
@@ -3548,11 +3658,7 @@ footer a{color:rgba(255,255,255,.7)}
   &copy; 2026 Luck Dragon Pty Ltd &nbsp;&middot;&nbsp; ABN 64 697 434 898 &nbsp;&middot;&nbsp;
   <a href="/privacy">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="/terms">Terms of Service</a> &nbsp;&middot;&nbsp;
   <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> &nbsp;&middot;&nbsp; <a href="https://sportportal.com.au" target="_blank" rel="noopener">sportportal.com.au</a>
-</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
-</body>
+</footer></body>
 </html>`;
 var SSP_NAV_JS = `// School Sport Portal \u2014 shared top nav
 // Auto-injects a header with breadcrumb + footer with Privacy/Terms/Help links
@@ -3820,11 +3926,7 @@ footer a{color:#94a3b8;text-decoration:none}
 <footer>
   <a href="/">School Sport Portal</a> &nbsp;\xB7&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;\xB7&nbsp; <a href="/terms">Terms of Service</a> &nbsp;\xB7&nbsp; <a href="https://sportportal.com.au" target="_blank" rel="noopener">Sport Portal</a><br>
   <span style="margin-top:6px;display:block">\xA9 2026 Luck Dragon Pty Ltd \xB7 ABN 64 697 434 898</span>
-</footer>
-<script>
-async function submitContactForm(e){e.preventDefault();const form=document.getElementById('ssp-contact-form');const btn=document.getElementById('ssp-submit-btn');const msg=document.getElementById('ssp-form-msg');const data=Object.fromEntries(new FormData(form));btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){msg.style.display='block';msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 Got it. We\\'ll be in touch within one school day. Check your email \u2014 you\\'ve got a confirmation on the way.';form.reset();btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(err){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26A0 Couldn\\'t send right now \u2014 please email info@schoolsportportal.com.au directly. Sorry about that.';btn.disabled=false;btn.textContent='Send my school\\'s details \u2192';}return false;}
-<\/script>
-</body>
+</footer></body>
 </html>`;
 var SSP_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -3949,6 +4051,8 @@ tr:last-child td{border:none}
 </body></html>`;
 }
 __name(renderSchoolPortal, "renderSchoolPortal");
+__name2(renderSchoolPortal, "renderSchoolPortal");
+__name22(renderSchoolPortal, "renderSchoolPortal");
 async function _innerFetch(request, env, ctx) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -3975,13 +4079,13 @@ async function _innerFetch(request, env, ctx) {
         { status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    if (!env.SSP_DB) {
+    if (!env.DB) {
       return new Response(
         JSON.stringify({ ok: false, error: "DB unavailable" }),
         { status: 503, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    const school = await env.SSP_DB.prepare("SELECT id, name, api_token FROM schools WHERE id = ? AND active = 1").bind(schoolId).first();
+    const school = await env.DB.prepare("SELECT id, name, api_token FROM schools WHERE id = ? AND active = 1").bind(schoolId).first();
     if (!school) {
       return new Response(
         JSON.stringify({ ok: false, error: "School not found" }),
@@ -3994,7 +4098,7 @@ async function _innerFetch(request, env, ctx) {
         { status: 401, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    const students = await env.SSP_DB.prepare(
+    const students = await env.DB.prepare(
       "SELECT first_name, last_name_initial, year_level, gender, bib_number FROM students WHERE school_id = ? AND active = 1 AND bib_number IS NOT NULL ORDER BY bib_number ASC"
     ).bind(schoolId).all();
     const bibs = {};
@@ -4041,13 +4145,13 @@ async function _innerFetch(request, env, ctx) {
   }
   {
     const slug = path.slice(1).split("/")[0].replace(/\.html$/, "");
-    if (slug && !slug.includes(".") && env.SSP_DB) {
-      const schoolRec = await env.SSP_DB.prepare("SELECT * FROM schools WHERE id = ? AND active = 1").bind(slug).first();
+    if (slug && !slug.includes(".") && env.DB) {
+      const schoolRec = await env.DB.prepare("SELECT * FROM schools WHERE id = ? AND active = 1").bind(slug).first();
       if (schoolRec) {
         const [{ results: stuList }, { results: carnivalList }, qualRow] = await Promise.all([
-          env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(slug).all(),
-          env.SSP_DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(slug).all(),
-          env.SSP_DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(slug).first()
+          env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(slug).all(),
+          env.DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(slug).all(),
+          env.DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(slug).first()
         ]);
         return new Response(renderSchoolPortal(schoolRec, stuList, carnivalList, qualRow?.n || 0), {
           status: 200,
@@ -4097,6 +4201,8 @@ async function _innerFetch(request, env, ctx) {
   return new Response(LEGAL_PAGES["404"], { status: 404, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Source": "embedded-404" } });
 }
 __name(_innerFetch, "_innerFetch");
+__name2(_innerFetch, "_innerFetch");
+__name22(_innerFetch, "_innerFetch");
 function injectDemoBanner(html, kind) {
   const banner = `
 <div style="background:linear-gradient(90deg,#f59e0b,#f97316);color:#fff;text-align:center;padding:14px 18px;margin:0 0 0 0;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -4107,6 +4213,8 @@ function injectDemoBanner(html, kind) {
   return html.replace(/<body[^>]*>/, (m) => m + banner);
 }
 __name(injectDemoBanner, "injectDemoBanner");
+__name2(injectDemoBanner, "injectDemoBanner");
+__name22(injectDemoBanner, "injectDemoBanner");
 async function verifyStripeSignature(body, sigHeader, secret) {
   if (!sigHeader || !secret) return false;
   const parts = sigHeader.split(",");
@@ -4121,21 +4229,25 @@ async function verifyStripeSignature(body, sigHeader, secret) {
   return expected === v1;
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
+__name2(verifyStripeSignature, "verifyStripeSignature");
+__name22(verifyStripeSignature, "verifyStripeSignature");
 async function checkLoginRateLimit(env, email) {
   const now = Date.now();
   const windowMs = 60 * 60 * 1e3;
   const limit = 5;
   try {
-    await env.SSP_DB.prepare("DELETE FROM login_attempts WHERE ts < ?").bind(now - windowMs).run();
-    const row = await env.SSP_DB.prepare("SELECT COUNT(*) as c FROM login_attempts WHERE email = ? AND ts > ?").bind(email, now - windowMs).first();
+    await env.DB.prepare("DELETE FROM login_attempts WHERE ts < ?").bind(now - windowMs).run();
+    const row = await env.DB.prepare("SELECT COUNT(*) as c FROM login_attempts WHERE email = ? AND ts > ?").bind(email, now - windowMs).first();
     if (row && row.c >= limit) return false;
-    await env.SSP_DB.prepare("INSERT INTO login_attempts (email, ts) VALUES (?, ?)").bind(email, now).run();
+    await env.DB.prepare("INSERT INTO login_attempts (email, ts) VALUES (?, ?)").bind(email, now).run();
     return true;
   } catch (e) {
     return true;
   }
 }
 __name(checkLoginRateLimit, "checkLoginRateLimit");
+__name2(checkLoginRateLimit, "checkLoginRateLimit");
+__name22(checkLoginRateLimit, "checkLoginRateLimit");
 var worker_default = {
   async fetch(request, env, ctx) {
     const _r = await _innerFetch(request, env, ctx);
@@ -4164,4 +4276,6 @@ var worker_default = {
 export {
   worker_default as default
 };
-//# sourceMappingURL=worker.js.map
+//# sourceMappingURL=ssp-portal-clean.js.map
+
+--0806aa45d818f8ae2a224329fdea8c21fd7fa6a0c1cd5305c3c1b6c367ee--
