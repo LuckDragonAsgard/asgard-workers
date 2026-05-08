@@ -1,7 +1,7 @@
---16ed25e12f7a97eaa07fcf088e830b0e7368087f01fdd53b73401798022f
-Content-Disposition: form-data; name="index.js"
+--9662cdf941f0d999403ebfd9f548a83f3d496f05a397144238acfbd1136d
+Content-Disposition: form-data; name="ct-worker.js"
 
-// worker.js
+// ../ct-worker.js
 var HTML = `<!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -707,6 +707,17 @@ var HTML = `<!DOCTYPE html>
       </div>
     </div>
 
+
+    <!-- \u2500\u2500 WD26 Live Carnival \u2500\u2500 -->
+    <div style="margin-top:24px;background:linear-gradient(135deg,#14532d 0%,#166534 60%,#16a34a 100%);border-radius:14px;padding:18px 20px;color:#fff;border:2px solid #22c55e">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:1.1rem">\u{1F534}</span>
+        <span style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#86efac">Live Carnival</span>
+      </div>
+      <div style="font-size:0.98rem;font-weight:700;margin-bottom:6px;line-height:1.3">Williamstown District Cross Country 2026</div>
+      <div style="font-size:0.82rem;color:rgba(255,255,255,0.8);margin-bottom:14px;line-height:1.5">Track runners, view live results and follow qualifiers for the WD26 district carnival in real time.</div>
+      <a href="https://sportcarnival.com.au/wd26" target="_blank" style="background:#22c55e;color:#052e16;padding:9px 18px;border-radius:7px;font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block">View Live Results \u2192</a>
+    </div>
 
     <!-- \u2500\u2500 School Sport Portal upsell \u2500\u2500 -->
     <div style="margin-top:24px;background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 60%,#1a56db 100%);border-radius:14px;padding:18px 20px;color:#fff">
@@ -4647,10 +4658,10 @@ function xcSaveRecording() {
 
 
 
-// ══════════════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // URL AUTO-CREATE (deep-link from sportcarnival.com.au)
 // Usage: carnivaltiming.com?school=X&event=Y&sport=track&houses=Red,Blue&colour=%2314b8a6&code=WPS-2026
-// ══════════════════════════════════════════════════
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 async function checkAutoCreate() {
   const params = new URLSearchParams(window.location.search);
   const school = params.get('school');
@@ -4674,7 +4685,7 @@ async function checkAutoCreate() {
   // Show home screen briefly then auto-create
   showScreen('home');
   applyAccent(colour);
-  toast('Setting up carnival…', 3000);
+  toast('Setting up carnival\u2026', 3000);
   await new Promise(r => setTimeout(r, 900));
 
   // Find a unique 4-letter code
@@ -4692,7 +4703,7 @@ async function checkAutoCreate() {
   };
   await db.ref('meta').set(carnivalMeta);
   localStorage.setItem('fl_last_code', cCode);
-  toast(\`Carnival ready — \${cCode}\`, 3500);
+  toast(\`Carnival ready \u2014 \${cCode}\`, 3500);
   showRolePicker();
   setTimeout(() => enterRole('admin'), 700);
 }
@@ -5125,7 +5136,6 @@ var worker_default = {
 export {
   worker_default as default
 };
-//# sourceMappingURL=worker.js.map
+//# sourceMappingURL=ct-worker.js.map
 
-
---16ed25e12f7a97eaa07fcf088e830b0e7368087f01fdd53b73401798022f--
+--9662cdf941f0d999403ebfd9f548a83f3d496f05a397144238acfbd1136d--
