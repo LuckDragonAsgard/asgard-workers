@@ -1,4 +1,4 @@
---0806aa45d818f8ae2a224329fdea8c21fd7fa6a0c1cd5305c3c1b6c367ee
+--e60d3452556626b8dcd8719e15afb72b9f70121068fc084fa2686fa50baa
 Content-Disposition: form-data; name="ssp-portal-clean.js"
 
 var __defProp = Object.defineProperty;
@@ -9,6 +9,8 @@ var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
 var __defProp22 = Object.defineProperty;
 var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
+var __defProp222 = Object.defineProperty;
+var __name222 = /* @__PURE__ */ __name22((target, value) => __defProp222(target, "name", { value, configurable: true }), "__name");
 var ADMIN_SEC_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
@@ -20,12 +22,13 @@ async function hashPassword(password) {
   const keyMat = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 1e3, hash: "SHA-256" }, keyMat, 256);
-  const toHex = /* @__PURE__ */ __name22((b) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join(""), "toHex");
+  const toHex = /* @__PURE__ */ __name222((b) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join(""), "toHex");
   return `pbkdf2:${toHex(salt)}:${toHex(new Uint8Array(bits))}`;
 }
 __name(hashPassword, "hashPassword");
 __name2(hashPassword, "hashPassword");
 __name22(hashPassword, "hashPassword");
+__name222(hashPassword, "hashPassword");
 async function verifyPassword(password, stored) {
   try {
     const [, saltHex, hashHex] = stored.split(":");
@@ -42,6 +45,7 @@ async function verifyPassword(password, stored) {
 __name(verifyPassword, "verifyPassword");
 __name2(verifyPassword, "verifyPassword");
 __name22(verifyPassword, "verifyPassword");
+__name222(verifyPassword, "verifyPassword");
 async function createSession(db, schoolId) {
   const token = crypto.randomUUID() + "-" + crypto.randomUUID();
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1e3).toISOString();
@@ -52,6 +56,7 @@ async function createSession(db, schoolId) {
 __name(createSession, "createSession");
 __name2(createSession, "createSession");
 __name22(createSession, "createSession");
+__name222(createSession, "createSession");
 async function getSession(db, req) {
   const cookie = req.headers.get("Cookie") || "";
   const match = cookie.match(/ssp_session=([^;]+)/);
@@ -64,12 +69,14 @@ async function getSession(db, req) {
 __name(getSession, "getSession");
 __name2(getSession, "getSession");
 __name22(getSession, "getSession");
+__name222(getSession, "getSession");
 async function getSchool(db, schoolId) {
   return db.prepare("SELECT * FROM schools WHERE id = ?").bind(schoolId).first();
 }
 __name(getSchool, "getSchool");
 __name2(getSchool, "getSchool");
 __name22(getSchool, "getSchool");
+__name222(getSchool, "getSchool");
 async function sendSetupEmail(resendKey, school, setupToken) {
   const setupUrl = `https://schoolsportportal.com.au/setup?token=${setupToken}`;
   const html = `<!DOCTYPE html>
@@ -103,6 +110,7 @@ async function sendSetupEmail(resendKey, school, setupToken) {
 __name(sendSetupEmail, "sendSetupEmail");
 __name2(sendSetupEmail, "sendSetupEmail");
 __name22(sendSetupEmail, "sendSetupEmail");
+__name222(sendSetupEmail, "sendSetupEmail");
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
@@ -117,8 +125,9 @@ function parseCSV(text) {
 __name(parseCSV, "parseCSV");
 __name2(parseCSV, "parseCSV");
 __name22(parseCSV, "parseCSV");
+__name222(parseCSV, "parseCSV");
 function normaliseStudent(row, schoolId) {
-  const get = /* @__PURE__ */ __name22((...keys) => {
+  const get = /* @__PURE__ */ __name222((...keys) => {
     for (const k of keys) if (row[k]) return row[k];
     return "";
   }, "get");
@@ -134,6 +143,7 @@ function normaliseStudent(row, schoolId) {
 __name(normaliseStudent, "normaliseStudent");
 __name2(normaliseStudent, "normaliseStudent");
 __name22(normaliseStudent, "normaliseStudent");
+__name222(normaliseStudent, "normaliseStudent");
 var STYLE = `
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -197,6 +207,7 @@ function loginPage(error = "") {
 __name(loginPage, "loginPage");
 __name2(loginPage, "loginPage");
 __name22(loginPage, "loginPage");
+__name222(loginPage, "loginPage");
 function accountPickerPage(email, password, accounts, error = "") {
   const cards = accounts.map((s) => {
     const icon = s.account_type === "district" ? "\u{1F3EB}" : s.account_type === "division" ? "\u{1F3E2}" : s.account_type === "region" ? "\u{1F5FA}\uFE0F" : "\u{1F3EB}";
@@ -229,6 +240,7 @@ function accountPickerPage(email, password, accounts, error = "") {
 __name(accountPickerPage, "accountPickerPage");
 __name2(accountPickerPage, "accountPickerPage");
 __name22(accountPickerPage, "accountPickerPage");
+__name222(accountPickerPage, "accountPickerPage");
 function setupPage(token, error = "") {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Set Up Account \u2014 School Sport Portal</title>${STYLE}</head>
@@ -251,6 +263,7 @@ function setupPage(token, error = "") {
 __name(setupPage, "setupPage");
 __name2(setupPage, "setupPage");
 __name22(setupPage, "setupPage");
+__name222(setupPage, "setupPage");
 function topbar(school, activePage = "") {
   const nav = [
     ["/", "Dashboard"],
@@ -266,6 +279,7 @@ function topbar(school, activePage = "") {
 __name(topbar, "topbar");
 __name2(topbar, "topbar");
 __name22(topbar, "topbar");
+__name222(topbar, "topbar");
 function dashboardPage(school, stats) {
   const portalUrl = `https://schoolsportportal.com.au/${school.id}`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -313,6 +327,7 @@ ${topbar(school, "Dashboard")}
 __name(dashboardPage, "dashboardPage");
 __name2(dashboardPage, "dashboardPage");
 __name22(dashboardPage, "dashboardPage");
+__name222(dashboardPage, "dashboardPage");
 function studentsPage(school, students, msg = "") {
   const rows = students.map((s) => `<tr>
     <td>${s.first_name} ${s.last_name_initial ? s.last_name_initial + "." : ""}</td>
@@ -353,6 +368,7 @@ ${topbar(school, "Students")}
 __name(studentsPage, "studentsPage");
 __name2(studentsPage, "studentsPage");
 __name22(studentsPage, "studentsPage");
+__name222(studentsPage, "studentsPage");
 function uploadPage(school, error = "") {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Upload Students \u2014 ${school.name}</title>${STYLE}</head>
@@ -392,6 +408,7 @@ Noah,P,3,Wattle,M,2016-01-05</pre>
 __name(uploadPage, "uploadPage");
 __name2(uploadPage, "uploadPage");
 __name22(uploadPage, "uploadPage");
+__name222(uploadPage, "uploadPage");
 function carnivalsPage(school, carnivals, msg = "") {
   const typeLabel = { cross_country: "Cross Country", swimming: "Swimming", athletics: "Athletics", other: "Other" };
   const statusBadge = { upcoming: "#dbeafe:#1d4ed8", active: "#dcfce7:#16a34a", complete: "#f1f5f9:#64748b" };
@@ -438,6 +455,7 @@ ${topbar(school, "Carnivals")}
 __name(carnivalsPage, "carnivalsPage");
 __name2(carnivalsPage, "carnivalsPage");
 __name22(carnivalsPage, "carnivalsPage");
+__name222(carnivalsPage, "carnivalsPage");
 function exportPage(school, qualifiers) {
   const rows = qualifiers.map((q) => `<tr>
     <td>${q.first_name} ${q.last_name_initial ? q.last_name_initial + "." : ""}</td>
@@ -477,6 +495,7 @@ ${topbar(school, "Export")}
 __name(exportPage, "exportPage");
 __name2(exportPage, "exportPage");
 __name22(exportPage, "exportPage");
+__name222(exportPage, "exportPage");
 function orgTopbar(school, orgType, activePage) {
   const typeLabels = { district: "\u{1F3EB} District", division: "\u{1F3DF}\uFE0F Division", region: "\u{1F5FA}\uFE0F Region", state: "\u{1F1E6}\u{1F1FA} State" };
   const typeLabel = typeLabels[orgType] || "Admin";
@@ -486,6 +505,7 @@ function orgTopbar(school, orgType, activePage) {
   return `<div class="topbar" style="background:#1e293b;padding:16px 24px;display:flex;justify-content:space-between;align-items:center"><h1 style="color:#fff;margin:0;font-size:1.1rem">${typeLabel}: ${school.name}</h1><nav style="display:flex;align-items:center;gap:8px">${nav}</nav></div>`;
 }
 __name(orgTopbar, "orgTopbar");
+__name2(orgTopbar, "orgTopbar");
 function districtDashboardPage(school, distSchools) {
   const allActive = distSchools.length > 0 && distSchools.every((s) => s.active);
   const schoolRows = distSchools.length === 0 ? '<tr><td colspan="4" style="color:#64748b;padding:16px">No schools linked to this district yet.</td></tr>' : distSchools.map((s) => `<tr>
@@ -514,6 +534,7 @@ function districtDashboardPage(school, distSchools) {
   </div></body></html>`;
 }
 __name(districtDashboardPage, "districtDashboardPage");
+__name2(districtDashboardPage, "districtDashboardPage");
 function divisionDashboardPage(school, districts) {
   const districtRows = districts.length === 0 ? '<tr><td colspan="3" style="color:#64748b;padding:16px">No districts found in this division.</td></tr>' : districts.map((d) => `<tr>
         <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.name}</td>
@@ -538,6 +559,7 @@ function divisionDashboardPage(school, districts) {
   </div></body></html>`;
 }
 __name(divisionDashboardPage, "divisionDashboardPage");
+__name2(divisionDashboardPage, "divisionDashboardPage");
 function regionDashboardPage(school, divisions) {
   const divisionRows = divisions.length === 0 ? '<tr><td colspan="3" style="color:#64748b;padding:16px">No divisions found in this region.</td></tr>' : divisions.map((d) => `<tr>
         <td style="padding:12px 16px;border-bottom:1px solid #334155">${d.name}</td>
@@ -562,16 +584,17 @@ function regionDashboardPage(school, divisions) {
   </div></body></html>`;
 }
 __name(regionDashboardPage, "regionDashboardPage");
+__name2(regionDashboardPage, "regionDashboardPage");
 async function _adminFetch(request, env) {
   const url = new URL(request.url);
   let path = url.pathname;
   const method = request.method;
-  const respond = /* @__PURE__ */ __name22((body, status = 200, extra = {}) => new Response(body, {
+  const respond = /* @__PURE__ */ __name222((body, status = 200, extra = {}) => new Response(body, {
     status,
     headers: { "Content-Type": "text/html; charset=utf-8", ...ADMIN_SEC_HEADERS, ...extra }
   }), "respond");
-  const redirect = /* @__PURE__ */ __name22((loc) => new Response(null, { status: 302, headers: { Location: loc, ...ADMIN_SEC_HEADERS } }), "redirect");
-  const setCookieRedirect = /* @__PURE__ */ __name22((loc, token) => new Response(null, {
+  const redirect = /* @__PURE__ */ __name222((loc) => new Response(null, { status: 302, headers: { Location: loc, ...ADMIN_SEC_HEADERS } }), "redirect");
+  const setCookieRedirect = /* @__PURE__ */ __name222((loc, token) => new Response(null, {
     status: 302,
     headers: {
       Location: loc,
@@ -579,7 +602,7 @@ async function _adminFetch(request, env) {
       ...ADMIN_SEC_HEADERS
     }
   }), "setCookieRedirect");
-  const clearCookieRedirect = /* @__PURE__ */ __name22((loc) => new Response(null, {
+  const clearCookieRedirect = /* @__PURE__ */ __name222((loc) => new Response(null, {
     status: 302,
     headers: {
       Location: loc,
@@ -845,6 +868,7 @@ async function _adminFetch(request, env) {
 __name(_adminFetch, "_adminFetch");
 __name2(_adminFetch, "_adminFetch");
 __name22(_adminFetch, "_adminFetch");
+__name222(_adminFetch, "_adminFetch");
 var LEGAL_PAGES = { "cookies": `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -902,6 +926,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "subprocessors": `<!DOCTYPE html>
@@ -962,6 +987,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "security": `<!DOCTYPE html>
@@ -1022,6 +1048,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "sla": `<!DOCTYPE html>
@@ -1080,6 +1107,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "accessibility": `<!DOCTYPE html>
@@ -1137,6 +1165,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "child-safety": `<!DOCTYPE html>
@@ -1195,6 +1224,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "404": `<!DOCTYPE html>
@@ -1247,6 +1277,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "about": `<!DOCTYPE html>
@@ -1305,6 +1336,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/about">About</a> \xB7 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 <a href="/changelog">Changelog</a> \xB7 <a href="/modern-slavery">Modern Slavery</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "changelog": `<!DOCTYPE html>
@@ -1405,6 +1437,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/about">About</a> \xB7 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 <a href="/changelog">Changelog</a> \xB7 <a href="/modern-slavery">Modern Slavery</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>`, "modern-slavery": `<!DOCTYPE html>
@@ -1463,6 +1496,7 @@ footer a{color:rgba(255,255,255,.7)}footer a:hover{color:#fff}
 <a href="/about">About</a> \xB7 <a href="/privacy">Privacy</a> \xB7 <a href="/terms">Terms</a> \xB7 <a href="/cookies">Cookies</a> \xB7 <a href="/subprocessors">Subprocessors</a> \xB7 <a href="/security">Security</a> \xB7 <a href="/sla">SLA</a> \xB7 <a href="/accessibility">Accessibility</a> \xB7 <a href="/child-safety">Child Safety</a> \xB7 <a href="/changelog">Changelog</a> \xB7 <a href="/modern-slavery">Modern Slavery</a> \xB7 
 <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \xB7 
 <a href="https://asgard-status.pgallivan.workers.dev/">Status</a>
+<br><span style="margin-top:8px;display:inline-block">Also by Luck Dragon: <a href="https://sportcarnival.com.au" target="_blank" rel="noopener">SportCarnival</a> \xB7 <a href="https://carnivaltiming.com" target="_blank" rel="noopener">Carnival Timing</a></span>
 </footer>
 </body>
 </html>` };
@@ -4053,6 +4087,7 @@ tr:last-child td{border:none}
 __name(renderSchoolPortal, "renderSchoolPortal");
 __name2(renderSchoolPortal, "renderSchoolPortal");
 __name22(renderSchoolPortal, "renderSchoolPortal");
+__name222(renderSchoolPortal, "renderSchoolPortal");
 async function _innerFetch(request, env, ctx) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -4131,6 +4166,25 @@ async function _innerFetch(request, env, ctx) {
       }
     });
   }
+  if (path.startsWith("/primarydistrict/")) {
+    const GH_PD = "https://raw.githubusercontent.com/LuckDragonAsgard/schoolsportportal/main";
+    let pdPath = path;
+    if (!pdPath.endsWith(".html")) pdPath = pdPath + ".html";
+    const pdResponse = await fetch(GH_PD + pdPath + "?_cb=" + Date.now() + "_" + Math.random().toString(36).slice(2), { cf: { cacheTtl: 0, cacheEverything: false } });
+    if (pdResponse.ok) {
+      const html = await pdResponse.text();
+      return new Response(html, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-cache, must-revalidate",
+          "X-Robots-Tag": "index, follow",
+          "X-Source": "github-primarydistrict"
+        }
+      });
+    }
+    return new Response(LEGAL_PAGES["404"], { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
+  }
   if (path === "/demo-school" || normPath === "/demo-school.html") {
     return new Response(injectDemoBanner(DEMO_SCHOOL, "school"), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-demo" } });
   }
@@ -4203,6 +4257,7 @@ async function _innerFetch(request, env, ctx) {
 __name(_innerFetch, "_innerFetch");
 __name2(_innerFetch, "_innerFetch");
 __name22(_innerFetch, "_innerFetch");
+__name222(_innerFetch, "_innerFetch");
 function injectDemoBanner(html, kind) {
   const banner = `
 <div style="background:linear-gradient(90deg,#f59e0b,#f97316);color:#fff;text-align:center;padding:14px 18px;margin:0 0 0 0;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -4215,6 +4270,7 @@ function injectDemoBanner(html, kind) {
 __name(injectDemoBanner, "injectDemoBanner");
 __name2(injectDemoBanner, "injectDemoBanner");
 __name22(injectDemoBanner, "injectDemoBanner");
+__name222(injectDemoBanner, "injectDemoBanner");
 async function verifyStripeSignature(body, sigHeader, secret) {
   if (!sigHeader || !secret) return false;
   const parts = sigHeader.split(",");
@@ -4231,6 +4287,7 @@ async function verifyStripeSignature(body, sigHeader, secret) {
 __name(verifyStripeSignature, "verifyStripeSignature");
 __name2(verifyStripeSignature, "verifyStripeSignature");
 __name22(verifyStripeSignature, "verifyStripeSignature");
+__name222(verifyStripeSignature, "verifyStripeSignature");
 async function checkLoginRateLimit(env, email) {
   const now = Date.now();
   const windowMs = 60 * 60 * 1e3;
@@ -4248,6 +4305,7 @@ async function checkLoginRateLimit(env, email) {
 __name(checkLoginRateLimit, "checkLoginRateLimit");
 __name2(checkLoginRateLimit, "checkLoginRateLimit");
 __name22(checkLoginRateLimit, "checkLoginRateLimit");
+__name222(checkLoginRateLimit, "checkLoginRateLimit");
 var worker_default = {
   async fetch(request, env, ctx) {
     const _r = await _innerFetch(request, env, ctx);
@@ -4278,4 +4336,4 @@ export {
 };
 //# sourceMappingURL=ssp-portal-clean.js.map
 
---0806aa45d818f8ae2a224329fdea8c21fd7fa6a0c1cd5305c3c1b6c367ee--
+--e60d3452556626b8dcd8719e15afb72b9f70121068fc084fa2686fa50baa--
