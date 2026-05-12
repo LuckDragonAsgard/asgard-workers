@@ -1,0 +1,99 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "fl": {
+      ".read": true,
+      ".write": "auth != null",
+
+      "$carnivalCode": {
+        ".validate": "$carnivalCode.matches(/^[A-Z0-9]{4,12}$/)",
+
+        "meta": {
+          ".validate": "newData.hasChildren(['school', 'sport', 'name'])",
+          "school":     { ".validate": "newData.isString() && newData.val().length <= 120" },
+          "sport":      { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "name":       { ".validate": "newData.isString() && newData.val().length <= 200" },
+          "createdAt":  { ".validate": "newData.isNumber()" },
+          "colour":     { ".validate": "newData.isString() && newData.val().length <= 12" },
+          "tier":       { ".validate": "newData.isString() && newData.val().matches(/^(school|district|division|region|state)$/)" },
+          "isDemo":     { ".validate": "newData.isBoolean()" },
+          "$other":     { ".validate": false }
+        },
+
+        "results": {
+          "$raceKey": {
+            ".validate": "newData.hasChildren(['event'])",
+            "results": {
+              "$idx": {
+                "name":     { ".validate": "newData.isString() && newData.val().length <= 80" },
+                "lane":     { ".validate": "newData.isNumber()" },
+                "num":      { ".validate": "newData.isNumber()" },
+                "place":    { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 999" },
+                "timeMs":   { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 36000000" },
+                "elapsedMs":{ ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 36000000" },
+                "house":    { ".validate": "newData.isString() && newData.val().length <= 40" },
+                "school":   { ".validate": "newData.isString() && newData.val().length <= 120" },
+                "dq":       { ".validate": "newData.isBoolean()" },
+                "$other":   { ".validate": false }
+              }
+            }
+          }
+        },
+
+        "roster": { "$any": { ".validate": true } },
+        "xc":     { "$any": { ".validate": true } },
+        "race":   { "$any": { ".validate": true } },
+        "recall": { "$any": { ".validate": true } }
+      }
+    },
+
+    "wps_aths_2026": {
+      ".read": true,
+      ".write": "auth != null",
+
+      "results": {
+        "$raceKey": {
+          ".validate": "newData.hasChildren()",
+          "$idx": {
+            "name":   { ".validate": "newData.isString() && newData.val().length <= 80" },
+            "house":  { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "result": { ".validate": "newData.isNumber() || newData.isString()" },
+            "place":  { ".validate": "newData.isNumber()" },
+            "members":{ "$m": { ".validate": "newData.isString() && newData.val().length <= 80" } },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    },
+
+    "carnivalResults": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+
+    "scores": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+
+    "users": {
+      ".read": "auth != null && auth.uid != null",
+      ".write": "auth != null && auth.uid != null",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+
+    "fb": {
+      ".read": false,
+      ".write": false
+    },
+    "test_write": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
