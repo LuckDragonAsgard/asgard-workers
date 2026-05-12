@@ -1275,7 +1275,7 @@ function renderLogin(app){
   try{
    const r=await fetch(VERIFY_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:"paddy",pin:inp.value})});
    const d=await r.json();
-   if(d.success){saveAuth({user:d.user,pin:inp.value,agentPin:d.agentPin});STATE.user=d.user;STATE.agentPin=d.agentPin;await loadProjects();render()}
+   if(d.success){try{const jwtResp=await fetch("https://asgard-auth.pgallivan.workers.dev/v1/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pin:inp.value})});const jwtData=await jwtResp.json();if(jwtData.ok&&jwtData.jwt){localStorage.setItem("asgard_jwt",jwtData.jwt);localStorage.setItem("asgard_jwt_expiry",Date.now()+7200000)}}catch(e){}saveAuth({user:d.user,pin:inp.value,agentPin:d.agentPin});STATE.user=d.user;STATE.agentPin=d.agentPin;await loadProjects();render()}
    else{err.textContent="Wrong PIN.";inp.value=""}
   }catch(e){err.textContent="Connection error."}
   btn.disabled=false;btn.textContent="Sign in";
@@ -1284,8 +1284,9 @@ function renderLogin(app){
  card.appendChild(btn);card.appendChild(err);wrap.appendChild(card);app.appendChild(wrap);
  setTimeout(()=>inp.focus(),50);
 }
+function getJWT(){const jwt=localStorage.getItem("asgard_jwt");const expiry=parseInt(localStorage.getItem("asgard_jwt_expiry")||"0");if(jwt&&Date.now()<expiry)return jwt;return null}
 
-async function loadProjects(){try{const r=await fetch(PROJECTS_API);const d=await r.json();STATE.projects=d.projects||(Array.isArray(d)?d:[])}catch(e){STATE.projects=[]}}
+async function loadProjects(){try{const jwt=getJWT();const headers={"Content-Type":"application/json"};if(jwt)headers["Authorization"]="Bearer "+jwt;const r=await fetch(PROJECTS_API,{headers});const d=await r.json();STATE.projects=d.projects||(Array.isArray(d)?d:[])}catch(e){STATE.projects=[]}}
 
 function renderShell(){const l=el("div",{class:"layout"+(STATE.view==="home"?" layout-home":"")});l.appendChild(renderSidebar());l.appendChild(renderMain());if(STATE.view!=="home")l.appendChild(renderChatPane());return l}
 
