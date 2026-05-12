@@ -1,5 +1,5 @@
 // falkor-tools v2.1.0 — Asgard-style project hub with Finance, sorting, all info per project
-const PROJECTS_API = 'https://falkor-dashboard.luckdragon.io/api/projects';
+const PROJECTS_API = 'https://asgard-projects.pgallivan.workers.dev/v1/projects';
 const VERIFY_API   = 'https://falkor-push.luckdragon.io/user/verify';
 const CHAT_API     = '/api/chat';
 
@@ -1057,7 +1057,7 @@ button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));b
 </style></head>
 <body><div id="app"></div>
 <script>
-const VERIFY_API="https://falkor-push.luckdragon.io/user/verify",PROJECTS_API="/api/projects",CHAT_API="/api/chat";
+const VERIFY_API="https://falkor-push.luckdragon.io/user/verify",PROJECTS_API="https://asgard-projects.pgallivan.workers.dev/v1/projects",CHAT_API="/api/chat";
 const $=(s,r=document)=>r.querySelector(s);
 const fmtMel=s=>{if(!s)return s;const utc=String(s).replace(' ','T');const iso=/Z$|[+-]\d\d:?\d\d$/.test(utc)?utc:utc+'Z';const d=new Date(iso);if(isNaN(d))return s;try{return new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Melbourne',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',','')+' AEST'}catch(e){return s}};
 const el=(tag,attrs={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k==="class")n.className=v;else if(k==="onclick")n.addEventListener("click",v);else if(k==="html")n.innerHTML=v;else n.setAttribute(k,v)}for(const k of kids){if(k==null||k===false)continue;if(typeof k==="string"||typeof k==="number")n.appendChild(document.createTextNode(String(k)));else if(k && k.nodeType)n.appendChild(k);else n.appendChild(document.createTextNode(String(k)))}return n};
