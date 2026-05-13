@@ -1,3 +1,8 @@
+--14baa004f59b805be572ec4308876853924f605cc6226d53eef7eacfbaf7
+Content-Disposition: form-data; name="carnival-results.js"
+
+
+
 // Public API rate limiter (per-isolate; CF deploys many isolates so this is approximate)
 const _rl_buckets = new Map();
 function rateLimit(key, max=60, windowMs=60000) {
@@ -41,7 +46,7 @@ export default {
     const cors = {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Publish-Pin',
       'Access-Control-Allow-Credentials': 'true',
     };
     if (request.method === 'OPTIONS') return new Response(null, {headers: cors});
@@ -74,8 +79,18 @@ export default {
 
     // POST /api/results/:code
     if (request.method === 'POST' && path.startsWith('/api/results/')) {
+      // Auth: accept either X-Publish-Pin header matching env.CARNIVAL_PUBLISH_PIN, or a logged-in admin/committee user
+      const pin = request.headers.get('X-Publish-Pin') || '';
+      const pinOk = env.CARNIVAL_PUBLISH_PIN && pin && pin === env.CARNIVAL_PUBLISH_PIN;
+      let userOk = false;
+      if (!pinOk) {
+        const u = await getCurrentUser(request, env);
+        userOk = u && (u.role === 'admin' || u.role === 'committee' || u.role === 'coach');
+      }
+      if (!pinOk && !userOk) return new Response(JSON.stringify({error:'Forbidden — missing X-Publish-Pin header or auth cookie'}), {status:403, headers:{...cors,'Content-Type':'application/json'}});
       const code = path.split('/')[3];
       if (!code) return new Response('Missing code', {status:400});
+      if (!/^[A-Z0-9]{3,16}$/.test(code)) return new Response(JSON.stringify({error:'Invalid carnival code'}), {status:400, headers:{...cors,'Content-Type':'application/json'}});
       const body = await request.json();
       const {meta, results} = body;
       const now = Date.now();
@@ -87,7 +102,7 @@ export default {
             .bind(code, raceKey, raceData.eventName||'', raceData.heatName||'', now, JSON.stringify(raceData)).run();
         }
       }
-      return new Response(JSON.stringify({success:true}), {headers:{...cors,'Content-Type':'application/json'}});
+      return new Response(JSON.stringify({success:true,code,races:results?Object.keys(results).length:0,authMethod:pinOk?'pin':'user'}), {headers:{...cors,'Content-Type':'application/json'}});
     }
 
 
@@ -465,3 +480,4 @@ export default {
     return new Response('Not found', {status:404});
   }
 };
+--14baa004f59b805be572ec4308876853924f605cc6226d53eef7eacfbaf7--
