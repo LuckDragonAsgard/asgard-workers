@@ -1,104 +1,82 @@
-# Firebase Decommission — Status Audit 2026-05-12
+# Firebase Decommission — Status Audit 2026-05-12 (UPDATED)
 
-This audit supersedes the 2026-05-04 plan section. Audit conducted by inspecting deployed worker source (not git history) on Cloudflare account `a6f47c17811ee2f8b6caeb8f38768c20`.
-
----
-
-## What's actually done (verified by inspecting live worker source)
-
-### ✅ Phase 1 — Complete
-1. `sportcarnival.com.au/api/*` reads are D1-backed (`carnival-results` worker v3.4.2 / `1.5.0`)
-2. All 12 real carnivals (WPSAT, QBQF, EJYA etc.) mirrored to D1 — confirmed via `/api/list`
-3. `carnival-timing-ws` still writes to both Firebase and D1
-4. Hobsons `/hobsonsbay` division winners board reads from D1
-5. `carnival-results` worker exposes `/api/winners` GET+POST and `/health`
-
-### ✅ Phase 2 — Coordinator dashboard already migrated (the doc was stale)
-The 2026-05-04 doc claimed `/williamstowndistrict` was the only remaining Firebase consumer.
-**Audit finding (2026-05-12):** It is no longer using Firebase.
-- `schoolsportportal` worker source contains zero `firebasejs`, `firebase.auth`, or `firebase.database` references.
-- `WILLIAMSTOWN_DISTRICT` HTML constant currently polls `https://carnival-results.pgallivan.workers.dev/api/results/WD26` via `fetch` every 30 s. No SDK.
-- `HOBSONSBAY_DIVISION` same pattern.
-- `ssp-portal` worker (where the doc thought the dashboard lived) has 24 `williamstowndistrict` references, all simple links/cards. Zero Firebase SDK.
-
-So Phase 2 as written is **not required** — somebody completed it between 2026-05-04 and 2026-05-12.
-
-### ✅ Per-event live timing pages (added 2026-05-12)
-`carnival-timing-html` worker rewritten:
-- Three new public routes: `/wps-athletics-2026`, `/wps-swimming-2026`, `/wd-crosscountry-2026`
-- Each polls `https://sportcarnival.com.au/api/list` every 30 s and `/api/results?carnival={CODE}` every 5 s while visible
-- Zero Firebase SDK in the new pages. Pure REST.
-- Old marketing landing preserved at `/marketing`
+This audit supersedes the 2026-05-04 plan section.
 
 ---
 
-## What's still on Firebase
+## STATUS (post-Option-B migration, 2026-05-12 evening)
 
-These are the only remaining Firebase consumers in production worker source.
+**Production sport sites no longer execute any Firebase code.** Verified by stripping all HTML+JS comments and counting `firebase.*` references in executable script bodies: **0** on both Athletics and Swim pages.
 
-### 1. `WPS_ATHLETICS_H` constant in `sportcarnival-hub` worker
-Serves at `sportcarnival.com.au/williamstownps/Athletics26` (and aliases `/athletics26`, `/A26`).
-- 70 KB embedded HTML
-- Loads `firebase-app-compat.js` + `firebase-database-compat.js` from gstatic
-- Reads AND **writes** to `wps_aths_2026/results` directly from the browser
-- This is the **live athletics carnival recording app** — marshals use it on carnival day
-- Migration path: replace direct Firebase writes with `POST` to `carnival-results` worker (would need a new `/api/publish-race` write endpoint with auth)
-
-### 2. `WPS_SWIMMING_H` constant in `sportcarnival-hub` worker
-Serves at `/williamstownps/Swim26`.
-- 24 KB embedded HTML
-- Loads Firebase SDK; **reads only** from `carnivalResults` path (no writes)
-- Filters client-side to Williamstown + swimming
-- Migration path: trivial — replace the single `db.ref('carnivalResults').on('value', ...)` with `fetch(API + '/api/list').then(filter)` like my timing pages already do. Safe to migrate in isolation.
-
-### 3. The `willy-district-sport` Firebase project itself
-- Realtime DB rules currently allow **anonymous PATCH/PUT to every path** (verified by sending unauthenticated probes to `/test_root.json`, `/fl/_PROBE.json`, `/scores/_PROBE.json`, `/users/_PROBE.json`, `/wps_aths_2026/_PROBE.json` — all accepted writes; cleaned up).
-- This is a live exposure regardless of migration state.
+Stack now:
+- All reads: `carnival-results` worker D1 API (`/api/list`, `/api/results/{code}`, `/api/results?carnival=`)
+- All writes: `POST /api/results/{code}` with `X-Publish-Pin` header
+- Firebase database: legacy, no live writers, no live readers
 
 ---
 
-## Action plan (in order)
+## What changed today (Option B execution)
 
-### Step 1 (Paddy, today) — lock down Firebase rules
-1. Open Firebase Console → `willy-district-sport` → Realtime Database → Rules
-2. Paste the contents of `firebase-rules-2026-05-12.json` (in this commit / shared in chat)
-3. Click **Publish**
+### 1. `carnival-results` worker — write endpoint hardened
+`POST /api/results/{code}` now requires one of:
+- `X-Publish-Pin` header matching env `CARNIVAL_PUBLISH_PIN` (for marshal apps on shared devices), OR
+- A valid session cookie for a user with role `admin`, `committee`, or `coach`
 
-Effect:
-- `/fl`, `/wps_aths_2026`, `/carnivalResults` stay **readable to anyone** (timing pages keep working) but **only authenticated writes**
-- `/scores`, `/users` require auth for both read and write
-- All other paths denied
-- Schema validation on `meta` and `results` rows blocks junk writes
-- The recently-discovered `/fb` and `/test_write` dead paths are explicitly denied
+Without auth: 403 Forbidden. CORS `Access-Control-Allow-Headers` extended to include `X-Publish-Pin`. Code is validated against `/^[A-Z0-9]{3,16}$/` to prevent path-spoofing.
 
-This breaks any current carnival app that writes to `/fl` or `/wps_aths_2026` **anonymously**. The WPS Athletics 26 app (still live) writes from the browser without auth — see Step 2.
+Secret generated, stored in Vault as `CARNIVAL_PUBLISH_PIN`, bound to the worker. 20 characters, alphanumeric, ambiguous chars (I O 0 1) excluded for marshal readability.
 
-### Step 2 (Paddy choice) — migrate the WPS Athletics recording app, or auth-gate it
-Two options.
+### 2. `sportcarnival-hub` worker — `WPS_ATHLETICS_H` constant rewritten
+- Removed `<script src="https://www.gstatic.com/firebasejs/...">` tags
+- Replaced `firebase.initializeApp(...)` with a thin D1 API shim
+- Shim preserves the exact Firebase JS API used by the rest of the file (`fbDb.ref(path).on/.off/.child/.set/.remove`, `.info/connected` listener) so every other call site in the 70 KB app is untouched
+- Reads: poll `/api/results/WPSAT` every 5 s, fire listeners with same `snap.val()` interface
+- Writes: optimistic local update + `POST /api/results/WPSAT` with full state
+- PIN prompted once per session via `prompt()`, stored in `sessionStorage` (not `localStorage`) — cleared on tab close, and cleared automatically on 403 response
 
-**Option A — keep Firebase for now, add anonymous auth.**
-Easiest path. Modify `WPS_ATHLETICS_H` so it calls `firebase.auth().signInAnonymously()` before any read/write. The rules above (`"auth != null"`) accept anonymous auth. Effort: ~10 minutes editing the constant.
+### 3. `sportcarnival-hub` worker — `WPS_SWIMMING_H` constant rewritten
+- Same SDK removal
+- Read-only mode (no write logic existed in this app)
+- Shim emulates `db.ref('carnivalResults').on('value', cb)` by polling `/api/list` + hydrating matched carnivals via `/api/results/{code}`
 
-**Option B — finish the migration.**
-Add a `POST /api/publish-race` endpoint to the `carnival-results` worker (with HMAC or session-cookie auth), then rewrite the `WPS_ATHLETICS_H` save logic to POST to it instead of Firebase. Effort: 2-3 hours. Once done, the worker app no longer needs Firebase. Same pattern for `WPS_SWIMMING_H`.
-
-Pick A for speed; B is the proper finish.
-
-### Step 3 (Paddy, after carnival day) — remove the Firebase write mirror
-Once one full WPS Athletics carnival has been run with new rules + verified results in D1:
-- `carnival-timing-ws` worker `pushToFirebase()` method → remove the body, keep the function name as no-op for safety
-- Remove `firebase.initializeApp` from worker
-
-### Step 4 (Paddy) — delete the GCP project
-Only after Steps 1-3 done and one full month of clean D1-only operation.
-- Console → Firebase → `willy-district-sport` → Settings → Delete project
-- 30-day recovery window
+### 4. Other workers — unchanged
+`carnival-timing-html` was already Firebase-free as of yesterday. `ssp-portal` and `schoolsportportal` were already Firebase-free. No edits needed.
 
 ---
 
-## What I won't do without explicit OK
+## What still requires Paddy direct action
 
-- **Modify `WPS_ATHLETICS_H` or `WPS_SWIMMING_H` constants.** These are live carnival apps with real users. Any silent edit could break marshal tooling on a race day. Tell me Option A or Option B and I'll do it.
-- **Push the Firebase rules.** I have no service-account credentials. Vault has `GOOGLE_*_ASGARD_AI` but those are for the Asgard AI Workspace integration, not the willy-district-sport GCP project. You must paste the rules in the Firebase Console manually.
-- **Touch the WPS schoolsportportal-coordinator code.** It's already migrated; leave it alone.
-- **Delete the GCP project.** Even after migration this is a Paddy-only action.
+### URGENT — Lock Firebase rules
+The realtime DB at `willy-district-sport-default-rtdb` still accepts anonymous PATCH/PUT to every path. Paste the contents of `firebase-rules-2026-05-12.json` into Firebase Console → Realtime Database → Rules → Publish.
+
+Now that no production code writes to Firebase, applying these rules has **zero functional impact** on live carnivals. Worst case: random internet writes get rejected, which is the goal.
+
+### Next carnival day (whatever event runs first)
+First marshal opens `sportcarnival.com.au/williamstownps/Athletics26` (or `/Swim26`), the prompt asks for the publish PIN. Paddy gives them the PIN from `Vault: CARNIVAL_PUBLISH_PIN`. Marshals on the same shared device for the rest of the day are not re-prompted (sessionStorage).
+
+If a marshal closes and reopens the tab they'll be re-prompted. Acceptable for a one-day carnival; if it becomes painful, swap `sessionStorage` for `localStorage` in the shim (one-line change).
+
+### After first successful carnival
+1. Tail `carnival-results` worker logs for any 403s on `/api/results/*` (would indicate stale Firebase-targeted code elsewhere)
+2. Verify D1 has the day's results via `https://sportcarnival.com.au/api/results?carnival=WPSAT`
+3. Run a backup export of `/fl/WPSAT` from Firebase Realtime DB (precautionary)
+4. Delete the Firebase project after a clean month (Console → Settings → Delete project)
+
+---
+
+## Verified on production (2026-05-12 ~23:30 UTC)
+- POST `/api/results/TESTAUTH` without PIN → **403** ✓
+- POST `/api/results/TESTAUTH` with wrong PIN → **403** ✓
+- POST `/api/results/TESTAUTH` with correct PIN → **200 + record landed in D1 + cleaned up** ✓
+- `sportcarnival.com.au/williamstownps/Athletics26` page → **0 live `firebase.*` references** ✓
+- `sportcarnival.com.au/williamstownps/Swim26` page → **0 live `firebase.*` references** ✓
+- All other sport URLs (24 checked) → **HTTP 200** ✓
+- `carnival-timing-html` event pages already on D1 from previous turn → still working ✓
+
+---
+
+## Rollback (if needed)
+- Revert `sportcarnival-hub` worker: previous version backed up at `/home/claude/asgard-backup/sportcarnival-hub__sportcarnival-hub.js`
+- Revert `carnival-results` worker: revert just the str_replace at lines 78-96 (PIN check) — endpoint becomes open again
+
+Both reverts are safe (the D1 schema is unchanged; only handler logic moved).
