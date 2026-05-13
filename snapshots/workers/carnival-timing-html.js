@@ -1,5 +1,5 @@
---1f919001baa944378afd4992d36804f660839712fb950762b7656a812bf9
-Content-Disposition: form-data; name="ct-worker.js"
+--f3e439796e27dabec078b36623575f618f5e1c9dd2cf49a678bac7432e11
+Content-Disposition: form-data; name="ct-html.js"
 
 // ../ct-worker.js
 var HTML = `<!DOCTYPE html>
@@ -5116,15 +5116,383 @@ footer a{color:rgba(255,255,255,.7)}
 </footer>
 </body>
 </html>`;
+// Event timing page generator — reads from carnival-results D1 API.
+// v4 (2026-05-12): switched from direct Firebase to D1-backed REST API per FIREBASE_DECOMMISSION plan.
+//
+// API endpoints (CORS-open, GET-only):
+//   GET https://sportcarnival.com.au/api/list                  -> [{code, school, sport, name, published_at}]
+//   GET https://sportcarnival.com.au/api/results?carnival=CODE -> {ok, meta:{school,sport,name}, results:{raceKey:{age,event,gender,raceId,publishedAt,results:[{lane,name,place,timeMs,house?,school?}],type}}}
+//
+// Each event page polls /api/list every 30s and /api/results?carnival=CODE every 5s while visible.
+
+const _CT_EVENT_REGISTRY = {
+  "wps-athletics-2026": {
+    title: "WPS Athletics 2026 — Live Results",
+    subtitle: "Williamstown Primary School · Athletics",
+    school: "Williamstown Primary School",
+    sportPattern: "athletics|track",
+    schoolPattern: "williamstown primary",
+    excludeDemo: true,
+    appUrl: "https://sportcarnival.com.au/williamstownps/Athletics26",
+    portalUrl: "https://schoolsportportal.com.au/williamstownps"
+  },
+  "wps-swimming-2026": {
+    title: "WPS Swimming 2026 — Live Results",
+    subtitle: "Williamstown Primary School · Swimming",
+    school: "Williamstown Primary School",
+    sportPattern: "swim",
+    schoolPattern: "williamstown primary",
+    excludeDemo: true,
+    appUrl: "https://sportcarnival.com.au/williamstownps/Swim26",
+    portalUrl: "https://schoolsportportal.com.au/williamstownps"
+  },
+  "wd-crosscountry-2026": {
+    title: "Williamstown District XC 2026 — Live Results",
+    subtitle: "Williamstown District · Cross Country",
+    school: "Williamstown District",
+    sportPattern: "xc|cross",
+    schoolPattern: "williamstown district",
+    excludeDemo: true,
+    appUrl: "https://sportcarnival.com.au/district/primary/williamstown/XC26",
+    portalUrl: "https://schoolsportportal.com.au/district/primary/williamstown"
+  }
+};
+
+const _CT_API_BASE = "https://sportcarnival.com.au";
+
+function _ctEventPage(slug) {
+  const cfg = _CT_EVENT_REGISTRY[slug];
+  if (!cfg) return null;
+  return `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${cfg.title}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#fff;min-height:100vh}
+  .nav{background:linear-gradient(90deg,#0d1b3e,#1a3a6e);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:13px;font-weight:600}
+  .nav a{color:#fff;text-decoration:none;opacity:.92}
+  .nav .brand{color:#fcd34d}
+  .nav .pill{background:#dc2626;padding:5px 12px;border-radius:6px;font-size:12px;color:#fff;text-decoration:none}
+  .container{max-width:1100px;margin:0 auto;padding:24px 18px}
+  .header{margin-bottom:20px}
+  .header h1{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+  .header .sub{color:#94a3b8;font-size:.95rem;margin-bottom:8px}
+  .header .meta{color:#94a3b8;font-size:.85rem;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .meta .live{display:inline-flex;align-items:center;gap:6px;color:#22c55e;font-weight:600}
+  .meta .live .dot{width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite}
+  .meta .live.off{color:#64748b}
+  .meta .live.off .dot{background:#64748b;animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .carnival-pick{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;padding:12px;background:#1e293b;border:1px solid #334155;border-radius:8px}
+  .carnival-pick label{font-size:.85rem;color:#94a3b8;align-self:center}
+  .carnival-pick select{background:#0f172a;border:1px solid #334155;color:#fcd34d;padding:6px 10px;border-radius:6px;font-size:.85rem;font-family:inherit;font-weight:600;flex:1;min-width:200px}
+  .filter{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+  .filter input,.filter select{background:#1e293b;border:1px solid #334155;color:#fff;padding:8px 12px;border-radius:6px;font-size:.9rem;font-family:inherit}
+  .filter input{flex:1;min-width:200px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+  .stat{background:#1e293b;padding:14px;border-radius:8px;border:1px solid #334155}
+  .stat .v{font-size:1.6rem;font-weight:800;color:#fcd34d}
+  .stat .k{color:#94a3b8;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .events{display:flex;flex-direction:column;gap:12px}
+  .event{background:#1e293b;border:1px solid #334155;border-radius:10px;overflow:hidden}
+  .event h3{padding:12px 16px;background:#334155;font-size:.95rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .event h3 .tag{background:#0f172a;color:#fcd34d;font-size:.72rem;padding:3px 8px;border-radius:4px;font-weight:600}
+  .event table{width:100%;border-collapse:collapse;font-size:.88rem}
+  .event th,.event td{padding:8px 14px;text-align:left;border-bottom:1px solid #334155}
+  .event tr:last-child td{border-bottom:none}
+  .event td.place{font-weight:800;color:#fcd34d;width:50px;text-align:center}
+  .event td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#22c55e}
+  .event td.house,.event td.school{color:#94a3b8;font-size:.85rem}
+  .empty{padding:60px 20px;text-align:center;color:#64748b;background:#1e293b;border-radius:10px;border:1px solid #334155}
+  .empty p{margin-top:8px;font-size:.85rem}
+  .empty .debug{margin-top:14px;font-size:.7rem;color:#475569;font-family:ui-monospace,monospace}
+  .footer{margin-top:24px;text-align:center;color:#64748b;font-size:.8rem;padding-top:16px;border-top:1px solid #334155}
+  .footer a{color:#60a5fa;text-decoration:none}
+  .error{background:#7f1d1d;color:#fecaca;padding:14px;border-radius:8px;margin-bottom:14px;font-size:.85rem;display:none}
+</style>
+</head>
+<body>
+<div class="nav">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <a class="brand" href="https://sportportal.com.au">SportPortal</a>
+    <span style="opacity:.5">\u2022</span>
+    <a href="${cfg.portalUrl}">${cfg.school}</a>
+    <span style="opacity:.5">\u2022</span>
+    <a href="${cfg.appUrl}">Open carnival app</a>
+  </div>
+  <a class="pill" href="https://carnivaltiming.com">\u25CF All Events</a>
+</div>
+<div class="container">
+  <div class="header">
+    <h1>${cfg.title}</h1>
+    <div class="sub">${cfg.subtitle}</div>
+    <div class="meta">
+      <span class="live off" id="live-badge"><span class="dot"></span> <span id="live-text">Connecting\u2026</span></span>
+      <span id="meta-count">\u2014</span>
+      <span id="meta-update" style="opacity:.7"></span>
+    </div>
+  </div>
+  <div class="error" id="err"></div>
+  <div class="carnival-pick" id="picker" style="display:none">
+    <label for="carnivalSel">Carnival:</label>
+    <select id="carnivalSel"></select>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="filter">
+    <input id="q" type="search" placeholder="Search by name, school, house\u2026" autocomplete="off">
+    <select id="houseFilter"><option value="">All houses / schools</option></select>
+    <select id="ageFilter"><option value="">All age groups</option></select>
+  </div>
+  <div class="events" id="events"><div class="empty"><strong>Loading\u2026</strong></div></div>
+  <div class="footer">Powered by <a href="https://carnivaltiming.com">Carnival Timing</a> \u00B7 Data: <a href="https://sportcarnival.com.au/api/status">carnival-results-d1</a> \u00B7 Carnival app: <a href="${cfg.appUrl}">${cfg.appUrl.replace('https://','')}</a></div>
+</div>
+<script>
+(function(){
+  const API_BASE = ${JSON.stringify(_CT_API_BASE)};
+  const SCHOOL_RE = new RegExp(${JSON.stringify(cfg.schoolPattern)}, "i");
+  const SPORT_RE = new RegExp(${JSON.stringify(cfg.sportPattern)}, "i");
+  const EXCLUDE_DEMO = ${JSON.stringify(!!cfg.excludeDemo)};
+  const POLL_LIST_MS = 30000; // refresh list of carnivals every 30s
+  const POLL_RESULTS_MS = 5000; // refresh active carnival's results every 5s
+  let allCarnivals = [];
+  let selectedCode = null;
+  let currentCarnival = null; // {code, meta, results}
+  let listTimer = null, resultsTimer = null;
+  let online = false;
+
+  function fmtMs(ms){
+    if(ms==null) return "\u2014";
+    const n = Number(ms);
+    if(!isFinite(n) || n<=0) return "\u2014";
+    const totalSec = n / 1000;
+    const m = Math.floor(totalSec/60);
+    const s = (totalSec - m*60);
+    return m>0 ? m + ":" + s.toFixed(2).padStart(5,"0") : s.toFixed(2) + "s";
+  }
+  function fmt(v){ return v==null||v===""?"\u2014":String(v).replace(/</g,"&lt;"); }
+
+  function setLive(on, txt){
+    online = on;
+    const badge = document.getElementById("live-badge");
+    badge.classList.toggle("off", !on);
+    document.getElementById("live-text").textContent = txt || (on ? "Live" : "Connecting\u2026");
+  }
+
+  function showErr(msg){
+    const e = document.getElementById("err");
+    if(!msg){ e.style.display="none"; return; }
+    e.style.display = "block"; e.textContent = msg;
+  }
+
+  function carnivalToGroups(carn){
+    const groups = [];
+    Object.entries(carn.results || {}).forEach(([raceKey, r]) => {
+      if(!r || !Array.isArray(r.results)) return;
+      const places = r.results.filter(Boolean).map(p => ({
+        place: p.place || null,
+        name: p.name || "",
+        house: p.house || "",
+        school: p.school || "",
+        ms: p.timeMs != null ? p.timeMs : (p.elapsedMs != null ? p.elapsedMs : null)
+      })).sort((a,b)=>(a.place||999)-(b.place||999));
+      if(places.length === 0) return;
+      groups.push({event:r.event||raceKey, age:r.age||"", gender:r.gender||"", publishedAt:r.publishedAt||0, places});
+    });
+    groups.sort((a,b)=>(b.publishedAt||0)-(a.publishedAt||0));
+    return groups;
+  }
+
+  function applyFilters(groups){
+    const q = (document.getElementById("q").value || "").toLowerCase();
+    const houseF = document.getElementById("houseFilter").value;
+    const ageF = document.getElementById("ageFilter").value;
+    return groups.map(g => {
+      if(ageF && g.age !== ageF) return null;
+      const places = g.places.filter(p => {
+        if(houseF && (p.house||p.school) !== houseF) return false;
+        if(!q) return true;
+        const hay = ((p.name||"") + " " + (p.house||"") + " " + (p.school||"")).toLowerCase();
+        return hay.includes(q);
+      });
+      if(places.length === 0) return null;
+      return Object.assign({}, g, {places});
+    }).filter(Boolean);
+  }
+
+  function render(){
+    if(!currentCarnival){
+      document.getElementById("events").innerHTML = '<div class="empty"><strong>No active ${cfg.subtitle.replace(/'/g, "\\'")} carnival yet.</strong><p>Once your carnival app starts publishing results they will appear here within seconds.</p><div class="debug">Looking for: school~/' + SCHOOL_RE.source + '/i  sport~/' + SPORT_RE.source + '/i</div></div>';
+      document.getElementById("meta-count").textContent = "\u2014";
+      document.getElementById("stats").innerHTML = "";
+      return;
+    }
+    const allGroups = carnivalToGroups(currentCarnival);
+    const groups = applyFilters(allGroups);
+    const el = document.getElementById("events");
+    if(groups.length === 0){
+      el.innerHTML = '<div class="empty"><strong>' + (allGroups.length===0 ? "Carnival connected \u2014 waiting for first published race." : "No results match your filter.") + '</strong>' + (allGroups.length===0 ? '<p>Showing: ' + fmt(currentCarnival.meta.name) + '</p>' : '') + '</div>';
+    } else {
+      el.innerHTML = groups.map(g => {
+        const tag = (g.age||g.gender) ? ('<span class="tag">'+[g.age,g.gender].filter(Boolean).join(" \u00B7 ")+'</span>') : '';
+        const hasHouse = g.places.some(p=>p.house);
+        const hasSchool = g.places.some(p=>p.school);
+        const hasMs = g.places.some(p=>p.ms);
+        const headers = '<tr><th>#</th><th>Name</th>' + (hasHouse?'<th>House</th>':'') + (hasSchool?'<th>School</th>':'') + (hasMs?'<th style="text-align:right">Time</th>':'') + '</tr>';
+        const rows = g.places.map(p => '<tr>' +
+          '<td class="place">'+fmt(p.place||"")+'</td>' +
+          '<td>'+fmt(p.name)+'</td>' +
+          (hasHouse?'<td class="house">'+fmt(p.house)+'</td>':'') +
+          (hasSchool?'<td class="school">'+fmt(p.school)+'</td>':'') +
+          (hasMs?'<td class="num">'+fmtMs(p.ms)+'</td>':'') +
+        '</tr>').join("");
+        return '<div class="event"><h3>'+fmt(g.event)+tag+'</h3><table><thead>'+headers+'</thead><tbody>'+rows+'</tbody></table></div>';
+      }).join("");
+    }
+    const placeCount = groups.reduce((s,g)=>s+g.places.length, 0);
+    document.getElementById("meta-count").textContent = placeCount + " " + (placeCount===1?"result":"results") + (groups.length?(" across " + groups.length + " event"+(groups.length===1?"":"s")):"");
+    // filters + stats
+    const groupings = {};
+    allGroups.forEach(g => g.places.forEach(p => { const k = p.house || p.school; if(k) groupings[k] = (groupings[k]||0)+1; }));
+    const ages = new Set();
+    allGroups.forEach(g => { if(g.age) ages.add(g.age); });
+    const hf = document.getElementById("houseFilter"), af = document.getElementById("ageFilter");
+    const prevH = hf.value, prevA = af.value;
+    hf.innerHTML = '<option value="">All houses / schools</option>' + Object.keys(groupings).sort().map(h => '<option value="'+h+'">'+h+'</option>').join("");
+    af.innerHTML = '<option value="">All age groups</option>' + [...ages].sort().map(a => '<option value="'+a+'">'+a+'</option>').join("");
+    hf.value = prevH; af.value = prevA;
+    const stats = [
+      {k:"Results", v:allGroups.reduce((s,g)=>s+g.places.length, 0)},
+      {k:"Events", v:allGroups.length},
+      {k:"Houses / schools", v:Object.keys(groupings).length || "\u2014"},
+      {k:"Carnival", v: fmt(currentCarnival.meta.name).slice(0,28)}
+    ];
+    document.getElementById("stats").innerHTML = stats.map(s => '<div class="stat"><div class="v">'+s.v+'</div><div class="k">'+s.k+'</div></div>').join("");
+  }
+
+  function refreshPicker(){
+    const picker = document.getElementById("picker");
+    const sel = document.getElementById("carnivalSel");
+    if(allCarnivals.length === 0){ picker.style.display = "none"; return; }
+    picker.style.display = allCarnivals.length > 1 ? "flex" : "none";
+    const prev = sel.value;
+    sel.innerHTML = allCarnivals.map(c => '<option value="'+c.code+'">'+fmt(c.name)+' \u00B7 '+fmt(c.school)+'</option>').join("");
+    sel.value = prev && allCarnivals.find(c=>c.code===prev) ? prev : (allCarnivals[0] ? allCarnivals[0].code : "");
+    if(sel.value !== selectedCode){
+      selectedCode = sel.value;
+      loadResults();
+    }
+  }
+
+  async function loadList(){
+    try {
+      const r = await fetch(API_BASE + "/api/list", {cache: "no-store"});
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const list = await r.json();
+      allCarnivals = list.filter(c => {
+        if(!c || !c.school) return false;
+        // demo carnivals don't have isDemo flag in /api/list; exclude by school name
+        if(EXCLUDE_DEMO && /demo carnival/i.test(c.school)) return false;
+        if(!SCHOOL_RE.test(c.school)) return false;
+        if(!SPORT_RE.test(c.sport||"")) return false;
+        return true;
+      });
+      // most-recent first
+      allCarnivals.sort((a,b)=>(b.published_at||0)-(a.published_at||0));
+      refreshPicker();
+      setLive(true);
+      showErr("");
+    } catch (e) {
+      setLive(false, "Connection error");
+      showErr("Could not load carnival list: " + e.message);
+    }
+  }
+
+  async function loadResults(){
+    if(!selectedCode){ currentCarnival = null; render(); return; }
+    try {
+      const r = await fetch(API_BASE + "/api/results?carnival=" + encodeURIComponent(selectedCode), {cache: "no-store"});
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const data = await r.json();
+      if(!data || !data.ok) throw new Error("API returned not ok");
+      currentCarnival = {code: data.code, meta: data.meta||{}, results: data.results||{}};
+      setLive(true);
+      showErr("");
+      document.getElementById("meta-update").textContent = "updated " + new Date().toLocaleTimeString("en-AU", {hour12:false});
+      render();
+    } catch (e) {
+      setLive(false, "Connection error");
+      showErr("Could not load results for " + selectedCode + ": " + e.message);
+    }
+  }
+
+  async function tick(){
+    await loadList();
+    await loadResults();
+  }
+  tick();
+  listTimer = setInterval(loadList, POLL_LIST_MS);
+  resultsTimer = setInterval(loadResults, POLL_RESULTS_MS);
+  document.addEventListener("visibilitychange", () => {
+    if(document.hidden){
+      clearInterval(listTimer); clearInterval(resultsTimer);
+    } else {
+      loadList(); loadResults();
+      listTimer = setInterval(loadList, POLL_LIST_MS);
+      resultsTimer = setInterval(loadResults, POLL_RESULTS_MS);
+    }
+  });
+
+  ["q","houseFilter","ageFilter"].forEach(id => document.getElementById(id).addEventListener("input", render));
+  document.getElementById("carnivalSel").addEventListener("change", e => { selectedCode = e.target.value; loadResults(); });
+})();
+</script>
+</body></html>`;
+}
+
+function _ctEventIndex() {
+  const rows = Object.entries(_CT_EVENT_REGISTRY).map(([slug, cfg]) =>
+    `<a class="card" href="/${slug}"><div class="ttl">${cfg.title.replace(' — Live Results','')}</div><div class="sub">${cfg.subtitle}</div><div class="cta">View live results \u2192</div></a>`
+  ).join("");
+  return `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Live Carnival Events \u2014 Carnival Timing</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#fff;margin:0;padding:0;min-height:100vh}.nav{background:linear-gradient(90deg,#0d1b3e,#1a3a6e);padding:10px 16px;font-size:13px;font-weight:600}.nav a{color:#fcd34d;text-decoration:none}.container{max-width:840px;margin:0 auto;padding:36px 18px}h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}.lede{color:#94a3b8;margin-bottom:24px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}.card{display:block;background:#1e293b;border:1px solid #334155;padding:18px;border-radius:10px;text-decoration:none;color:#fff;transition:all .15s}.card:hover{border-color:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,78,216,.2)}.ttl{font-weight:700;font-size:1.05rem;margin-bottom:4px}.sub{color:#94a3b8;font-size:.85rem;margin-bottom:10px}.cta{color:#fcd34d;font-size:.85rem;font-weight:600}.foot{margin-top:32px;color:#64748b;font-size:.85rem;padding-top:18px;border-top:1px solid #334155}.foot a{color:#60a5fa}</style></head><body>
+<div class="nav"><a href="https://sportportal.com.au">SportPortal</a> \u00B7 Live Timing</div>
+<div class="container"><h1>Live Carnival Events</h1><div class="lede">Real-time results from active school sport carnivals. Data is read live from the D1-backed carnival timing engine.</div><div class="grid">${rows}</div><div class="foot">Don\u2019t see your event? Carnivals appear here once they\u2019re published. Marketing site: <a href="https://carnivaltiming.com/marketing">about Carnival Timing</a> \u00B7 Sport platform: <a href="https://sportportal.com.au">sportportal.com.au</a></div></div></body></html>`;
+}
+
+
+
+
+
 var worker_default = {
   async fetch(req, env, ctx) {
-    const _path = new URL(req.url).pathname;
+    const _u = new URL(req.url);
+    const _path = _u.pathname.replace(/\/$/, "") || "/";
     if (_path === "/privacy") return new Response(PRIVACY_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
     if (_path === "/terms") return new Response(TERMS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
-    return new Response(HTML, { headers: {
+    // /events — live event index (which carnivals are running)
+    if (_path === "/events") return new Response(_ctEventIndex(), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-CT-Version": "v8.9.0+events" } });
+    // /<slug> — per-event live results page (path 1 segment, matches registry)
+    if (_path.startsWith("/") && _path.indexOf("/", 1) === -1) {
+      const slug = _path.slice(1);
+      const page = _ctEventPage(slug);
+      if (page) return new Response(page, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-CT-Version": "v8.9.0+events", "X-CT-Event": slug } });
+    }
+    // /marketing — old marketing landing (was apex)
+    if (_path === "/marketing") return new Response(HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-CT-Version": "v8.9.0", "X-CT-Source": "marketing" } });
+    // Known paths with no content on this domain — redirect to canonical SSP
+    if (_path === "/contact") return Response.redirect("https://schoolsportportal.com.au/contact", 301);
+    if (_path === "/forgot-password") return Response.redirect("https://schoolsportportal.com.au/forgot-password", 301);
+    if (_path === "/signup" || _path === "/sign-up" || _path === "/register") return Response.redirect("https://schoolsportportal.com.au/contact", 301);
+    if (_path === "/pricing") return Response.redirect("https://schoolsportportal.com.au/pricing", 301);
+    if (_path === "/help") return Response.redirect("https://schoolsportportal.com.au/help", 301);
+    // Unknown single-segment paths — 404
+    if (_path !== "/" && _path.indexOf("/", 1) === -1) {
+      const n404 = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Not found \u2014 Carnival Timing</title><style>body{font-family:sans-serif;text-align:center;padding:60px 20px;color:#334155}h1{color:#0d1b3e}a{color:#1d4ed8}</style></head><body><h1>404</h1><p>That page doesn't exist on Carnival Timing.</p><p><a href="/">Back to live events</a> &nbsp;&middot;&nbsp; <a href="https://schoolsportportal.com.au">School Sport Portal</a></p></body></html>`;
+      return new Response(n404, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    // Apex — show event index (was marketing). Old marketing still at /marketing.
+    return new Response(_ctEventIndex(), { headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store",
-      "X-CT-Version": "v8.9.0",
+      "X-CT-Version": "v8.9.0+events",
       "X-Frame-Options": "SAMEORIGIN",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -5137,5 +5505,4 @@ export {
   worker_default as default
 };
 //# sourceMappingURL=ct-worker.js.map
-
---1f919001baa944378afd4992d36804f660839712fb950762b7656a812bf9--
+--f3e439796e27dabec078b36623575f618f5e1c9dd2cf49a678bac7432e11--
