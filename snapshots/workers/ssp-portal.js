@@ -1,5 +1,5 @@
---9ffac17b83c4d61bb3e93cd4c4ddd638c9505489f113de30e310b2e861d3
-Content-Disposition: form-data; name="ssp-portal-clean.js"
+--97a899dd900fb5d8fe304a3ecb65bb50cbdccf613f848c99879ff9b53870
+Content-Disposition: form-data; name="ssp-portal.js"
 
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
@@ -69,7 +69,7 @@ async function sendSetupEmail(resendKey, school, setupToken) {
 <html><head><meta charset="UTF-8"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
 <div style="text-align:center;padding:24px 0 32px">
-  <div style="font-size:2rem">\u{1F3EB}</div>
+  <div style="font-size:2rem">🏫</div>
   <h1 style="font-size:1.4rem;color:#1e3a8a;margin:8px 0 4px">School Sport Portal</h1>
 </div>
 <p>Hi ${school.name},</p>
@@ -166,20 +166,22 @@ tr:hover td{background:#f8fafc}
 .login-logo h1{font-size:1.3rem;color:#0d1b3e;margin-top:8px}
 .login-logo .emoji{font-size:2.5rem}
 </style>`;
-function loginPage(error = "") {
+function loginPage(error = "", asId = "") {
+  const ctxLabel = asId ? `<p style="color:#1d4ed8;font-size:.8rem;margin-top:6px;font-weight:600">Signing in to: <code style="background:#dbeafe;padding:2px 6px;border-radius:4px">${asId}</code></p>` : "";
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Login \u2014 School Sport Portal</title>${STYLE}</head>
 <body>
 <div class="login-wrap">
   <div class="login-box">
-    <div class="login-logo"><div class="emoji">\u{1F3EB}</div><h1>School Sport Portal</h1><p style="color:#64748b;font-size:.85rem;margin-top:4px">School admin login</p></div>
+    <div class="login-logo"><div class="emoji">🏫</div><h1>School Sport Portal</h1><p style="color:#64748b;font-size:.85rem;margin-top:4px">Admin login</p>${ctxLabel}</div>
     ${error ? `<div class="alert alert-error">${error}</div>` : ""}
     <form method="POST" action="/login">
-      <div class="form-group"><label>School email address</label><input type="email" name="email" required autofocus placeholder="admin@yourschool.edu.au"></div>
+      <input type="hidden" name="as" value="${asId.replace(/[^a-z0-9-_]/g,'')}">
+      <div class="form-group"><label>Email address</label><input type="email" name="email" required autofocus placeholder="admin@yourschool.edu.au"></div>
       <div class="form-group"><label>Password</label><input type="password" name="password" required placeholder="Your password"></div>
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px">Log In \u2192</button>
     </form>
-    <p style="text-align:center;margin-top:20px;font-size:.8rem;color:#94a3b8">Forgot your password? Email <a href="mailto:info@schoolsportportal.com.au" style="color:#1d4ed8">info@schoolsportportal.com.au</a></p>
+    <p style="text-align:center;margin-top:20px;font-size:.8rem;color:#94a3b8">Forgot your password? <a href="/forgot-password" style="color:#1d4ed8;font-weight:600">Reset it here</a> &nbsp;·&nbsp; <a href="mailto:info@schoolsportportal.com.au" style="color:#94a3b8">Email us</a></p>
   </div>
 </div>
 </body></html>`;
@@ -192,7 +194,7 @@ function setupPage(token, error = "") {
 <body>
 <div class="login-wrap">
   <div class="login-box">
-    <div class="login-logo"><div class="emoji">\u{1F511}</div><h1>Set your password</h1><p style="color:#64748b;font-size:.85rem;margin-top:4px">School Sport Portal account setup</p></div>
+    <div class="login-logo"><div class="emoji">🔑</div><h1>Set your password</h1><p style="color:#64748b;font-size:.85rem;margin-top:4px">School Sport Portal account setup</p></div>
     ${error ? `<div class="alert alert-error">${error}</div>` : ""}
     <div class="alert alert-info" style="margin-bottom:20px">Choose a strong password \u2014 you'll use this every time you log in to manage your school's student data.</div>
     <form method="POST" action="/setup">
@@ -215,7 +217,7 @@ function topbar(school, activePage = "") {
     ["/export", "Export"]
   ].map(([path, label]) => `<a href="/admin${path}" class="${activePage === label ? "active" : ""}">${label}</a>`).join("");
   return `<div class="topbar">
-    <h1>\u{1F3EB} ${school.name}</h1>
+    <h1>🏫 ${school.name}</h1>
     <nav>${nav}<a href="/logout" style="color:#ef4444;margin-left:24px">Log out</a></nav>
   </div>`;
 }
@@ -246,10 +248,10 @@ ${topbar(school, "Dashboard")}
   <div class="card">
     <h2>Quick Actions</h2>
     <div style="display:flex;flex-wrap:wrap;gap:10px">
-      <a href="/admin/students" class="btn btn-primary">\u{1F4CB} Manage Students</a>
+      <a href="/admin/students" class="btn btn-primary">📋 Manage Students</a>
       <a href="/admin/students/upload" class="btn btn-success">\u2B06\uFE0F Upload CSV</a>
-      <a href="/admin/export" class="btn btn-secondary">\u{1F4E5} Export District Entries</a>
-      <a href="/admin/carnivals" class="btn btn-secondary">\u{1F3C3} Carnivals</a>
+      <a href="/admin/export" class="btn btn-secondary">📥 Export District Entries</a>
+      <a href="/admin/carnivals" class="btn btn-secondary">🏃 Carnivals</a>
     </div>
   </div>
 
@@ -290,7 +292,7 @@ ${topbar(school, "Students")}
   </div>
   ${students.length === 0 ? `
     <div class="card" style="text-align:center;padding:48px">
-      <div style="font-size:3rem;margin-bottom:12px">\u{1F4CB}</div>
+      <div style="font-size:3rem;margin-bottom:12px">📋</div>
       <h3 style="margin-bottom:8px;color:#0d1b3e">No students yet</h3>
       <p style="color:#64748b;margin-bottom:20px">Upload your student roster as a CSV to get started.</p>
       <a href="/admin/students/upload" class="btn btn-primary">Upload Student CSV</a>
@@ -409,7 +411,7 @@ ${topbar(school, "Export")}
     <p style="color:#64748b;margin-bottom:16px">All students marked as district qualifiers across all carnivals.</p>
     <div style="display:flex;gap:10px;margin-bottom:20px">
       <a href="/admin/export/csv" class="btn btn-primary">\u2B07\uFE0F Download CSV</a>
-      <a href="/admin/export/carnivaltiming" class="btn btn-secondary">\u{1F4E4} Export to Carnival Timing</a>
+      <a href="/admin/export/carnivaltiming" class="btn btn-secondary">📤 Export to Carnival Timing</a>
     </div>
     ${qualifiers.length === 0 ? `
       <div style="text-align:center;padding:32px;color:#64748b">
@@ -429,6 +431,10 @@ __name(exportPage, "exportPage");
 __name2(exportPage, "exportPage");
 async function _adminFetch(request, env) {
   const url = new URL(request.url);
+  // www -> apex 301
+  if (url.hostname === "www.schoolsportportal.com.au") {
+    return Response.redirect("https://schoolsportportal.com.au" + url.pathname + url.search, 301);
+  }
   const path = url.pathname;
   const method = request.method;
   const respond = /* @__PURE__ */ __name2((body, status = 200, extra = {}) => new Response(body, {
@@ -453,32 +459,39 @@ async function _adminFetch(request, env) {
     }
   }), "clearCookieRedirect");
   if (path === "/login") {
-    if (method === "GET") return respond(loginPage());
+    const asId = (url.searchParams.get("as") || "").toLowerCase().replace(/[^a-z0-9-_]/g, "");
+    if (method === "GET") return respond(loginPage("", asId));
     if (method === "POST") {
       const form = await request.formData();
       const email = (form.get("email") || "").toLowerCase().trim();
       const password = form.get("password") || "";
-      if (!email || !password) return respond(loginPage("Please enter your email and password."));
+      const asPost = (form.get("as") || "").toString().toLowerCase().replace(/[^a-z0-9-_]/g, "");
+      if (!email || !password) return respond(loginPage("Please enter your email and password.", asPost));
       const rateLimitOk = await checkLoginRateLimit(env, email);
-      if (!rateLimitOk) return respond(loginPage("Too many login attempts. Please try again in an hour."));
-      const school = await env.SSP_DB.prepare("SELECT * FROM schools WHERE email = ? AND active = 1").bind(email).first();
-      if (!school || !school.password_hash) return respond(loginPage("Invalid email or password."));
+      if (!rateLimitOk) return respond(loginPage("Too many login attempts. Please try again in an hour.", asPost));
+      let school;
+      if (asPost) {
+        school = await env.DB.prepare("SELECT * FROM schools WHERE id = ? AND email = ? AND active = 1").bind(asPost, email).first();
+      } else {
+        school = await env.DB.prepare("SELECT * FROM schools WHERE email = ? AND active = 1").bind(email).first();
+      }
+      if (!school || !school.password_hash) return respond(loginPage("Invalid email or password.", asPost));
       const ok = await verifyPassword(password, school.password_hash);
-      if (!ok) return respond(loginPage("Invalid email or password."));
-      const token = await createSession(env.SSP_DB, school.id);
+      if (!ok) return respond(loginPage("Invalid email or password.", asPost));
+      const token = await createSession(env.DB, school.id);
       return setCookieRedirect("/admin", token);
     }
   }
   if (path === "/logout") {
-    const sess = await getSession(env.SSP_DB, request);
-    if (sess) await env.SSP_DB.prepare("DELETE FROM sessions WHERE token = ?").bind(sess.token).run();
+    const sess = await getSession(env.DB, request);
+    if (sess) await env.DB.prepare("DELETE FROM sessions WHERE token = ?").bind(sess.token).run();
     return clearCookieRedirect("/login");
   }
   if (path === "/setup") {
     const token = url.searchParams.get("token") || "";
     if (method === "GET") {
       if (!token) return redirect("/login");
-      const school = await env.SSP_DB.prepare("SELECT id FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(token).first();
+      const school = await env.DB.prepare("SELECT id FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(token).first();
       if (!school) return respond(setupPage("", "This setup link has expired or is invalid. Email info@schoolsportportal.com.au for a new one."));
       return respond(setupPage(token));
     }
@@ -489,11 +502,11 @@ async function _adminFetch(request, env) {
       const pw2 = form.get("password2") || "";
       if (pw.length < 8) return respond(setupPage(tok, "Password must be at least 8 characters."));
       if (pw !== pw2) return respond(setupPage(tok, "Passwords do not match."));
-      const school = await env.SSP_DB.prepare("SELECT * FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(tok).first();
+      const school = await env.DB.prepare("SELECT * FROM schools WHERE setup_token = ? AND setup_token_expires > datetime('now')").bind(tok).first();
       if (!school) return respond(setupPage(tok, "This setup link has expired. Email info@schoolsportportal.com.au for a new one."));
       const hash = await hashPassword(pw);
-      await env.SSP_DB.prepare("UPDATE schools SET password_hash = ?, setup_token = NULL, setup_token_expires = NULL, updated_at = datetime('now') WHERE id = ?").bind(hash, school.id).run();
-      const sessionToken = await createSession(env.SSP_DB, school.id);
+      await env.DB.prepare("UPDATE schools SET password_hash = ?, setup_token = NULL, setup_token_expires = NULL, updated_at = datetime('now') WHERE id = ?").bind(hash, school.id).run();
+      const sessionToken = await createSession(env.DB, school.id);
       return setCookieRedirect("/admin", sessionToken);
     }
   }
@@ -510,7 +523,7 @@ async function _adminFetch(request, env) {
     if (!sid || !sname || !semail) return new Response(JSON.stringify({ ok: false, error: "Missing fields" }), { status: 400, headers: { "Content-Type": "application/json" } });
     const setupToken2 = crypto.randomUUID();
     const setupExpires2 = new Date(Date.now() + 48 * 60 * 60 * 1e3).toISOString();
-    await env.SSP_DB.prepare("INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, active) VALUES (?, ?, ?, ?, ?, 1)").bind(sid, sname, semail, setupToken2, setupExpires2).run();
+    await env.DB.prepare("INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, active) VALUES (?, ?, ?, ?, ?, 1)").bind(sid, sname, semail, setupToken2, setupExpires2).run();
     if (env.RESEND_API_KEY) {
       const sc = { id: sid, name: sname, email: semail };
       await sendSetupEmail(env.RESEND_API_KEY, sc, setupToken2);
@@ -522,11 +535,22 @@ async function _adminFetch(request, env) {
     const pin = request.headers.get("X-Pin");
     if (pin !== env.AGENT_PIN) return new Response("{}", { status: 403 });
     const schoolId2 = path.split("/").pop();
-    const schoolData2 = await env.SSP_DB.prepare("SELECT id, name, suburb, state, student_count FROM schools WHERE id = ? AND active = 1").bind(schoolId2).first();
+    const schoolData2 = await env.DB.prepare("SELECT id, name, suburb, state, student_count FROM schools WHERE id = ? AND active = 1").bind(schoolId2).first();
     if (!schoolData2) return new Response("{}", { status: 404, headers: { "Content-Type": "application/json" } });
-    const { results: stu2 } = await env.SSP_DB.prepare("SELECT first_name, last_name_initial, year_level, house, gender FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(schoolId2).all();
+    const { results: stu2 } = await env.DB.prepare("SELECT first_name, last_name_initial, year_level, house, gender FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(schoolId2).all();
     return new Response(JSON.stringify({ school: schoolData2, students: stu2 }), { headers: { "Content-Type": "application/json" } });
   }
+  // POST /admin/school/settings — update school info (suburb, principal, phone, state)
+  if (path === "/admin/school/settings" && method === "POST") {
+    const sess = await getSession(env.DB, request);
+    if (!sess) return new Response(JSON.stringify({ok:false,error:"Not authenticated"}),{status:401,headers:{...cors,"Content-Type":"application/json"}});
+    let body; try { body = await request.json(); } catch { return new Response(JSON.stringify({ok:false,error:"Bad JSON"}),{status:400,headers:{...cors,"Content-Type":"application/json"}}); }
+    const clean = (s,max) => String(s||"").trim().slice(0,max);
+    await env.DB.prepare("UPDATE schools SET suburb=?,state=?,principal=?,phone=?,updated_at=datetime('now') WHERE id=?")
+      .bind(clean(body.suburb,100), clean(body.state,20), clean(body.principal,100), clean(body.phone,30), sess.school_id).run();
+    return new Response(JSON.stringify({ok:true}),{headers:{...cors,"Content-Type":"application/json"}});
+  }
+
   if (path === "/stripe-webhook" && method === "POST") {
     const rawBody = await request.text();
     const sig = request.headers.get("Stripe-Signature") || "";
@@ -549,7 +573,7 @@ async function _adminFetch(request, env) {
         const tok = crypto.randomUUID();
         const exp = new Date(Date.now() + 48 * 60 * 60 * 1e3).toISOString();
         try {
-          await env.SSP_DB.prepare(
+          await env.DB.prepare(
             "INSERT OR REPLACE INTO schools (id, name, email, setup_token, setup_token_expires, student_count, subscription_type, active, created_at) VALUES (?, ?, ?, ?, ?, ?, 'paid', 1, datetime('now'))"
           ).bind(sId, sName || sId, sEmail, tok, exp, sCount).run();
           if (env.RESEND_API_KEY) {
@@ -570,6 +594,75 @@ async function _adminFetch(request, env) {
         }
       }
     }
+    // ─── invoice.paid — subscription renewal ────────────────────
+    if (stripeEvent.type === "invoice.paid") {
+      const inv = stripeEvent.data.object;
+      const custId = inv.customer;
+      const subId = inv.subscription;
+      // Re-activate school record on renewal
+      if (custId) {
+        try {
+          await env.DB.prepare(
+            "UPDATE schools SET active=1, stripe_customer_id=?, stripe_subscription_id=? WHERE stripe_customer_id=?"
+          ).bind(custId, subId || null, custId).run();
+          // Also try matching by subscription ID
+          if (subId) {
+            await env.DB.prepare(
+              "UPDATE schools SET active=1, stripe_subscription_id=? WHERE stripe_subscription_id=?"
+            ).bind(subId, subId).run();
+          }
+          // Send renewal confirmation email if we have an email address
+          const school = await env.DB.prepare(
+            "SELECT name, email FROM schools WHERE stripe_customer_id=? LIMIT 1"
+          ).bind(custId).first();
+          if (school && school.email && env.RESEND_API_KEY) {
+            const period = inv.lines && inv.lines.data && inv.lines.data[0]
+              ? new Date(inv.lines.data[0].period.end * 1000).toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'})
+              : 'next year';
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Paddy at School Sport Portal <hello@schoolsportportal.com.au>",
+                reply_to: "info@schoolsportportal.com.au",
+                to: [school.email],
+                subject: "School Sport Portal renewed — thanks!",
+                html: `<p>Hi ${school.name || 'there'},</p><p>Your School Sport Portal subscription has renewed. Your portal is active until ${period}.</p><p>Nothing changes on your end — log in and keep going at <a href="https://schoolsportportal.com.au/login">schoolsportportal.com.au/login</a>.</p><p>Thanks for being with us.<br>— Paddy, School Sport Portal</p><p style="font-size:.8rem;color:#94a3b8">To cancel, email info@schoolsportportal.com.au or manage billing at <a href="https://schoolsportportal.com.au/billing">schoolsportportal.com.au/billing</a>.</p>`
+              })
+            });
+          }
+        } catch (renewErr) {
+          console.error("renewal error:", renewErr);
+        }
+      }
+    }
+    // ─── invoice.payment_failed — subscription payment failure ──────
+    if (stripeEvent.type === "invoice.payment_failed") {
+      const inv = stripeEvent.data.object;
+      const custId = inv.customer;
+      if (custId) {
+        try {
+          const school = await env.DB.prepare(
+            "SELECT name, email FROM schools WHERE stripe_customer_id=? LIMIT 1"
+          ).bind(custId).first();
+          if (school && school.email && env.RESEND_API_KEY) {
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Paddy at School Sport Portal <hello@schoolsportportal.com.au>",
+                reply_to: "info@schoolsportportal.com.au",
+                to: [school.email],
+                subject: "Action needed: School Sport Portal payment failed",
+                html: `<p>Hi ${school.name || 'there'},</p><p>We couldn't process your School Sport Portal renewal payment. Your portal access will continue for now, but please update your payment details to avoid interruption.</p><p><a href="https://schoolsportportal.com.au/billing" style="background:#dc2626;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;margin:16px 0">Update Payment Details →</a></p><p>Or email <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> and we can sort it out.<br>— Paddy</p>`
+              })
+            });
+          }
+        } catch (failErr) {
+          console.error("payment_failed handler error:", failErr);
+        }
+      }
+    }
     return new Response("OK");
   }
   if (path === "/thanks") {
@@ -577,20 +670,20 @@ async function _adminFetch(request, env) {
     return new Response(thanksHtml, { headers: { "Content-Type": "text/html; charset=utf-8" } });
   }
   if (path.startsWith("/admin")) {
-    const sess = await getSession(env.SSP_DB, request);
+    const sess = await getSession(env.DB, request);
     if (!sess) return redirect("/login");
-    const school = await getSchool(env.SSP_DB, sess.schoolId);
+    const school = await getSchool(env.DB, sess.schoolId);
     if (!school) return redirect("/login");
     if (path === "/admin" || path === "/admin/") {
       const [stuRow, carRow, qualRow] = await Promise.all([
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM students WHERE school_id = ? AND active = 1").bind(school.id).first(),
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM carnivals WHERE school_id = ?").bind(school.id).first(),
-        env.SSP_DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(school.id).first()
+        env.DB.prepare("SELECT COUNT(*) as n FROM students WHERE school_id = ? AND active = 1").bind(school.id).first(),
+        env.DB.prepare("SELECT COUNT(*) as n FROM carnivals WHERE school_id = ?").bind(school.id).first(),
+        env.DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(school.id).first()
       ]);
       return respond(dashboardPage(school, { students: stuRow?.n || 0, carnivals: carRow?.n || 0, qualifiers: qualRow?.n || 0 }));
     }
     if (path === "/admin/students" && method === "GET") {
-      const { results: students } = await env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
+      const { results: students } = await env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
       return respond(studentsPage(school, students, url.searchParams.get("msg") || ""));
     }
     if (path === "/admin/students/upload" && method === "GET") {
@@ -606,24 +699,24 @@ async function _adminFetch(request, env) {
         if (rows.length === 0) return respond(uploadPage(school, "CSV appears empty or invalid. Check the format."));
         const students = rows.map((r) => normaliseStudent(r, school.id)).filter(Boolean);
         if (students.length === 0) return respond(uploadPage(school, "Could not find a first_name column. Check the CSV headers."));
-        await env.SSP_DB.prepare("UPDATE students SET active = 0 WHERE school_id = ?").bind(school.id).run();
-        const stmt = env.SSP_DB.prepare("INSERT INTO students (id, school_id, first_name, last_name_initial, year_level, house, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        await env.DB.prepare("UPDATE students SET active = 0 WHERE school_id = ?").bind(school.id).run();
+        const stmt = env.DB.prepare("INSERT INTO students (id, school_id, first_name, last_name_initial, year_level, house, dob, gender) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         const batch = students.map((s) => stmt.bind(s.id, s.school_id, s.first_name, s.last_name_initial, s.year_level, s.house, s.dob, s.gender));
-        await env.SSP_DB.batch(batch);
-        await env.SSP_DB.prepare("UPDATE schools SET student_count = ?, updated_at = datetime('now') WHERE id = ?").bind(students.length, school.id).run();
+        await env.DB.batch(batch);
+        await env.DB.prepare("UPDATE schools SET student_count = ?, updated_at = datetime('now') WHERE id = ?").bind(students.length, school.id).run();
         return redirect(`/admin/students?msg=\u2705 Uploaded ${students.length} students successfully`);
       } catch (e) {
         return respond(uploadPage(school, `Upload failed: ${e.message}`));
       }
     }
     if (path === "/admin/students/download") {
-      const { results: students } = await env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
+      const { results: students } = await env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(school.id).all();
       const header = "first_name,last_name_initial,year_level,house,gender,dob\n";
       const csv = header + students.map((s) => [s.first_name, s.last_name_initial, s.year_level, s.house, s.gender, s.dob].join(",")).join("\n");
       return new Response(csv, { headers: { "Content-Type": "text/csv", "Content-Disposition": `attachment; filename="${school.id}-students.csv"`, ...ADMIN_SEC_HEADERS } });
     }
     if (path === "/admin/carnivals" && method === "GET") {
-      const { results: carnivals } = await env.SSP_DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(school.id).all();
+      const { results: carnivals } = await env.DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(school.id).all();
       return respond(carnivalsPage(school, carnivals, url.searchParams.get("msg") || ""));
     }
     if (path === "/admin/carnivals" && method === "POST") {
@@ -633,11 +726,11 @@ async function _adminFetch(request, env) {
       const date = form.get("date") || "";
       if (!name) return redirect("/admin/carnivals");
       const id = crypto.randomUUID();
-      await env.SSP_DB.prepare("INSERT INTO carnivals (id, school_id, name, type, date) VALUES (?, ?, ?, ?, ?)").bind(id, school.id, name, type, date).run();
+      await env.DB.prepare("INSERT INTO carnivals (id, school_id, name, type, date) VALUES (?, ?, ?, ?, ?)").bind(id, school.id, name, type, date).run();
       return redirect(`/admin/carnivals?msg=\u2705 Carnival "${name}" created`);
     }
     if (path === "/admin/export" && method === "GET") {
-      const { results: qualifiers } = await env.SSP_DB.prepare(`
+      const { results: qualifiers } = await env.DB.prepare(`
           SELECT s.first_name, s.last_name_initial, s.year_level, s.gender, s.dob,
                  r.event, r.place, c.name as carnival_name
           FROM results r
@@ -649,7 +742,7 @@ async function _adminFetch(request, env) {
       return respond(exportPage(school, qualifiers));
     }
     if (path === "/admin/export/csv") {
-      const { results: qualifiers } = await env.SSP_DB.prepare(`
+      const { results: qualifiers } = await env.DB.prepare(`
           SELECT s.first_name, s.last_name_initial, s.year_level, s.gender, s.dob,
                  r.event, r.place, c.name as carnival_name, c.date as carnival_date
           FROM results r
@@ -1476,7 +1569,7 @@ var INDEX_HTML = `<!DOCTYPE html>
 </nav>
 
 <section class="hero">
-  <div class="hero-badge">\u{1F3C5} Built for Australian PE teachers</div>
+  <div class="hero-badge">🏅 Built for Australian PE teachers</div>
   <h1>School sport,<br>all in one place</h1>
   <p>Live carnival timing, house points, event programs, results and district qualifiers \u2014 for the price of a can of Milo per student.</p>
   <div class="trust-row">
@@ -1620,7 +1713,7 @@ var INDEX_HTML = `<!DOCTYPE html>
         <div style="padding:20px;flex:1">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
             <div style="width:28px;height:28px;background:#1e3a5f;border-radius:6px;display:flex;align-items:center;justify-content:center">
-              <span style="font-size:14px">\u{1F3EB}</span>
+              <span style="font-size:14px">🏫</span>
             </div>
             <div>
               <div style="font-size:13px;font-weight:700;color:#1e3a5f">Williamstown Primary</div>
@@ -1766,13 +1859,13 @@ var INDEX_HTML = `<!DOCTYPE html>
 
     // Phase 1: ARM
     setTimeout(() => {
-      statusEl.textContent = '\u{1F534} Armed \u2014 race about to start';
+      statusEl.textContent = '🔴 Armed \u2014 race about to start';
       statusEl.style.color = '#ef4444';
     }, 1200);
 
     // Phase 2: GO
     setTimeout(() => {
-      statusEl.textContent = '\u{1F7E2} GO! Race running\u2026';
+      statusEl.textContent = '🟢 GO! Race running\u2026';
       statusEl.style.color = '#3fb950';
       running = true;
       startMs = Date.now();
@@ -1906,17 +1999,17 @@ var INDEX_HTML = `<!DOCTYPE html>
     <p class="section-lead">School Sport Portal is part of a family of tools built specifically for Australian school sport.</p>
     <div class="tools-grid">
       <div class="tool-card">
-        <div class="tool-name">\u{1F3C1} Carnival Timing</div>
+        <div class="tool-name">🏁 Carnival Timing</div>
         <div class="tool-desc">Standalone timing app for carnivals. Works with or without Portal. Free to use at carnivaltiming.com.</div>
         <a href="https://carnivaltiming.com" class="tool-link">carnivaltiming.com \u2192</a>
       </div>
       <div class="tool-card">
-        <div class="tool-name">\u{1F5D3}\uFE0F Carnival Planner</div>
+        <div class="tool-name">🗓\uFE0F Carnival Planner</div>
         <div class="tool-desc">Plan your draw, heat sheets and timetable before carnival day. Integrates directly with Carnival Timing.</div>
         <a href="https://sportcarnival.com.au" class="tool-link">sportcarnival.com.au \u2192</a>
       </div>
       <div class="tool-card">
-        <div class="tool-name">\u{1F4CA} School Sport Portal</div>
+        <div class="tool-name">📊 School Sport Portal</div>
         <div class="tool-desc">The complete package \u2014 everything above plus persistent records, public pages and district integration.</div>
         <a href="#pricing" class="tool-link">See pricing above \u2192</a>
       </div>
@@ -3212,7 +3305,7 @@ footer a{color:rgba(255,255,255,.7)}
       <p>All data is stored in Australia using the following services:</p>
       <ul>
         <li><strong>Cloudflare Workers &amp; KV</strong> \u2014 edge infrastructure with Australian data residency</li>
-        <li><strong>Google Firebase Realtime Database</strong> \u2014 Australian region (australia-southeast1)</li>
+        <li><strong>Google Firebase Realtime Database</strong> \u2014 Singapore region (asia-southeast1) — <em>legacy only, district coordinator seasonal data (teams, fixtures, ladders). Migration to Cloudflare D1 (Sydney) in progress. Carnival results and student roster data are already on D1 (Sydney).</em></li>
       </ul>
       <p>Access to student data requires coordinator authentication. Public-facing result pages display only anonymised data (first name + last initial). We use HTTPS across all services. No passwords are stored \u2014 access is managed via Cloudflare Access and single-use codes.</p>
     </div>
@@ -3624,7 +3717,7 @@ footer a{color:#94a3b8;text-decoration:none}
 </head>
 <body>
 <nav>
-  <span class="logo">\u{1F3EB} School Sport Portal</span>
+  <span class="logo">🏫 School Sport Portal</span>
   <a href="/">Home</a>
   <a href="/privacy">Privacy</a>
   <a href="/terms">Terms</a>
@@ -3688,19 +3781,19 @@ footer a{color:#94a3b8;text-decoration:none}
   <p>Once your roster is loaded, running a carnival is simple.</p>
   <div class="grid">
     <div class="grid-item">
-      <h4>\u{1F3C3} Cross Country</h4>
+      <h4>🏃 Cross Country</h4>
       <p>Auto-generates the age group draw with bib numbers. Export to PDF for printing.</p>
     </div>
     <div class="grid-item">
-      <h4>\u{1F3CA} Swimming</h4>
+      <h4>🏊 Swimming</h4>
       <p>Build heat sheets by age group and stroke. House points tallied automatically.</p>
     </div>
     <div class="grid-item">
-      <h4>\u{1F3C3}\u200D\u2642\uFE0F Athletics</h4>
+      <h4>🏃\u200D\u2642\uFE0F Athletics</h4>
       <p>Track and field event management. Results published live for parents to follow.</p>
     </div>
     <div class="grid-item">
-      <h4>\u{1F4CB} District Entry</h4>
+      <h4>📋 District Entry</h4>
       <p>Select your qualifiers \u2014 their bib numbers and times are pre-filled from your results.</p>
     </div>
   </div>
@@ -3768,7 +3861,7 @@ var SSP_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://schoolsportportal.com.au/</loc><priority>1.0</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://schoolsportportal.com.au/help</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://schoolsportportal.com.au/demo-school</loc><priority>0.7</priority></url>
+  <url><loc>https://schoolsportportal.com.au/pricing</loc><priority>0.9</priority></url><url><loc>https://schoolsportportal.com.au/contact</loc><priority>0.8</priority></url><url><loc>https://schoolsportportal.com.au/forgot-password</loc><priority>0.3</priority></url><url><loc>https://schoolsportportal.com.au/demo-school</loc><priority>0.7</priority></url>
   <url><loc>https://schoolsportportal.com.au/demo-district</loc><priority>0.7</priority></url>
   <url><loc>https://schoolsportportal.com.au/demo-division</loc><priority>0.7</priority></url>
   <url><loc>https://schoolsportportal.com.au/demo-region</loc><priority>0.7</priority></url>
@@ -3838,10 +3931,10 @@ tr:last-child td{border:none}
 </head>
 <body>
 <div class="hero">
-  <div style="font-size:2rem;margin-bottom:12px">\u{1F3EB}</div>
+  <div style="font-size:2rem;margin-bottom:12px">🏫</div>
   <h1>${school.name}</h1>
   <p>School Sport Portal${school.suburb ? " \xB7 " + school.suburb + (school.state ? ", " + school.state : "") : ""}</p>
-  <span class="badge">\u{1F512} School-only view</span>
+  <span class="badge">🔒 School-only view</span>
 </div>
 
 <div class="container">
@@ -3875,7 +3968,7 @@ tr:last-child td{border:none}
   <div class="card">
     <div class="card-head"><h2>Carnivals</h2></div>
     <div style="padding:16px;display:flex;flex-wrap:wrap;gap:8px">
-      ${carnivals.map((c) => `<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:.85rem;color:#374151">\u{1F3C3} ${c.name}${c.date ? " \u2014 " + c.date : ""}</span>`).join("")}
+      ${carnivals.map((c) => `<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:.85rem;color:#374151">🏃 ${c.name}${c.date ? " \u2014 " + c.date : ""}</span>`).join("")}
     </div>
   </div>` : ""}
 </div>
@@ -3890,6 +3983,10 @@ __name(renderSchoolPortal, "renderSchoolPortal");
 __name2(renderSchoolPortal, "renderSchoolPortal");
 async function _innerFetch(request, env, ctx) {
   const url = new URL(request.url);
+  // www -> apex 301
+  if (url.hostname === "www.schoolsportportal.com.au") {
+    return Response.redirect("https://schoolsportportal.com.au" + url.pathname + url.search, 301);
+  }
   const path = url.pathname;
   if (path === "/login" || path === "/logout" || path === "/setup" || path === "/thanks" || path === "/stripe-webhook" || path.includes("/admin")) {
     return _adminFetch(request, env);
@@ -3914,13 +4011,13 @@ async function _innerFetch(request, env, ctx) {
         { status: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    if (!env.SSP_DB) {
+    if (!env.DB) {
       return new Response(
         JSON.stringify({ ok: false, error: "DB unavailable" }),
         { status: 503, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    const school = await env.SSP_DB.prepare("SELECT id, name, api_token FROM schools WHERE id = ? AND active = 1").bind(schoolId).first();
+    const school = await env.DB.prepare("SELECT id, name, api_token FROM schools WHERE id = ? AND active = 1").bind(schoolId).first();
     if (!school) {
       return new Response(
         JSON.stringify({ ok: false, error: "School not found" }),
@@ -3933,7 +4030,7 @@ async function _innerFetch(request, env, ctx) {
         { status: 401, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } }
       );
     }
-    const students = await env.SSP_DB.prepare(
+    const students = await env.DB.prepare(
       "SELECT first_name, last_name_initial, year_level, gender, bib_number FROM students WHERE school_id = ? AND active = 1 AND bib_number IS NOT NULL ORDER BY bib_number ASC"
     ).bind(schoolId).all();
     const bibs = {};
@@ -3978,15 +4075,22 @@ async function _innerFetch(request, env, ctx) {
   if (path === "/demo-region" || normPath === "/demo-region.html") {
     return new Response(injectDemoBanner(DEMO_REGION, "region"), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-demo" } });
   }
+  if (path === "/forgot-password" || path === "/forgot-password/") {
+    const fHtml = "<!DOCTYPE html><html lang=\"en-AU\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Reset Password \u2014 School Sport Portal</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;background:#f8fafc;color:#0f172a;min-height:100vh;display:flex;flex-direction:column}.tb{background:#0d1b3e;padding:0 24px;height:52px;display:flex;align-items:center}.tb a{color:#fcd34d;font-weight:700;font-size:.95rem;text-decoration:none}.main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}.c{background:#fff;border-radius:14px;padding:40px;box-shadow:0 4px 20px rgba(13,27,62,.08);width:100%;max-width:420px}h1{font-size:1.4rem;font-weight:900;color:#0d1b3e;margin-bottom:8px}p.s{font-size:.9rem;color:#64748b;margin-bottom:28px}label{display:flex;flex-direction:column;gap:6px;font-size:.86rem;font-weight:600;color:#0f172a;margin-bottom:16px}input{padding:11px 14px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.95rem;font-family:inherit;width:100%}input:focus{outline:none;border-color:#1d4ed8}.btn{background:#1d4ed8;color:#fff;border:none;padding:13px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:4px}.btn:disabled{background:#94a3b8}.msg{padding:12px 16px;border-radius:8px;font-size:.88rem;margin-top:12px;display:none}.bk{text-align:center;margin-top:20px;font-size:.85rem;color:#64748b}.bk a{color:#1d4ed8}</style></head><body><div class=\"tb\"><a href=\"/\">School Sport Portal</a></div><div class=\"main\"><div class=\"c\"><h1>Reset your password</h1><p class=\"s\">Enter your email address and we'll send a reset link valid for 15 minutes.</p><label>Email address<input type=\"email\" id=\"fe\" placeholder=\"you@school.edu.au\" autofocus></label><button class=\"btn\" id=\"fb\" onclick=\"sendReset()\">Send Reset Link &rarr;</button><div id=\"fm\" class=\"msg\"></div><div class=\"bk\"><a href=\"/login\">&larr; Back to login</a></div></div></div><script>async function sendReset(){var e=document.getElementById('fe').value.trim(),b=document.getElementById('fb'),m=document.getElementById('fm');if(!e){m.style.cssText='display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca';m.textContent='Please enter your email.';return;}b.disabled=true;b.textContent='Sending...';m.style.display='none';try{var r=await fetch('https://carnival-results.pgallivan.workers.dev/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})});var j=await r.json();m.style.display='block';if(j.ok||r.status===200){m.style.cssText='display:block;background:#dcfce7;color:#15803d;border:1px solid #86efac';m.textContent='If that email is registered a reset link is on its way.';b.style.display='none';}else{throw new Error(j.error||'Failed');}}catch(ex){m.style.cssText='display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca';m.textContent='Something went wrong. Email info@schoolsportportal.com.au for help.';b.disabled=false;b.textContent='Send Reset Link'}}<\/script></body></html>";
+    return new Response(fHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+  }
   {
     const slug = path.slice(1).split("/")[0].replace(/\.html$/, "");
-    if (slug && !slug.includes(".") && env.SSP_DB) {
-      const schoolRec = await env.SSP_DB.prepare("SELECT * FROM schools WHERE id = ? AND active = 1").bind(slug).first();
+    // Slug aliases — map URL slugs to D1 school IDs
+    const _slugAlias = { "williamstownps": "williamstownprimary", "wyndhamdivision": "wyndham", "hobsonsbaydivision": "hobsonsbay" };
+    const resolvedSlug = _slugAlias[slug] || slug;
+    if (resolvedSlug && !resolvedSlug.includes(".") && env.DB) {
+      const schoolRec = await env.DB.prepare("SELECT * FROM schools WHERE id = ? AND active = 1").bind(resolvedSlug).first();
       if (schoolRec) {
         const [{ results: stuList }, { results: carnivalList }, qualRow] = await Promise.all([
-          env.SSP_DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(slug).all(),
-          env.SSP_DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(slug).all(),
-          env.SSP_DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(slug).first()
+          env.DB.prepare("SELECT * FROM students WHERE school_id = ? AND active = 1 ORDER BY year_level, first_name").bind(slug).all(),
+          env.DB.prepare("SELECT * FROM carnivals WHERE school_id = ? ORDER BY date DESC").bind(slug).all(),
+          env.DB.prepare("SELECT COUNT(*) as n FROM results r JOIN carnivals c ON r.carnival_id = c.id WHERE c.school_id = ? AND r.qualified = 1").bind(slug).first()
         ]);
         return new Response(renderSchoolPortal(schoolRec, stuList, carnivalList, qualRow?.n || 0), {
           status: 200,
@@ -3995,11 +4099,66 @@ async function _innerFetch(request, env, ctx) {
       }
     }
   }
-  if (path === "/williamstownprimary" || normPath === "/williamstownprimary.html" || normPath === "/williamstownps.html") {
+  if (path === "/williamstownprimary" || normPath === "/williamstownprimary.html") {
     return new Response(WPS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-wps" } });
   }
   if (path === "/hobsonsbay" || path === "/hobsonsbaydivision" || normPath === "/hobsonsbaydivision.html" || normPath === "/hobsonsbay.html") {
     return new Response(HOBSONS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-hobsons" } });
+  }
+  /* Hierarchy aliases — Paddy's canonical URL scheme 2026-05-12 (additive only) */
+  if (path === "/district/primary/williamstown" || path === "/district/primary/williamstown/" || normPath === "/district/primary/williamstown.html") {
+    const ghResponse = await fetch("https://raw.githubusercontent.com/Luck-Dragon-Pty-Ltd/district-sport/main/index.html?_cb=" + Date.now() + "_" + Math.random().toString(36).slice(2), { cf: { cacheTtl: 0, cacheEverything: false } });
+    const html = await ghResponse.text();
+    return new Response(html, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache, must-revalidate", "X-Robots-Tag": "index, follow", "X-Source": "district-sport-full" } });
+  }
+  if (path === "/division/primary/hobsonsbay" || path === "/division/primary/hobsonsbay/" || normPath === "/division/primary/hobsonsbay.html") {
+    return new Response(HOBSONS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-hobsons-aliased" } });
+  }
+  if (path === "/division/primary/wyndham" || path === "/division/primary/wyndham/" || path === "/wyndham" || path === "/wyndhamdivision") {
+    const _wyndHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wyndham Division \u2014 School Sport Portal</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:0;line-height:1.6}.container{max-width:760px;margin:0 auto;padding:32px 20px}h1{font-size:1.75rem;margin:0 0 8px;color:#0f172a}.crumb{font-size:.85rem;color:#64748b;margin-bottom:24px}.crumb a{color:#1d4ed8;text-decoration:none}.meta{color:#64748b;margin-bottom:28px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:12px}.card h2{font-size:1.1rem;margin:0 0 12px}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{text-decoration:none;padding:7px 14px;border-radius:6px;font-size:.85rem;font-weight:500}.pill.admin{background:#1d4ed8;color:#fff}.timing-cta{margin-top:24px;background:#0f172a;color:#fff;padding:18px 22px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.timing-cta a{background:#dc2626;color:#fff;text-decoration:none;padding:8px 18px;border-radius:6px;font-weight:600;font-size:.9rem}</style></head><body><div class="container"><div class="crumb"><a href="/">School Sport Portal</a> \u203A <a href="/division">Divisions</a> \u203A Wyndham</div><h1>Wyndham Division (Primary)</h1><p class="meta">Western Metropolitan Region \u00B7 School Sport Portal</p><div class="card"><h2>Wyndham Division</h2><div class="pills"><a class="pill admin" href="/login?as=wyndham">Admin sign-in \u2192</a></div></div><div class="timing-cta"><div><strong>Live carnival timing</strong><div style="font-size:.85rem;opacity:.85;margin-top:2px">Real-time results across all events</div></div><a href="https://carnivaltiming.com">\u25CF Open Live Timing</a></div></div></body></html>`;
+    return new Response(_wyndHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-wyndham" } });
+  }
+
+
+  if (path === "/forgot-password" || path === "/forgot-password/") {
+    if (method === "GET") {
+      const forgotHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset Password \u2014 School Sport Portal</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a;min-height:100vh;display:flex;flex-direction:column}.topbar{background:#0d1b3e;padding:0 24px;height:52px;display:flex;align-items:center}.topbar a{color:#fcd34d;font-weight:700;font-size:.95rem;text-decoration:none}.main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}.card{background:#fff;border-radius:14px;padding:40px;box-shadow:0 4px 20px rgba(13,27,62,.08);width:100%;max-width:420px}h1{font-size:1.4rem;font-weight:900;color:#0d1b3e;margin-bottom:8px}p.sub{font-size:.9rem;color:#64748b;margin-bottom:28px}label{display:flex;flex-direction:column;gap:6px;font-size:.86rem;font-weight:600;color:#0f172a;margin-bottom:16px}input{padding:11px 14px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.95rem;font-family:inherit;width:100%}input:focus{outline:none;border-color:#1d4ed8}.btn{background:#1d4ed8;color:#fff;border:none;padding:13px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:4px}.btn:hover{background:#1e40af}.btn:disabled{background:#94a3b8}.msg{padding:12px 16px;border-radius:8px;font-size:.88rem;margin-top:12px;display:none}.back{text-align:center;margin-top:20px;font-size:.85rem;color:#64748b}.back a{color:#1d4ed8}</style></head><body><div class="topbar"><a href="/">🏫 School Sport Portal</a></div><div class="main"><div class="card"><h1>Reset your password</h1><p class="sub">Enter your email address and we'll send you a reset link. It expires in 15 minutes.</p><label>Email address<input type="email" id="fp-email" placeholder="you@school.edu.au" autofocus></label><button class="btn" id="fp-btn" onclick="sendReset()">Send Reset Link \u2192</button><div id="fp-msg" class="msg"></div><div class="back"><a href="/login">\u2190 Back to login</a></div></div></div><script>async function sendReset(){const email=document.getElementById('fp-email').value.trim();const btn=document.getElementById('fp-btn');const msg=document.getElementById('fp-msg');if(!email){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26a0 Please enter your email address.';return;}btn.disabled=true;btn.textContent='Sending\u2026';msg.style.display='none';try{const r=await fetch('https://carnival-results.pgallivan.workers.dev/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});const j=await r.json();msg.style.display='block';if(j.ok||r.status===200){msg.style.background='#dcfce7';msg.style.color='#15803d';msg.style.border='1px solid #86efac';msg.textContent='\u2713 If that email is registered, a reset link is on its way. Check your inbox (and spam folder).';btn.style.display='none';}else{throw new Error(j.error||'Failed');}}catch(e){msg.style.display='block';msg.style.background='#fef2f2';msg.style.color='#991b1b';msg.style.border='1px solid #fecaca';msg.textContent='\u26a0 Something went wrong. Email info@schoolsportportal.com.au for help.';btn.disabled=false;btn.textContent='Send Reset Link \u2192';}}<\/script></body></html>`;
+      return new Response(forgotHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+    }
+  }
+
+
+  if (path === "/pricing" || path === "/pricing/") {
+    const pricingHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pricing \u2014 School Sport Portal</title><meta name="description" content="School Sport Portal pricing: $1 per student per year. Carnival Timing: $49 per carnival or $149/year."><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a;line-height:1.6}.topbar{background:#0d1b3e;color:#fff;padding:0 24px;height:52px;display:flex;align-items:center;gap:16px}.topbar strong{color:#fcd34d;font-size:.95rem}.topbar a{color:#94a3b8;text-decoration:none;font-size:.85rem}.topbar a:hover{color:#fff}.hero{background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 100%);color:#fff;padding:60px 24px;text-align:center}.hero h1{font-size:2.5rem;font-weight:900;margin-bottom:12px}.hero p{font-size:1.1rem;opacity:.85;max-width:500px;margin:0 auto}.section{max-width:960px;margin:0 auto;padding:60px 24px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:48px}.card{background:#fff;border-radius:16px;padding:36px;box-shadow:0 4px 20px rgba(13,27,62,.08);position:relative}.card.featured{border:2px solid #1d4ed8}.badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#1d4ed8;color:#fff;font-size:.75rem;font-weight:700;padding:4px 16px;border-radius:20px;white-space:nowrap}.card-title{font-size:1.25rem;font-weight:800;color:#0d1b3e;margin-bottom:6px}.card-price{font-size:2.5rem;font-weight:900;color:#1d4ed8;margin-bottom:4px}.card-price span{font-size:1rem;font-weight:500;color:#64748b}.card-desc{font-size:.88rem;color:#64748b;margin-bottom:24px}.features{list-style:none;margin-bottom:28px}.features li{font-size:.9rem;color:#334155;padding:6px 0;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px}.features li::before{content:"\u2713";color:#16a34a;font-weight:700;flex-shrink:0}.btn{display:block;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:.95rem;text-decoration:none;cursor:pointer}.btn-primary{background:#1d4ed8;color:#fff}.btn-primary:hover{background:#1e40af}.btn-outline{border:2px solid #1d4ed8;color:#1d4ed8;background:#fff}.btn-outline:hover{background:#eff6ff}.note{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px 20px;font-size:.88rem;color:#0369a1;margin-bottom:40px}.faq{margin-bottom:48px}.faq h2{font-size:1.4rem;font-weight:800;margin-bottom:24px;color:#0d1b3e}.faq-item{border-bottom:1px solid #e2e8f0;padding:16px 0}.faq-q{font-weight:700;font-size:.95rem;margin-bottom:6px}.faq-a{font-size:.9rem;color:#64748b}footer{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:20px;font-size:12px}footer a{color:rgba(255,255,255,.7)}@media(max-width:640px){.cards{grid-template-columns:1fr}}</style></head><body><div class="topbar"><strong>🏫 School Sport Portal</strong><a href="/">Home</a><a href="/help">Help</a><a href="/contact">Contact</a></div><div class="hero"><h1>Simple, fair pricing</h1><p>One price for the whole year. No surprises, no hidden fees, no lock-in.</p></div><div class="section"><div class="cards"><div class="card featured"><span class="badge">Most popular</span><div class="card-title">School Sport Portal</div><div class="card-price">$1<span> per student / year</span></div><div class="card-desc">inc. GST &middot; A 400-student school pays $400/yr &mdash; less than $1.10/day</div><ul class="features"><li>School sport portal with your URL</li><li>Student roster (enter once, use all year)</li><li>Cross country, swimming &amp; athletics carnival management</li><li>Live timing with Carnival Timing &mdash; included free</li><li>District &amp; division entry management</li><li>Results published live for parents</li><li>Admin login for your PE coordinator</li><li>99.5% uptime SLA with race-day priority</li></ul><a href="/contact" class="btn btn-primary">Request a Demo \u2192</a></div><div class="card"><div class="card-title">Carnival Timing</div><div class="card-price">$49<span> per carnival</span></div><div class="card-desc">inc. GST &middot; Or $149/yr for unlimited carnivals</div><ul class="features"><li>Live results on carnivaltiming.com</li><li>Athletics, swimming &amp; cross country</li><li>Marshal app works on any phone</li><li>No app download required</li><li>Results appear within 5 seconds</li><li>XC name-picker fallback (no bibs needed)</li><li>Race-day tech support via phone</li></ul><div style="display:grid;gap:10px;margin-top:4px"><a href="https://buy.stripe.com/8x26oGgux9IT3wQckm9IQ05" target="_blank" class="btn btn-primary">Buy Single Carnival &mdash; $49</a><a href="https://buy.stripe.com/7sY3cu3HL8EP4AUesu9IQ06" target="_blank" class="btn btn-outline">Annual Pass &mdash; $149/yr</a></div></div></div><div class="note">💳 All payments via Stripe. Tax invoice with GST split issued automatically. ABN 64 697 434 898 &middot; GST registered 23 April 2026. <strong>SSP subscribers get Carnival Timing included at no extra charge.</strong></div><div class="faq"><h2>Frequently asked questions</h2><div class="faq-item"><div class="faq-q">How does pricing work for a 400-student school?</div><div class="faq-a">$1 per student per year, inc. GST. 400 students = $400/yr ($364 ex-GST + $36 GST). Stripe issues a tax invoice automatically.</div></div><div class="faq-item"><div class="faq-q">Is there a lock-in contract?</div><div class="faq-a">No. Annual subscription, cancel any time by emailing info@schoolsportportal.com.au. No cancellation fee.</div></div><div class="faq-item"><div class="faq-q">What if I only want Carnival Timing, not the full portal?</div><div class="faq-a">$49 per carnival or $149/yr for unlimited carnivals. No portal subscription needed. Click the buy buttons above.</div></div><div class="faq-item"><div class="faq-q">Can I get a refund?</div><div class="faq-a">Per-carnival: full refund if a technical failure prevents your carnival from running. Annual: full refund within 14 days if no data has been entered. See our <a href="/terms">Terms of Service</a> for full details.</div></div><div class="faq-item"><div class="faq-q">What's the race-day guarantee?</div><div class="faq-a">Let us know your carnival date at least 7 days before and we'll pre-flight your setup, have a tech on standby by phone, and hold non-critical deploys for 48 hours either side. See our <a href="/sla">SLA</a>.</div></div><div class="faq-item"><div class="faq-q">How do I set up a school?</div><div class="faq-a">Fill in the <a href="/contact">demo request form</a> and we'll be in touch within one school day. Every school is set up personally to make sure the configuration is right.</div></div></div></div><footer><p>&copy; 2026 Luck Dragon Pty Ltd &middot; ABN 64 697 434 898 &middot; <a href="/privacy">Privacy</a> &middot; <a href="/terms">Terms</a> &middot; <a href="/contact">Contact</a></p></footer></body></html>`;
+    return new Response(pricingHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  }
+
+  // /billing — redirect to Stripe customer portal (manage subscription, update card)
+  if (path === "/billing" || path === "/billing/") {
+    return Response.redirect("https://billing.stripe.com/p/login/eVa6p89lz7bqf0Q8ww", 301);
+  }
+
+  if (path === "/contact" || path === "/contact/") {
+    const contactHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact Us \u2014 School Sport Portal</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#0f172a;line-height:1.6}.topbar{background:#0d1b3e;color:#fff;padding:0 24px;height:52px;display:flex;align-items:center;gap:16px}.topbar a{color:#94a3b8;text-decoration:none;font-size:.85rem}.topbar a:hover{color:#fff}.topbar strong{color:#fcd34d;font-size:.95rem;margin-right:8px}.container{max-width:680px;margin:48px auto;padding:0 20px 80px}.hero{text-align:center;margin-bottom:40px}.hero h1{font-size:2rem;font-weight:900;color:#0d1b3e;margin-bottom:8px}.hero p{color:#64748b;font-size:1rem}label{display:flex;flex-direction:column;gap:6px;font-size:.86rem;font-weight:600;color:#0f172a}input,textarea,select{padding:11px 14px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.95rem;font-family:inherit;width:100%}input:focus,textarea:focus{outline:none;border-color:#1d4ed8}textarea{resize:vertical;min-height:100px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-card{background:#fff;border-radius:14px;padding:32px;box-shadow:0 4px 20px rgba(13,27,62,.07);display:grid;gap:16px}.btn{background:#1d4ed8;color:#fff;border:none;padding:13px 28px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;width:100%}.btn:hover{background:#1e40af}.btn:disabled{background:#94a3b8}.msg{padding:12px 16px;border-radius:8px;font-size:.9rem;display:none}.alt{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:20px 24px;margin-top:24px;font-size:.9rem;color:#0369a1}.alt a{color:#0369a1;font-weight:700}footer{background:#0d1b3e;color:rgba(255,255,255,.5);text-align:center;padding:20px;font-size:12px;margin-top:60px}footer a{color:rgba(255,255,255,.7)}</style></head><body><div class="topbar"><a href="/"><strong>🏫 School Sport Portal</strong></a><a href="/help">Help</a><a href="/about">About</a></div><div class="container"><div class="hero"><h1>Get in touch</h1><p>Questions about School Sport Portal or Carnival Timing? Fill in the form or email directly.</p></div><div class="form-card"><div class="grid2"><label>Your name<input name="name" id="c-name" type="text" required placeholder="Patrick Gallivan"></label><label>School<input name="school" id="c-school" type="text" required placeholder="Williamstown Primary"></label></div><div class="grid2"><label>Email<input name="email" id="c-email" type="email" required placeholder="you@school.edu.au"></label><label>Role<input name="role" id="c-role" type="text" placeholder="PE Coordinator"></label></div><label>Approx. student count<input name="students" id="c-students" type="number" min="0" placeholder="e.g. 400 (leave blank for general enquiries)"></label><label>Message<textarea name="message" id="c-msg" placeholder="Tell us what you're looking for, what carnivals you run, or anything else\u2026"></textarea></label><input type="text" name="website" id="c-hp" style="display:none" tabindex="-1" autocomplete="off"><div id="c-feedback" class="msg"></div><button class="btn" id="c-btn" onclick="submitContact()">Send Message \u2192</button></div><div class="alt">📧 Prefer email? Write to <a href="mailto:info@schoolsportportal.com.au">info@schoolsportportal.com.au</a> \u2014 Paddy replies personally, usually within one school day.<br><br>📞 Phone (school terms): <a href="tel:0466651720">0466 651 720</a></div></div><footer><p>\u00A9 2026 Luck Dragon Pty Ltd \u00B7 ABN 64 697 434 898 \u00B7 <a href="/privacy">Privacy</a> \u00B7 <a href="/terms">Terms</a></p></footer><script>async function submitContact(){const btn=document.getElementById('c-btn');const fb=document.getElementById('c-feedback');btn.disabled=true;btn.textContent='Sending\u2026';fb.style.display='none';const data={name:document.getElementById('c-name').value,school:document.getElementById('c-school').value,email:document.getElementById('c-email').value,role:document.getElementById('c-role').value,students:document.getElementById('c-students').value,message:document.getElementById('c-msg').value,website:document.getElementById('c-hp').value};if(!data.name||!data.email||!data.school){fb.style.display='block';fb.style.background='#fef2f2';fb.style.color='#991b1b';fb.style.border='1px solid #fecaca';fb.textContent='\u26a0 Please fill in your name, school, and email.';btn.disabled=false;btn.textContent='Send Message \u2192';return;}try{const r=await fetch('https://ssp-contact.pgallivan.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json();if(j.ok){fb.style.display='block';fb.style.background='#dcfce7';fb.style.color='#15803d';fb.style.border='1px solid #86efac';fb.textContent='\u2713 Got it! We\u2019ll be in touch within one school day.';document.querySelector('.form-card').querySelectorAll('input,textarea').forEach(el=>el.value='');btn.style.display='none';}else{throw new Error(j.error||'Send failed');}}catch(e){fb.style.display='block';fb.style.background='#fef2f2';fb.style.color='#991b1b';fb.style.border='1px solid #fecaca';fb.textContent='\u26a0 Could not send. Please email info@schoolsportportal.com.au directly.';btn.disabled=false;btn.textContent='Send Message \u2192';}}<\/script></body></html>`;
+    return new Response(contactHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" } });
+  }
+
+  if (path === "/wmr" || path === "/wmr/" || path === "/region/western-metro" || path === "/region/western-metropolitan") {
+    const wmrHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Western Metropolitan Region \u2014 School Sport Portal</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:0;line-height:1.6}.container{max-width:760px;margin:0 auto;padding:32px 20px}h1{font-size:1.75rem;margin:0 0 8px;color:#0f172a}.crumb{font-size:.85rem;color:#64748b;margin-bottom:24px}.crumb a{color:#1d4ed8;text-decoration:none}.meta{color:#64748b;margin-bottom:28px}.cards{display:flex;flex-direction:column;gap:10px}.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.card a.primary{color:#0f172a;text-decoration:none;font-weight:600}.pills{display:flex;gap:8px;flex-wrap:wrap}.pill{text-decoration:none;padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:500}.pill.admin{background:#1d4ed8;color:#fff}.timing-cta{margin-top:24px;background:#0f172a;color:#fff;padding:18px 22px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.timing-cta a{background:#dc2626;color:#fff;text-decoration:none;padding:8px 18px;border-radius:6px;font-weight:600;font-size:.9rem}</style></head><body><div class="container"><div class="crumb"><a href="/">School Sport Portal</a> \u203A <a href="/region">Regions</a> \u203A Western Metro</div><h1>Western Metropolitan Region</h1><p class="meta">Victoria \u00B7 School Sport Portal</p><div class="cards"><div class="card"><a class="primary" href="/division/primary/hobsonsbay">Hobsons Bay Division (Primary)</a><div class="pills"><a class="pill admin" href="/login?as=hobsonsbay">Admin sign-in \u2192</a></div></div><div class="card"><a class="primary" href="/division/primary/wyndham">Wyndham Division (Primary)</a><div class="pills"><a class="pill admin" href="/login?as=wyndham">Admin sign-in \u2192</a></div></div></div><div class="timing-cta"><div><strong>Live carnival timing</strong><div style="font-size:.85rem;opacity:.85;margin-top:2px">Real-time results across all events</div></div><a href="https://carnivaltiming.com">\u25CF Open Live Timing</a></div></div></body></html>`;
+    return new Response(wmrHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-wmr" } });
+  }
+  if (path === "/district" || path === "/district/" || path === "/district/primary" || path === "/district/primary/" || path === "/division" || path === "/division/" || path === "/division/primary" || path === "/division/primary/" || path === "/region" || path === "/region/" || path === "/state" || path === "/state/") {
+    const segs = path.replace(/^\/|\/$/g, "").split("/");
+    const lvl = segs[0];
+    const titleMap = { district: "Districts", division: "Divisions", region: "Regions", state: "State" };
+    const linkMap = {
+      district: '<li><div class="row"><a class="primary" href="/district/primary/williamstown">Williamstown District (Primary)</a><div class="pills"><a class="event-pill" href="https://sportcarnival.com.au/district/primary/williamstown">Carnival events \u2192</a><a class="admin-pill" href="/login?as=williamstown-district">Admin sign-in \u2192</a></div></div></li>',
+      division: '<li><div class="row"><a class="primary" href="/division/primary/hobsonsbay">Hobsons Bay Division (Primary)</a><div class="pills"><a class="admin-pill" href="/login?as=hobsonsbay">Admin sign-in \u2192</a></div></div></li><li><div class="row"><a class="primary" href="/division/primary/wyndham">Wyndham Division (Primary)</a><div class="pills"><a class="admin-pill" href="/login?as=wyndham">Admin sign-in \u2192</a></div></div></li>',
+      region: '<li><div class="row"><a class="primary" href="/wmr">Western Metropolitan Region</a><div class="pills"><a class="event-pill" href="https://carnivaltiming.com">Live Timing \u2192</a></div></div></li>',
+      state: '<li><em>Victorian State Schools Sport \u2014 coming soon</em></li>'
+    };
+    const hierHtml = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${titleMap[lvl]} \u2014 School Sport Portal</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:0;line-height:1.6}.container{max-width:760px;margin:0 auto;padding:32px 20px}h1{font-size:1.75rem;margin:0 0 8px;color:#0f172a}.crumb{font-size:.85rem;color:#64748b;margin-bottom:24px}.crumb a{color:#1d4ed8;text-decoration:none}ul{list-style:none;padding:0;margin:0}ul li{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:10px;transition:all .15s}ul li:hover{border-color:#1d4ed8;box-shadow:0 2px 8px rgba(29,78,216,.1)}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.row .primary{color:#0f172a;text-decoration:none;font-weight:600;font-size:1rem;flex:1}.pills{display:flex;gap:8px;flex-wrap:wrap}.event-pill,.admin-pill{text-decoration:none;padding:6px 12px;border-radius:6px;font-size:.8rem;font-weight:500;white-space:nowrap}.event-pill{background:#dc2626;color:#fff}.event-pill:hover{background:#b91c1c}.admin-pill{background:#1d4ed8;color:#fff}.admin-pill:hover{background:#1e40af}ul li em{color:#64748b;font-style:italic}.note{margin-top:32px;padding:16px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;font-size:.9rem;color:#78350f}.timing-cta{margin-top:20px;background:#0f172a;color:#fff;padding:18px 22px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.timing-cta a{background:#dc2626;color:#fff;text-decoration:none;padding:8px 18px;border-radius:6px;font-weight:600;font-size:.9rem}.timing-cta a:hover{background:#b91c1c}</style></head><body><div class="container"><div class="crumb"><a href="/">School Sport Portal</a> \u203A ${titleMap[lvl]}</div><h1>${titleMap[lvl]}</h1><ul>${linkMap[lvl]}</ul><div class="timing-cta"><div><strong>Live carnival timing</strong><div style="font-size:.85rem;opacity:.85;margin-top:2px">Real-time results across all events</div></div><a href="https://carnivaltiming.com">\u25CF Open Live Timing</a></div><div class="note">Hierarchy: School \u2192 District \u2192 Division \u2192 Region \u2192 State. Each level has its own admin sign-in and aggregated results from the carnival timing engine.</div></div></body></html>`;
+    return new Response(hierHtml, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300", "X-Source": "embedded-hierarchy" } });
   }
   if (path === "/help") {
     return new Response(SSP_HELP_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600", "X-Source": "embedded-help" } });
@@ -4068,10 +4227,10 @@ async function checkLoginRateLimit(env, email) {
   const windowMs = 60 * 60 * 1e3;
   const limit = 5;
   try {
-    await env.SSP_DB.prepare("DELETE FROM login_attempts WHERE ts < ?").bind(now - windowMs).run();
-    const row = await env.SSP_DB.prepare("SELECT COUNT(*) as c FROM login_attempts WHERE email = ? AND ts > ?").bind(email, now - windowMs).first();
+    await env.DB.prepare("DELETE FROM login_attempts WHERE ts < ?").bind(now - windowMs).run();
+    const row = await env.DB.prepare("SELECT COUNT(*) as c FROM login_attempts WHERE email = ? AND ts > ?").bind(email, now - windowMs).first();
     if (row && row.c >= limit) return false;
-    await env.SSP_DB.prepare("INSERT INTO login_attempts (email, ts) VALUES (?, ?)").bind(email, now).run();
+    await env.DB.prepare("INSERT INTO login_attempts (email, ts) VALUES (?, ?)").bind(email, now).run();
     return true;
   } catch (e) {
     return true;
@@ -4108,5 +4267,4 @@ export {
   worker_default as default
 };
 //# sourceMappingURL=ssp-portal-clean.js.map
-
---9ffac17b83c4d61bb3e93cd4c4ddd638c9505489f113de30e310b2e861d3--
+--97a899dd900fb5d8fe304a3ecb65bb50cbdccf613f848c99879ff9b53870--
