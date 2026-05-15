@@ -1,5 +1,5 @@
---576cf42dde54fccb773c7a71e235a036aa06fdedb283b2d341cbd9f51f1a
-Content-Disposition: form-data; name="ct-html.js"
+--cc93dc373cc6579b28f9a3670af46a3d64877265a54b1f1d4d803b105992
+Content-Disposition: form-data; name="ct-worker.js"
 
 // ../ct-worker.js
 var HTML = `<!DOCTYPE html>
@@ -1480,13 +1480,31 @@ async function _retryPendingSplits() {
   } catch(e) {}
 }
 
+var _reconnAttempts=0, _handshakeTimer=null;
+function _wsBackoff(){
+  // Exponential backoff with jitter: 500 -> 1000 -> 2000 -> 4000 -> 8000 (cap), +/-30% jitter
+  var base=Math.min(8000, 500*Math.pow(2, Math.min(_reconnAttempts, 4)));
+  var jitter=base*0.6*(Math.random()-0.5);
+  return Math.max(250, Math.round(base+jitter));
+}
 function _wsConnectTo(code){
   if(_ws && _wsCode===code && (_ws.readyState===0||_ws.readyState===1)) return;
   if(_ws){try{_ws.onclose=null;_ws.close();}catch{}}
+  if(_handshakeTimer){clearTimeout(_handshakeTimer);_handshakeTimer=null;}
   _wsCode=code; _wsReady=false;
   _ws=new WebSocket(\`wss://\${WS_HOST}/ws/\${code}\`);
+  // Handshake watchdog: if no onopen in 8s, force-close + trigger backoff reconnect
+  _handshakeTimer=setTimeout(()=>{
+    if(!_wsReady){
+      try{_ws.onclose=null;_ws.onerror=null;_ws.close();}catch{}
+      _wsReady=false; _notifyConn(false);
+      _reconnAttempts++;
+      if(_wsCode) _reconnTimer=setTimeout(()=>_wsConnectTo(_wsCode), _wsBackoff());
+    }
+  }, 8000);
   _ws.onopen=()=>{
-    _wsReady=true; clearTimeout(_reconnTimer);
+    _wsReady=true; _reconnAttempts=0;
+    clearTimeout(_reconnTimer); clearTimeout(_handshakeTimer); _handshakeTimer=null;
     // Replay any writes buffered while disconnected
     _msgBuf.splice(0).forEach(m=>_ws.send(m));
     // Retry any splits that were lost during a previous disconnect
@@ -1498,10 +1516,12 @@ function _wsConnectTo(code){
     _notifyConn(true);
   };
   _ws.onclose=_ws.onerror=()=>{
+    if(_handshakeTimer){clearTimeout(_handshakeTimer);_handshakeTimer=null;}
     _wsReady=false; _notifyConn(false);
     for(const [,r] of _pendingReqs){clearTimeout(r.timer);r.reject(new Error('ws closed'));}
     _pendingReqs.clear();
-    if(_wsCode) _reconnTimer=setTimeout(()=>_wsConnectTo(_wsCode),2500);
+    _reconnAttempts++;
+    if(_wsCode) _reconnTimer=setTimeout(()=>_wsConnectTo(_wsCode), _wsBackoff());
   };
   _ws.onmessage=({data})=>{
     const msg=JSON.parse(data);
@@ -1683,10 +1703,37 @@ function fbEnc(s) {
 
 // \u2500\u2500 UI helpers \u2500\u2500
 function showScreen(id) {
+  // Stop XC camera if we're navigating away from XC screens
+  // (saves battery + turns off the camera light + frees the device)
+  const _leavingXc = (id === 'home' || id === 'admin' || id === 'observer');
+  if (_leavingXc && typeof xcStopCamera === 'function') {
+    try { xcStopCamera(); } catch(_) {}
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('screen-' + id);
   if (el) { el.classList.add('active'); window.scrollTo(0,0); }
 }
+// xcStopCamera: hard-stop the XC live camera stream + detect loop.
+// Safe to call even when there's no active camera. Idempotent.
+function xcStopCamera() {
+  try { if (xcDetectInterval) { clearInterval(xcDetectInterval); xcDetectInterval = null; } } catch(_) {}
+  try {
+    if (xcCamStream) {
+      xcCamStream.getTracks().forEach(t => { try { t.stop(); } catch(_) {} });
+    }
+  } catch(_) {}
+  xcCamStream = null;
+  // Clear srcObject so the camera light goes off immediately on iOS Safari
+  try { var v = document.getElementById('xc-cam'); if (v) { v.srcObject = null; } } catch(_) {}
+  try { var v2 = document.getElementById('xc-cap'); if (v2) { var ctx = v2.getContext && v2.getContext('2d'); if (ctx) ctx.clearRect(0,0,v2.width,v2.height); } } catch(_) {}
+  try { xcPrevSamples = null; } catch(_) {}
+}
+// Also stop when the page is hidden (tab switch / lock screen) to spare battery
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden) { try { xcStopCamera(); } catch(_) {} }
+});
+// And on page unload
+window.addEventListener('pagehide', function(){ try { xcStopCamera(); } catch(_) {} });
 
 function toast(msg, dur=2200) {
   const el = document.getElementById('toast');
@@ -5468,7 +5515,7 @@ var worker_default = {
     if (_path === "/privacy") return new Response(PRIVACY_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
     if (_path === "/terms") return new Response(TERMS_HTML, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
     // /events — live event index (which carnivals are running)
-    if (_path === "/events") return new Response(_ctEventIndex(), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-CT-Version": "v8.9.0+events" } });
+    if (_path === "/events") return new Response(_ctEventIndex(), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-CT-Version": "v8.10.0+events" } });
     // /<slug> — per-event live results page (path 1 segment, matches registry)
     if (_path.startsWith("/") && _path.indexOf("/", 1) === -1) {
       const slug = _path.slice(1);
@@ -5505,4 +5552,4 @@ export {
   worker_default as default
 };
 //# sourceMappingURL=ct-worker.js.map
---576cf42dde54fccb773c7a71e235a036aa06fdedb283b2d341cbd9f51f1a--
+--cc93dc373cc6579b28f9a3670af46a3d64877265a54b1f1d4d803b105992--
