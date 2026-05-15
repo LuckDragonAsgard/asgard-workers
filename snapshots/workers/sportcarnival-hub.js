@@ -1,5 +1,5 @@
---7ba7c73a8c500a3cf53bf625887d0be47def98c02f31c23067b7915b7535
-Content-Disposition: form-data; name="sc-hub.js"
+--3bb8f53c6314ac2a8064a56c37ce62ed6bad67aa6dd3209920c0ffb55545
+Content-Disposition: form-data; name="sc-worker.js"
 
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
@@ -439,6 +439,9 @@ var _SEC_HEADERS = {
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; frame-ancestors 'self';"
 };
+const _SC_404_HTML = `<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Not found — SportCarnival</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;margin:0;padding:0;text-align:center;min-height:100vh;display:flex;align-items:center;justify-content:center}.container{max-width:580px;padding:40px 24px}.code{font-size:4rem;font-weight:800;color:#0d1b3e;margin:0 0 4px;letter-spacing:-.04em}h1{font-size:1.5rem;margin:0 0 16px;color:#0f172a}p{color:#475569;line-height:1.55;margin:0 0 12px}.links{margin-top:28px;padding-top:24px;border-top:1px solid #e2e8f0;font-size:.95rem}.links a{color:#1d4ed8;text-decoration:none;font-weight:600;margin:0 8px}.foot{margin-top:22px;font-size:.8rem;color:#94a3b8}</style></head><body><div class="container"><div class="code">404</div><h1>That page doesn't exist on SportCarnival</h1><p>SportCarnival event pages live at carnival-specific URLs like <code>/williamstownps/Athletics26</code> or <code>/district/primary/williamstown/XC26</code>. If you're looking for a marshal app or live timing console, use Carnival Timing instead.</p><div class="links"><a href="/">SportCarnival home</a> · <a href="https://carnivaltiming.com">Live Timing</a> · <a href="https://schoolsportportal.com.au">School Sport Portal</a></div><div class="foot">Carnival Timing handles real-time marshal entry · SportCarnival hosts results pages.</div></div></body></html>`;
+
+
 async function _innerFetch(req, env) {
   const url = new URL(req.url);
   const p = url.pathname;
@@ -514,7 +517,7 @@ async function _innerFetch(req, env) {
     return new Response(dec(WMR_XC_H), { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-cache", "X-Robots-Tag": "noindex" } });
   if (p === "/state-xc" || p === "/state-xc.html")
     return new Response(dec(STATE_XC_H), { headers: { "Content-Type": "text/html;charset=utf-8", "Cache-Control": "no-cache", "X-Robots-Tag": "noindex" } });
-  return new Response("Not found", { status: 404 });
+  return new Response(_SC_404_HTML, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 __name(_innerFetch, "_innerFetch");
 var SC_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
@@ -565,4 +568,4 @@ export {
   sportcarnival_hub_default as default
 };
 //# sourceMappingURL=sportcarnival-hub.js.map
---7ba7c73a8c500a3cf53bf625887d0be47def98c02f31c23067b7915b7535--
+--3bb8f53c6314ac2a8064a56c37ce62ed6bad67aa6dd3209920c0ffb55545--
