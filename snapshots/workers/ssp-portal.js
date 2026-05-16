@@ -1,4 +1,4 @@
---ac6addfecb6611e956ab3eece66d2b2764925170f6a51171f09093d7b427
+--7ab9d4ee2050fde6167a6afe912a00328f49e5c45842e96e8d26062eb471
 Content-Disposition: form-data; name="index.js"
 
 // schoolsportportal worker — auto-generated 2026-04-29 by overnight redesign
@@ -113,4 +113,4 @@ export default {
     return html(HOME);
   }
 };
---ac6addfecb6611e956ab3eece66d2b2764925170f6a51171f09093d7b427--
+--7ab9d4ee2050fde6167a6afe912a00328f49e5c45842e96e8d26062eb471--
